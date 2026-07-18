@@ -182,9 +182,8 @@
       document.getElementById('authGate').classList.add('show');
     } else {
       document.querySelector('.page').style.display = '';
-      const isPro = await TLAuth.isPro();
-      document.getElementById('navRight').innerHTML = isPro ? '' : `<a class="btn btn-ghost" href="index.html#pricing">Upgrade to Pro</a>`;
     }
+    await TLAuth.ui.renderAccountNav(document.getElementById('navRight'));
     document.getElementById('navRight').style.visibility = 'visible';
   })();
 

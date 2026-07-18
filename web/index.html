@@ -852,18 +852,7 @@
     });
   });
   (async function initNavAuthState(){
-    if(await TLAuth.isLoggedIn()){
-      const user = await TLAuth.getCurrentUser();
-      document.getElementById('navRight').innerHTML = `
-        <a class="btn btn-ghost" href="#" id="logoutLink">Log out</a>
-        <a class="btn btn-primary js-calendar-link" href="app.html">Hi, ${user.firstName} · Calendar</a>
-      `;
-      document.getElementById('logoutLink').addEventListener('click', async (e)=>{
-        e.preventDefault();
-        await TLAuth.logout();
-        location.reload();
-      });
-    }
+    await TLAuth.ui.renderAccountNav(document.getElementById('navRight'));
     document.getElementById('navRight').style.visibility = 'visible';
   })();
   const goProBtn = document.getElementById('goProBtn');

@@ -73,12 +73,6 @@
       return true;
     },
 
-    async initials(){
-      const u = await this.getCurrentUser();
-      if(!u) return '';
-      return ((u.firstName[0] || '') + (u.lastName[0] || '')).toUpperCase();
-    },
-
     async getPlanInfo(){
       const u = await this.getCurrentUser();
       if(!u) return null;
@@ -180,6 +174,41 @@
         background:transparent; border:none; color:var(--text-faint); font-size:13px; padding:4px; margin-top:2px;
       }
       .tl-modal .tl-cancel:hover{color:var(--text-dim);}
+
+      .tl-nav-avatar-wrap{position:relative;}
+      .tl-nav-avatar{
+        width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2));
+        display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; color:#fff;
+        box-shadow:0 0 0 1px rgba(79,140,255,0.15), 0 0 16px -4px rgba(79,140,255,0.6);
+        cursor:pointer; border:none; font-family:inherit;
+      }
+      .tl-nav-menu{
+        display:none; position:absolute; top:calc(100% + 12px); right:0; min-width:240px; z-index:60;
+        background:var(--bg-card); border:1px solid var(--border); border-radius:14px;
+        padding:8px; box-shadow:0 20px 48px -12px rgba(0,0,0,0.65);
+        animation:tlPop .15s ease;
+      }
+      .tl-nav-menu.open{display:block;}
+      .tl-nav-menu-head{display:flex; align-items:center; gap:11px; padding:10px 10px 14px; border-bottom:1px solid var(--border-soft); margin-bottom:6px;}
+      .tl-nav-menu-avatar{
+        width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2));
+        display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; color:#fff; flex-shrink:0;
+      }
+      .tl-nav-menu-name{font-size:13.5px; font-weight:700; color:var(--text);}
+      .tl-nav-menu-plan{
+        display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; color:var(--text-faint);
+        margin-top:4px; padding:2px 8px; border-radius:99px; background:var(--bg-elevated); border:1px solid var(--border);
+      }
+      .tl-nav-menu-plan.is-pro{color:var(--accent); background:var(--accent-dim); border-color:rgba(79,140,255,0.35);}
+      .tl-nav-menu a, .tl-nav-menu button{
+        display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:transparent; border:none;
+        font-family:inherit; color:var(--text); font-size:13.5px; padding:9px 10px; border-radius:9px; cursor:pointer;
+      }
+      .tl-nav-menu a:hover, .tl-nav-menu button:hover{background:var(--bg-hover);}
+      .tl-nav-menu-ic{width:18px; text-align:center; flex-shrink:0; opacity:.85;}
+      .tl-nav-menu-footer{border-top:1px solid var(--border-soft); margin-top:4px; padding-top:4px;}
+      .tl-nav-menu-footer button{color:var(--red);}
+      .tl-nav-menu-footer button:hover{background:var(--red-dim);}
     `;
     document.head.appendChild(style);
   }
@@ -215,7 +244,60 @@
     overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.remove(); });
   }
 
+  // Renders the logged-out (Log in / Start free) or logged-in (avatar +
+  // dropdown) nav state into containerEl. Used identically on every page so
+  // the top-right corner never looks different when navigating around.
+  async function renderAccountNav(containerEl, opts){
+    opts = opts || {};
+    ensureStyles();
+    if(!(await TLAuth.isLoggedIn())){
+      containerEl.innerHTML = `
+        <a class="btn btn-ghost" href="auth.html?mode=login">Log in</a>
+        <a class="btn btn-primary" href="auth.html?mode=signup&redirect=app.html">Start free</a>
+      `;
+      return;
+    }
+
+    const user = await TLAuth.getCurrentUser();
+    const isPro = await TLAuth.isPro();
+    const initials = ((user.firstName[0] || '') + (user.lastName[0] || '')).toUpperCase();
+
+    containerEl.innerHTML = `
+      <div class="tl-nav-avatar-wrap">
+        <button type="button" class="tl-nav-avatar" id="tlNavAvatarBtn">${initials}</button>
+        <div class="tl-nav-menu" id="tlNavMenu">
+          <div class="tl-nav-menu-head">
+            <div class="tl-nav-menu-avatar">${initials}</div>
+            <div>
+              <div class="tl-nav-menu-name">${user.firstName} ${user.lastName}</div>
+              <div class="tl-nav-menu-plan ${isPro ? 'is-pro' : ''}">${isPro ? '⭐ Pro plan' : 'Free plan'}</div>
+            </div>
+          </div>
+          ${opts.hideCalendarLink ? '' : '<a href="app.html"><span class="tl-nav-menu-ic">📅</span>Go to Calendar</a>'}
+          <a href="app.html?openProfile=1"><span class="tl-nav-menu-ic">⚙️</span>Account settings</a>
+          ${isPro ? '' : '<a href="index.html#pricing"><span class="tl-nav-menu-ic">⭐</span>Upgrade to Pro</a>'}
+          <div class="tl-nav-menu-footer">
+            <button type="button" id="tlNavLogoutBtn"><span class="tl-nav-menu-ic">↪</span>Log out</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const btn = containerEl.querySelector('#tlNavAvatarBtn');
+    const menu = containerEl.querySelector('#tlNavMenu');
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.classList.toggle('open');
+    });
+    document.addEventListener('click', () => menu.classList.remove('open'));
+    containerEl.querySelector('#tlNavLogoutBtn').addEventListener('click', async () => {
+      await TLAuth.logout();
+      location.reload();
+    });
+  }
+
   TLAuth.ui = {
+    renderAccountNav,
     requireAuth(redirectTo){
       const redirect = redirectTo ? `&redirect=${encodeURIComponent(redirectTo)}` : '';
       showModal({

@@ -329,9 +329,8 @@
         <a href="contact.html">Contact</a>
         <a href="faq.html">FAQ</a>
       `;
-      const isPro = await TLAuth.isPro();
-      document.getElementById('navRight').innerHTML = isPro ? '' : `<a class="btn btn-ghost" href="index.html#pricing">Upgrade to Pro</a>`;
     }
+    await TLAuth.ui.renderAccountNav(document.getElementById('navRight'));
     document.getElementById('navLinks').style.visibility = 'visible';
     document.getElementById('navRight').style.visibility = 'visible';
   })();

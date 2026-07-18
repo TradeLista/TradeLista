@@ -99,12 +99,6 @@
     padding:7px 12px; border-radius:99px; font-size:13px; color:var(--text-dim);
   }
   .account-pill select{background:transparent; border:none; color:var(--text); font-family:inherit; font-size:13px; outline:none;}
-  .avatar{
-    width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2));
-    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0;
-    box-shadow:0 0 0 1px rgba(79,140,255,0.15), 0 0 16px -4px rgba(79,140,255,0.6);
-    cursor:pointer;
-  }
 
   /* Auth gate */
   .auth-gate{
@@ -479,7 +473,6 @@
         </select>
       </div>
       <button class="btn btn-primary" id="addTradeBtn" style="padding:9px 16px; font-size:13.5px;">+ Add trade</button>
-      <div class="avatar" id="avatarBtn" title="Your account">SA</div>
     </div>
   </div>
 
@@ -777,17 +770,22 @@ window.addEventListener('scroll', ()=>{
   nav.classList.toggle('scrolled', window.scrollY > 12);
 });
 
+async function renderTopNav(){
+  await TLAuth.ui.renderAccountNav(document.getElementById('navRight'), { hideCalendarLink: true });
+  const accountSettingsLink = document.querySelector('#navRight a[href*="openProfile=1"]');
+  if(accountSettingsLink){
+    accountSettingsLink.addEventListener('click', (e)=>{ e.preventDefault(); openProfile(); });
+  }
+}
+
 // ---- Auth gate ----
 (async function initAuthGate(){
   if(!(await TLAuth.isLoggedIn())){
     document.getElementById('authGate').classList.add('show');
   } else {
     document.querySelector('.page').style.display = '';
-    const isPro = await TLAuth.isPro();
-    document.getElementById('navRight').innerHTML = isPro ? '' : `<a class="btn btn-ghost" href="index.html#pricing">Upgrade to Pro</a>`;
-    const avatarBtn = document.getElementById('avatarBtn');
-    avatarBtn.textContent = await TLAuth.initials();
-    avatarBtn.addEventListener('click', openProfile);
+    await renderTopNav();
+    if(new URLSearchParams(location.search).get('openProfile')) openProfile();
 
     const def = defaultChartRange();
     document.getElementById('chartFrom').value = fmtDateKey(def.from);
@@ -851,7 +849,7 @@ document.getElementById('saveProfileBtn').addEventListener('click', async ()=>{
   });
   if(!res.ok){ err.textContent = res.error; return; }
   err.textContent = '';
-  document.getElementById('avatarBtn').textContent = await TLAuth.initials();
+  await renderTopNav();
   document.getElementById('profileStatus').textContent = 'Profile updated.';
 });
 
