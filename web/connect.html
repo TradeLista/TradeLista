@@ -276,7 +276,7 @@
     <div class="faq-body">Yes. Manual entry works on both Free and Pro plans — just add each trade's symbol, lot size, entry, exit and profit/loss straight from the Calendar page.</div>
   </details>
 
-  <div class="callout" style="margin-top:40px; margin-bottom:0;">
+  <div class="callout" id="proRequiredCallout" style="margin-top:40px; margin-bottom:0;">
     <span class="ic">⭐</span>
     <div><strong>Pro plan required.</strong> EA auto-sync, up to 5 connected accounts and unlimited trades are part of the Pro plan.</div>
   </div>
@@ -329,6 +329,7 @@
         <a href="contact.html">Contact</a>
         <a href="faq.html">FAQ</a>
       `;
+      if(await TLAuth.isPro()) document.getElementById('proRequiredCallout').style.display = 'none';
     }
     await TLAuth.ui.renderAccountNav(document.getElementById('navRight'));
     document.getElementById('navLinks').style.visibility = 'visible';
