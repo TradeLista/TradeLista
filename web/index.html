@@ -818,6 +818,7 @@
   </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="auth.js"></script>
 <script>
   // Nav background on scroll
@@ -827,54 +828,68 @@
   });
 
   // ---- Auth-aware navigation ----
+  // preventDefault() must happen synchronously on click, before the async
+  // TLAuth check resolves — otherwise the browser navigates via the plain
+  // href before we get an answer. So we always prevent default first, then
+  // decide where to actually send the user once the check completes.
   document.querySelectorAll('.js-calendar-link').forEach(el=>{
     el.addEventListener('click', (e)=>{
-      if(!TLAuth.isLoggedIn()){
-        e.preventDefault();
-        TLAuth.ui.requireAuth('app.html');
-      }
+      e.preventDefault();
+      const href = el.getAttribute('href');
+      TLAuth.isLoggedIn().then(loggedIn=>{
+        if(loggedIn) location.href = href;
+        else TLAuth.ui.requireAuth('app.html');
+      });
     });
   });
   document.querySelectorAll('.js-start-free').forEach(el=>{
     el.addEventListener('click', (e)=>{
-      if(TLAuth.isLoggedIn()){
-        e.preventDefault();
-        location.href = 'app.html';
-      }
+      e.preventDefault();
+      const href = el.getAttribute('href');
+      TLAuth.isLoggedIn().then(loggedIn=>{
+        location.href = loggedIn ? 'app.html' : href;
+      });
     });
   });
-  if(TLAuth.isLoggedIn()){
-    const user = TLAuth.getCurrentUser();
-    document.getElementById('navRight').innerHTML = `
-      <a class="btn btn-ghost" href="#" id="logoutLink">Log out</a>
-      <a class="btn btn-primary js-calendar-link" href="app.html">Hi, ${user.firstName} · Calendar</a>
-    `;
-    document.getElementById('logoutLink').addEventListener('click', (e)=>{
-      e.preventDefault();
-      TLAuth.logout();
-      location.reload();
-    });
-  }
-  document.getElementById('navRight').style.visibility = 'visible';
+  (async function initNavAuthState(){
+    if(await TLAuth.isLoggedIn()){
+      const user = await TLAuth.getCurrentUser();
+      document.getElementById('navRight').innerHTML = `
+        <a class="btn btn-ghost" href="#" id="logoutLink">Log out</a>
+        <a class="btn btn-primary js-calendar-link" href="app.html">Hi, ${user.firstName} · Calendar</a>
+      `;
+      document.getElementById('logoutLink').addEventListener('click', async (e)=>{
+        e.preventDefault();
+        await TLAuth.logout();
+        location.reload();
+      });
+    }
+    document.getElementById('navRight').style.visibility = 'visible';
+  })();
   const goProBtn = document.getElementById('goProBtn');
   if(goProBtn){
-    goProBtn.addEventListener('click', (e)=>{
+    goProBtn.addEventListener('click', async (e)=>{
       e.preventDefault();
-      if(!TLAuth.isLoggedIn()){
+      if(!(await TLAuth.isLoggedIn())){
         TLAuth.ui.requireAuth('index.html#pricing');
         return;
       }
-      if(TLAuth.isPro()){
+      if(await TLAuth.isPro()){
         location.href = 'app.html';
         return;
       }
-      TLAuth.ui.showModal({
-        icon:'⭐',
-        title:'Upgrade to Pro',
-        message:'Confirm your upgrade to Pro — $10/month (demo only, no card will be charged).',
-        primaryLabel:'Confirm upgrade',
-        primaryAction: ()=>{ TLAuth.upgradeToPro(); location.href = 'app.html'; }
-      });
+      const res = await TLAuth.startCheckout();
+      if(!res.ok){
+        TLAuth.ui.showModal({
+          icon:'⚠️',
+          title:'Could not start checkout',
+          message: res.error || 'Something went wrong. Please try again.',
+          primaryLabel:'Close',
+          primaryAction: ()=>{ document.querySelector('.tl-overlay')?.remove(); }
+        });
+        return;
+      }
+      location.href = res.url;
     });
   }
 

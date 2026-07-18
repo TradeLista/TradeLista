@@ -461,7 +461,7 @@
   </div>
 </div>
 
-<div class="page">
+<div class="page" style="display:none">
   <div class="page-head">
     <div>
       <div class="page-eyebrow"><span class="dotpulse"></span> Live account · <span id="eyebrowMonth">—</span></div>
@@ -766,6 +766,7 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="auth.js"></script>
 <script>
 // Nav background on scroll
@@ -775,21 +776,30 @@ window.addEventListener('scroll', ()=>{
 });
 
 // ---- Auth gate ----
-if(!TLAuth.isLoggedIn()){
-  document.querySelector('.page').style.display = 'none';
-  document.getElementById('authGate').classList.add('show');
-} else {
-  const currentUser = TLAuth.getCurrentUser();
-  document.getElementById('navRight').innerHTML = `<a class="btn btn-ghost" href="index.html#pricing">${TLAuth.isPro() ? 'Pro plan' : 'Upgrade to Pro'}</a>`;
-  const avatarBtn = document.getElementById('avatarBtn');
-  avatarBtn.textContent = TLAuth.initials();
-  avatarBtn.addEventListener('click', openProfile);
-}
-document.getElementById('navRight').style.visibility = 'visible';
+(async function initAuthGate(){
+  if(!(await TLAuth.isLoggedIn())){
+    document.getElementById('authGate').classList.add('show');
+  } else {
+    document.querySelector('.page').style.display = '';
+    const isPro = await TLAuth.isPro();
+    document.getElementById('navRight').innerHTML = `<a class="btn btn-ghost" href="index.html#pricing">${isPro ? 'Pro plan' : 'Upgrade to Pro'}</a>`;
+    const avatarBtn = document.getElementById('avatarBtn');
+    avatarBtn.textContent = await TLAuth.initials();
+    avatarBtn.addEventListener('click', openProfile);
+
+    const def = defaultChartRange();
+    document.getElementById('chartFrom').value = fmtDateKey(def.from);
+    document.getElementById('chartTo').value = fmtDateKey(def.to);
+    document.getElementById('eyebrowMonth').textContent = monthLabel(today);
+    renderAll();
+    renderRules();
+  }
+  document.getElementById('navRight').style.visibility = 'visible';
+})();
 
 /* ---------- Profile / account management ---------- */
-function renderProfilePlanStatus(){
-  const info = TLAuth.getPlanInfo();
+async function renderProfilePlanStatus(){
+  const info = await TLAuth.getPlanInfo();
   const box = document.getElementById('planStatusBox');
   const actionBox = document.getElementById('planActionBox');
   if(!info) return;
@@ -799,32 +809,25 @@ function renderProfilePlanStatus(){
     actionBox.innerHTML = `<a class="btn btn-primary" style="width:100%; display:block; text-align:center;" href="index.html#pricing">Upgrade to Pro</a>`;
   } else if(info.cancelAtPeriodEnd){
     box.innerHTML = `<strong style="color:var(--text);">Pro plan</strong> — cancelled, active until <strong>${fmt(info.periodEnd)}</strong>`;
-    actionBox.innerHTML = `<button type="button" class="btn btn-ghost" id="resumeProBtn" style="width:100%;">Resume Pro plan</button>`;
-    document.getElementById('resumeProBtn').onclick = ()=>{
-      TLAuth.resumePro();
-      renderProfilePlanStatus();
-      document.getElementById('profileStatus').textContent = 'Pro plan resumed.';
+    actionBox.innerHTML = `<button type="button" class="btn btn-ghost" id="manageProBtn" style="width:100%;">Manage subscription</button>`;
+    document.getElementById('manageProBtn').onclick = async ()=>{
+      const res = await TLAuth.openBillingPortal();
+      if(!res.ok){ document.getElementById('profileStatus').textContent = res.error; return; }
+      location.href = res.url;
     };
   } else {
     box.innerHTML = `<strong style="color:var(--text);">Pro plan</strong> — renews on <strong>${fmt(info.periodEnd)}</strong>`;
-    actionBox.innerHTML = `<button type="button" class="btn btn-danger" id="cancelProBtn" style="width:100%;">Cancel Pro plan</button>`;
-    document.getElementById('cancelProBtn').onclick = ()=>{
-      const res = TLAuth.cancelPro();
-      if(!res.ok) return;
-      renderProfilePlanStatus();
-      TLAuth.ui.showModal({
-        icon:'✅',
-        title:'Subscription cancelled',
-        message:`Your Pro plan has been cancelled. You'll keep full Pro access until <strong>${fmt(res.periodEnd)}</strong>, then your account moves to the Free plan automatically.`,
-        primaryLabel:'Got it',
-        primaryAction: ()=>{ document.querySelector('.tl-overlay')?.remove(); }
-      });
+    actionBox.innerHTML = `<button type="button" class="btn btn-danger" id="manageProBtn" style="width:100%;">Manage subscription</button>`;
+    document.getElementById('manageProBtn').onclick = async ()=>{
+      const res = await TLAuth.openBillingPortal();
+      if(!res.ok){ document.getElementById('profileStatus').textContent = res.error; return; }
+      location.href = res.url;
     };
   }
 }
 
-function openProfile(){
-  const user = TLAuth.getCurrentUser();
+async function openProfile(){
+  const user = await TLAuth.getCurrentUser();
   if(!user) return;
   document.getElementById('profileEmail').value = user.email;
   document.getElementById('profileFirstName').value = user.firstName;
@@ -838,15 +841,15 @@ function openProfile(){
   openModal('profileOverlay');
 }
 
-document.getElementById('saveProfileBtn').addEventListener('click', ()=>{
+document.getElementById('saveProfileBtn').addEventListener('click', async ()=>{
   const err = document.getElementById('profileNameError');
-  const res = TLAuth.updateProfile({
+  const res = await TLAuth.updateProfile({
     firstName: document.getElementById('profileFirstName').value,
     lastName: document.getElementById('profileLastName').value
   });
   if(!res.ok){ err.textContent = res.error; return; }
   err.textContent = '';
-  document.getElementById('avatarBtn').textContent = TLAuth.initials();
+  document.getElementById('avatarBtn').textContent = await TLAuth.initials();
   document.getElementById('profileStatus').textContent = 'Profile updated.';
 });
 
@@ -863,8 +866,8 @@ document.getElementById('changePasswordBtn').addEventListener('click', async ()=
   document.getElementById('profileStatus').textContent = 'Password updated.';
 });
 
-document.getElementById('logoutFromProfileBtn').addEventListener('click', ()=>{
-  TLAuth.logout();
+document.getElementById('logoutFromProfileBtn').addEventListener('click', async ()=>{
+  await TLAuth.logout();
   location.reload();
 });
 
@@ -1380,8 +1383,9 @@ function backToDay(){
   if(currentDayKey) openDay(currentDayKey);
 }
 
-function openTrade(id){
+async function openTrade(id){
   currentTradeId = id;
+  const isPro = await TLAuth.isPro();
   const t = findTrade(id);
   document.getElementById('tradeModalTitle').textContent = t.symbol + ' — ' + new Date(t.date).toLocaleDateString('en-US',{month:'short', day:'numeric'});
   document.getElementById('tradeDetailGrid').innerHTML = `
@@ -1426,7 +1430,7 @@ function openTrade(id){
   const input = document.createElement('input');
   input.type = 'file'; input.accept = 'image/*';
   input.addEventListener('click', (e)=>{
-    if(!TLAuth.isPro()){
+    if(!isPro){
       e.preventDefault();
       TLAuth.ui.requirePro('Image uploads');
     }
@@ -1455,7 +1459,7 @@ function openTrade(id){
 
   const qlist = document.getElementById('questionsList');
   qlist.innerHTML = '';
-  if(!TLAuth.isPro()){
+  if(!isPro){
     const lock = document.createElement('div');
     lock.className = 'pro-lock';
     lock.innerHTML = `<strong>⭐ Pro feature</strong> Reflection questions are part of the Pro plan. <button type="button">Upgrade</button>`;
@@ -1483,7 +1487,7 @@ function openTrade(id){
     const [yesBtn, noBtn] = box.querySelectorAll('.yn button');
     const explainWrap = box.querySelector('.qexplain');
     const explainArea = box.querySelector('textarea');
-    qtextInput.disabled = !TLAuth.isPro();
+    qtextInput.disabled = !isPro;
     qtextInput.oninput = ()=>{
       const meta = loadMeta();
       if(!meta[id]) meta[id] = { note:'', images:[], answers:{} };
@@ -1493,7 +1497,7 @@ function openTrade(id){
       flashSaved();
     };
     function setAnswer(v){
-      if(!TLAuth.isPro()){ TLAuth.ui.requirePro('Reflection questions'); return; }
+      if(!isPro){ TLAuth.ui.requirePro('Reflection questions'); return; }
       const meta = loadMeta();
       if(!meta[id]) meta[id] = { note:'', images:[], answers:{} };
       if(!meta[id].answers[qi]) meta[id].answers[qi] = {};
@@ -1516,6 +1520,11 @@ function openTrade(id){
     };
     qlist.appendChild(box);
   });
+
+  document.getElementById('rteImageBtn').onclick = ()=>{
+    if(!isPro){ TLAuth.ui.requirePro('Image uploads'); return; }
+    rteImageInput.click();
+  };
 
   openModal('tradeOverlay');
 }
@@ -1554,8 +1563,8 @@ tradeNoteEl.addEventListener('input', saveTradeNote);
 const MAX_INLINE_IMAGE_BYTES = 3 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/png','image/jpeg','image/gif','image/webp']);
 
-function insertImageFile(file){
-  if(!TLAuth.isPro()){ TLAuth.ui.requirePro('Image uploads'); return; }
+async function insertImageFile(file){
+  if(!(await TLAuth.isPro())){ TLAuth.ui.requirePro('Image uploads'); return; }
   if(!ALLOWED_IMAGE_TYPES.has(file.type)){
     flashSaved('Please use a PNG, JPG, GIF or WEBP image.', true);
     return;
@@ -1579,10 +1588,10 @@ function insertImageFile(file){
 }
 
 const rteImageInput = document.getElementById('rteImageInput');
-document.getElementById('rteImageBtn').onclick = ()=>{
-  if(!TLAuth.isPro()){ TLAuth.ui.requirePro('Image uploads'); return; }
-  rteImageInput.click();
-};
+// The click handler that gates this (and opens the native file dialog) is
+// wired up fresh inside openTrade() each time, using that render's already-
+// fetched Pro status — file-dialog clicks must stay perfectly synchronous
+// with the user gesture, so we can't await TLAuth.isPro() at click time here.
 rteImageInput.addEventListener('change', (e)=>{
   const file = e.target.files[0];
   rteImageInput.value = '';
@@ -1722,7 +1731,7 @@ const RULES_KEY = 'tradelista_golden_rules';
 function loadRules(){ try{ return JSON.parse(localStorage.getItem(RULES_KEY)) || []; }catch(e){ return []; } }
 function saveRules(rules){ localStorage.setItem(RULES_KEY, JSON.stringify(rules)); }
 
-function renderRules(){
+async function renderRules(){
   const rules = loadRules();
   const list = document.getElementById('rulesList');
   const empty = document.getElementById('rulesEmpty');
@@ -1737,7 +1746,7 @@ function renderRules(){
   empty.style.display = rules.length ? 'none' : 'block';
   const btn = document.getElementById('ruleAddBtn');
   const input = document.getElementById('ruleInput');
-  const isPro = TLAuth.isPro();
+  const isPro = await TLAuth.isPro();
   btn.disabled = !isPro || rules.length >= 10;
   input.disabled = !isPro || rules.length >= 10;
   let lock = document.getElementById('rulesLock');
@@ -1760,8 +1769,8 @@ function removeRule(i){
   saveRules(rules);
   renderRules();
 }
-document.getElementById('ruleAddBtn').onclick = ()=>{
-  if(!TLAuth.isPro()){ TLAuth.ui.requirePro('Golden trading rules'); return; }
+document.getElementById('ruleAddBtn').onclick = async ()=>{
+  if(!(await TLAuth.isPro())){ TLAuth.ui.requirePro('Golden trading rules'); return; }
   const input = document.getElementById('ruleInput');
   const val = input.value.trim();
   if(!val) return;
@@ -1936,17 +1945,10 @@ document.getElementById('confirmDeleteBtn').onclick = ()=>{
   }
 };
 
-/* ---------- Init ---------- */
-if(TLAuth.isLoggedIn()){
-  (function initChartRange(){
-    const def = defaultChartRange();
-    document.getElementById('chartFrom').value = fmtDateKey(def.from);
-    document.getElementById('chartTo').value = fmtDateKey(def.to);
-  })();
-  document.getElementById('eyebrowMonth').textContent = monthLabel(today);
-  renderAll();
-  renderRules();
-}
+/* ---------- Init ----------
+   The logged-in init work (chart range, eyebrow month, renderAll, renderRules)
+   now runs inside initAuthGate() above, once we actually know the user is
+   logged in — see the "Auth gate" block near the top of this script. */
 </script>
 </body>
 </html>

@@ -180,9 +180,14 @@
       </defs>
     </svg><span class="brand-word"><span class="brand-trade">Trade</span><span class="brand-accent">Lista</span></span>
   </a>
-  <div class="navlinks">
+  <div class="navlinks" id="navLinks">
+    <a href="index.html#hero">Why TradeLista</a>
+    <a href="index.html#features">Features</a>
+    <a href="index.html#how-it-works">How it works</a>
     <a href="app.html" class="js-calendar-link">Calendar</a>
     <a class="active" href="connect.html">Connect Account</a>
+    <a href="index.html#pricing">Pricing</a>
+    <a href="index.html#contact">Contact</a>
   </div>
   <div class="navright" id="navRight" style="visibility:hidden">
     <a class="btn btn-ghost" href="auth.html?mode=login">Log in</a>
@@ -288,6 +293,7 @@
 
 <footer>© 2026 TradeLista. All rights reserved.</footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="auth.js"></script>
 <script>
   const nav = document.getElementById('topnav');
@@ -298,33 +304,42 @@
   // ---- Auth-aware navigation ----
   document.querySelectorAll('.js-calendar-link').forEach(el=>{
     el.addEventListener('click', (e)=>{
-      if(!TLAuth.isLoggedIn()){
-        e.preventDefault();
-        TLAuth.ui.requireAuth('app.html');
-      }
+      e.preventDefault();
+      const href = el.getAttribute('href');
+      TLAuth.isLoggedIn().then(loggedIn=>{
+        if(loggedIn) location.href = href;
+        else TLAuth.ui.requireAuth('app.html');
+      });
     });
   });
   document.querySelectorAll('.js-start-free').forEach(el=>{
     el.addEventListener('click', (e)=>{
-      if(TLAuth.isLoggedIn()){
-        e.preventDefault();
-        location.href = 'app.html';
-      }
+      e.preventDefault();
+      const href = el.getAttribute('href');
+      TLAuth.isLoggedIn().then(loggedIn=>{
+        location.href = loggedIn ? 'app.html' : href;
+      });
     });
   });
-  if(TLAuth.isLoggedIn()){
-    const user = TLAuth.getCurrentUser();
-    document.getElementById('navRight').innerHTML = `
-      <a class="btn btn-ghost" href="#" id="logoutLink">Log out</a>
-      <a class="btn btn-primary js-calendar-link" href="app.html">Hi, ${user.firstName} · Calendar</a>
-    `;
-    document.getElementById('logoutLink').addEventListener('click', (e)=>{
-      e.preventDefault();
-      TLAuth.logout();
-      location.reload();
-    });
-  }
-  document.getElementById('navRight').style.visibility = 'visible';
+  (async function initNavAuthState(){
+    if(await TLAuth.isLoggedIn()){
+      const user = await TLAuth.getCurrentUser();
+      document.getElementById('navLinks').innerHTML = `
+        <a href="app.html" class="js-calendar-link">Calendar</a>
+        <a class="active" href="connect.html">Connect Account</a>
+      `;
+      document.getElementById('navRight').innerHTML = `
+        <a class="btn btn-ghost" href="#" id="logoutLink">Log out</a>
+        <a class="btn btn-primary js-calendar-link" href="app.html">Hi, ${user.firstName} · Calendar</a>
+      `;
+      document.getElementById('logoutLink').addEventListener('click', async (e)=>{
+        e.preventDefault();
+        await TLAuth.logout();
+        location.reload();
+      });
+    }
+    document.getElementById('navRight').style.visibility = 'visible';
+  })();
 </script>
 </body>
 </html>
