@@ -59,7 +59,10 @@
   .brand-icon{flex-shrink:0; display:block;}
   .brand-trade{color:#f5f5f7;}
   .brand-accent{background:linear-gradient(135deg,#9d9ff5,#6366f1); -webkit-background-clip:text; background-clip:text; color:transparent;}
-  .navlinks{display:flex; gap:20px; font-size:14px; color:var(--text-dim);}
+  .navlinks{
+    display:flex; gap:20px; font-size:14px; color:var(--text-dim);
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  }
   .navlinks a{padding:6px 2px; border-bottom:2px solid transparent; transition:color .15s;}
   .navlinks a:hover{color:var(--text);}
   .navlinks a.active{color:var(--text); border-bottom-color:var(--accent);}
@@ -143,6 +146,7 @@
   .kpi .value.pos{color:var(--green);}
   .kpi .value.neg{color:var(--red);}
   .kpi .sub{font-size:12px; color:var(--text-faint); margin-top:4px;}
+  .kpi .sub#kpiTradeCount{font-size:12.5px; font-weight:700; color:var(--text-dim);}
 
   /* Dashboard layout: calendar + sidebar */
   .dashboard-grid{display:grid; grid-template-columns:1fr 300px; gap:18px; align-items:start;}
@@ -420,6 +424,15 @@
     .navlinks{display:none;}
     .detail-grid{grid-template-columns:1fr;}
   }
+  footer{border-top:1px solid var(--border-soft); padding:48px 24px 32px;}
+  .footer-inner{max-width:1180px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:32px;}
+  .footer-brand{max-width:280px;}
+  .footer-brand p{font-size:13px; color:var(--text-faint); margin-top:10px; line-height:1.6;}
+  .footer-cols{display:flex; gap:56px; flex-wrap:wrap;}
+  .footer-col h4{font-size:12px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:14px;}
+  .footer-col a{display:block; font-size:13.5px; color:var(--text-dim); margin-bottom:10px;}
+  .footer-col a:hover{color:var(--text);}
+  .footer-bottom{max-width:1180px; margin:36px auto 0; padding-top:24px; border-top:1px solid var(--border-soft); font-size:12px; color:var(--text-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
 </style>
 </head>
 <body>
@@ -560,6 +573,54 @@
   </div>
   </div>
 </div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="brand">
+        <svg class="brand-icon" width="28" height="28" viewBox="0 0 112 112" aria-hidden="true">
+          <rect width="112" height="112" rx="28" fill="url(#logoGradFooter)"/>
+          <rect x="16" y="16" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+          <rect x="44" y="16" width="24" height="24" rx="6" fill="#22c55e"/>
+          <rect x="72" y="16" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+          <rect x="16" y="44" width="24" height="24" rx="6" fill="#ef4444"/>
+          <rect x="44" y="44" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+          <rect x="72" y="44" width="24" height="24" rx="6" fill="#22c55e"/>
+          <rect x="16" y="72" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+          <rect x="44" y="72" width="24" height="24" rx="6" fill="#22c55e"/>
+          <rect x="72" y="72" width="24" height="24" rx="6" fill="#ef4444"/>
+          <defs>
+            <linearGradient id="logoGradFooter" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#000000"/>
+              <stop offset="100%" stop-color="#8081F8"/>
+            </linearGradient>
+          </defs>
+        </svg><span class="brand-word"><span class="brand-trade">Trade</span><span class="brand-accent">Lista</span></span>
+      </div>
+      <p>The trading journal for MT4/MT5 traders who are done with PDFs and spreadsheets.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="index.html#features">Features</a>
+        <a href="index.html#pricing">Pricing</a>
+        <a href="app.html">Calendar demo</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="contact.html">Contact</a>
+        <a href="faq.html">FAQ</a>
+        <a href="#" onclick="return false;">Privacy Policy</a>
+        <a href="#" onclick="return false;">Imprint</a>
+        <a href="#" onclick="return false;">Terms</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 TradeLista. All rights reserved.</span>
+    <span>tradelista.com</span>
+  </div>
+</footer>
 
 <div class="auth-gate" id="authGate">
   <div class="ic">🔒</div>
@@ -714,53 +775,6 @@
   </div>
 </div>
 
-<!-- Profile / account overlay -->
-<div class="overlay" id="profileOverlay">
-  <div class="modal" style="max-width:440px;">
-    <div class="modal-head">
-      <h3>Your account</h3>
-      <button type="button" onclick="closeModal('profileOverlay')">✕</button>
-    </div>
-
-    <div class="form-row">
-      <label>Email</label>
-      <input type="email" id="profileEmail" disabled>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-row">
-        <label>First name</label>
-        <input type="text" id="profileFirstName">
-      </div>
-      <div class="form-row">
-        <label>Last name</label>
-        <input type="text" id="profileLastName">
-      </div>
-    </div>
-    <div class="form-error" id="profileNameError"></div>
-    <button type="button" class="btn btn-primary" id="saveProfileBtn" style="width:100%;">Save changes</button>
-
-    <div class="section-label" style="margin-top:22px;">Password</div>
-    <div class="form-row">
-      <label>Current password</label>
-      <input type="password" id="currentPassword" autocomplete="current-password">
-    </div>
-    <div class="form-row">
-      <label>New password <span class="opt">(min. 8 characters)</span></label>
-      <input type="password" id="newPassword" autocomplete="new-password">
-    </div>
-    <div class="form-error" id="passwordError"></div>
-    <button type="button" class="btn btn-ghost" id="changePasswordBtn" style="width:100%;">Change password</button>
-
-    <div class="section-label" style="margin-top:22px;">Plan</div>
-    <div id="planStatusBox" style="background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:var(--radius-sm); padding:12px 14px; font-size:13px; color:var(--text-dim); margin-bottom:12px;"></div>
-    <div id="planActionBox"></div>
-
-    <div id="profileStatus" style="font-size:12.5px; color:var(--green); min-height:16px; margin-top:14px; text-align:center;"></div>
-
-    <button type="button" class="btn btn-ghost" id="logoutFromProfileBtn" style="width:100%; margin-top:8px;">Log out</button>
-  </div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="auth.js"></script>
 <script>
@@ -772,10 +786,6 @@ window.addEventListener('scroll', ()=>{
 
 async function renderTopNav(){
   await TLAuth.ui.renderAccountNav(document.getElementById('navRight'), { hideCalendarLink: true });
-  const accountSettingsLink = document.querySelector('#navRight a[href*="openProfile=1"]');
-  if(accountSettingsLink){
-    accountSettingsLink.addEventListener('click', (e)=>{ e.preventDefault(); openProfile(); });
-  }
 }
 
 // ---- Auth gate ----
@@ -785,7 +795,6 @@ async function renderTopNav(){
   } else {
     document.querySelector('.page').style.display = '';
     await renderTopNav();
-    if(new URLSearchParams(location.search).get('openProfile')) openProfile();
 
     const def = defaultChartRange();
     document.getElementById('chartFrom').value = fmtDateKey(def.from);
@@ -796,80 +805,6 @@ async function renderTopNav(){
   }
   document.getElementById('navRight').style.visibility = 'visible';
 })();
-
-/* ---------- Profile / account management ---------- */
-async function renderProfilePlanStatus(){
-  const info = await TLAuth.getPlanInfo();
-  const box = document.getElementById('planStatusBox');
-  const actionBox = document.getElementById('planActionBox');
-  if(!info) return;
-  const fmt = ts => new Date(ts).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
-  if(info.plan !== 'pro'){
-    box.innerHTML = `<strong style="color:var(--text);">Free plan</strong>`;
-    actionBox.innerHTML = `<a class="btn btn-primary" style="width:100%; display:block; text-align:center;" href="index.html#pricing">Upgrade to Pro</a>`;
-  } else if(info.cancelAtPeriodEnd){
-    box.innerHTML = `<strong style="color:var(--text);">Pro plan</strong> — cancelled, active until <strong>${fmt(info.periodEnd)}</strong>`;
-    actionBox.innerHTML = `<button type="button" class="btn btn-ghost" id="manageProBtn" style="width:100%;">Manage subscription</button>`;
-    document.getElementById('manageProBtn').onclick = async ()=>{
-      const res = await TLAuth.openBillingPortal();
-      if(!res.ok){ document.getElementById('profileStatus').textContent = res.error; return; }
-      location.href = res.url;
-    };
-  } else {
-    box.innerHTML = `<strong style="color:var(--text);">Pro plan</strong> — renews on <strong>${fmt(info.periodEnd)}</strong>`;
-    actionBox.innerHTML = `<button type="button" class="btn btn-danger" id="manageProBtn" style="width:100%;">Manage subscription</button>`;
-    document.getElementById('manageProBtn').onclick = async ()=>{
-      const res = await TLAuth.openBillingPortal();
-      if(!res.ok){ document.getElementById('profileStatus').textContent = res.error; return; }
-      location.href = res.url;
-    };
-  }
-}
-
-async function openProfile(){
-  const user = await TLAuth.getCurrentUser();
-  if(!user) return;
-  document.getElementById('profileEmail').value = user.email;
-  document.getElementById('profileFirstName').value = user.firstName;
-  document.getElementById('profileLastName').value = user.lastName;
-  document.getElementById('profileNameError').textContent = '';
-  document.getElementById('currentPassword').value = '';
-  document.getElementById('newPassword').value = '';
-  document.getElementById('passwordError').textContent = '';
-  document.getElementById('profileStatus').textContent = '';
-  renderProfilePlanStatus();
-  openModal('profileOverlay');
-}
-
-document.getElementById('saveProfileBtn').addEventListener('click', async ()=>{
-  const err = document.getElementById('profileNameError');
-  const res = await TLAuth.updateProfile({
-    firstName: document.getElementById('profileFirstName').value,
-    lastName: document.getElementById('profileLastName').value
-  });
-  if(!res.ok){ err.textContent = res.error; return; }
-  err.textContent = '';
-  await renderTopNav();
-  document.getElementById('profileStatus').textContent = 'Profile updated.';
-});
-
-document.getElementById('changePasswordBtn').addEventListener('click', async ()=>{
-  const err = document.getElementById('passwordError');
-  const res = await TLAuth.changePassword({
-    currentPassword: document.getElementById('currentPassword').value,
-    newPassword: document.getElementById('newPassword').value
-  });
-  if(!res.ok){ err.textContent = res.error; return; }
-  err.textContent = '';
-  document.getElementById('currentPassword').value = '';
-  document.getElementById('newPassword').value = '';
-  document.getElementById('profileStatus').textContent = 'Password updated.';
-});
-
-document.getElementById('logoutFromProfileBtn').addEventListener('click', async ()=>{
-  await TLAuth.logout();
-  location.reload();
-});
 
 /* ---------- Mock data generation (deterministic) ---------- */
 function seeded(n){ let x = Math.sin(n*9973)*10000; return x - Math.floor(x); }
@@ -1250,7 +1185,7 @@ function renderKPIs(){
   const isCurrentViewMonth = (year===today.getFullYear() && month===today.getMonth());
   const monthPhrase = isCurrentViewMonth ? 'this month' : `in ${viewDate.toLocaleDateString('en-US',{month:'long'})}`;
   document.getElementById('kpiPctLabel').textContent = `PnL ${monthPhrase} (%)`;
-  document.getElementById('kpiUsdLabel').textContent = `PnL ${monthPhrase}`;
+  document.getElementById('kpiUsdLabel').textContent = `PnL ${monthPhrase} ($)`;
   document.getElementById('kpiWinrateLabel').textContent = `Win rate ${monthPhrase}`;
   document.getElementById('kpiBestDayLabel').textContent = `Best day ${monthPhrase}`;
 

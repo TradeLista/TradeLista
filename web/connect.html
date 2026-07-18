@@ -59,7 +59,10 @@
   .brand-icon{flex-shrink:0; display:block;}
   .brand-trade{color:#f5f5f7;}
   .brand-accent{background:linear-gradient(135deg,#9d9ff5,#6366f1); -webkit-background-clip:text; background-clip:text; color:transparent;}
-  .navlinks{display:flex; gap:20px; font-size:14px; color:var(--text-dim);}
+  .navlinks{
+    display:flex; gap:20px; font-size:14px; color:var(--text-dim);
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  }
   .navlinks a{padding:6px 2px; border-bottom:2px solid transparent; transition:color .15s;}
   .navlinks a:hover{color:var(--text);}
   .navlinks a.active{color:var(--text); border-bottom-color:var(--accent);}
@@ -154,7 +157,15 @@
   .final-cta .ctas{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; position:relative;}
 
   /* Footer */
-  footer{border-top:1px solid var(--border-soft); padding:32px 24px; text-align:center; color:var(--text-faint); font-size:12.5px;}
+  footer{border-top:1px solid var(--border-soft); padding:48px 24px 32px;}
+  .footer-inner{max-width:1180px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:32px;}
+  .footer-brand{max-width:280px;}
+  .footer-brand p{font-size:13px; color:var(--text-faint); margin-top:10px; line-height:1.6;}
+  .footer-cols{display:flex; gap:56px; flex-wrap:wrap;}
+  .footer-col h4{font-size:12px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:14px;}
+  .footer-col a{display:block; font-size:13.5px; color:var(--text-dim); margin-bottom:10px;}
+  .footer-col a:hover{color:var(--text);}
+  .footer-bottom{max-width:1180px; margin:36px auto 0; padding-top:24px; border-top:1px solid var(--border-soft); font-size:12px; color:var(--text-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
 </style>
 </head>
 <body>
@@ -281,7 +292,7 @@
     <div><strong>Pro plan required.</strong> EA auto-sync, up to 5 connected accounts and unlimited trades are part of the Pro plan.</div>
   </div>
 
-  <div class="final-cta">
+  <div class="final-cta" id="finalCta">
     <h2>Ready to connect your account?</h2>
     <p>Grab your API key from your profile and you'll be synced in a couple of minutes.</p>
     <div class="ctas">
@@ -291,7 +302,53 @@
   </div>
 </div>
 
-<footer>© 2026 TradeLista. All rights reserved.</footer>
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="brand">
+        <svg class="brand-icon" width="28" height="28" viewBox="0 0 112 112" aria-hidden="true">
+          <rect width="112" height="112" rx="28" fill="url(#logoGradFooter)"/>
+          <rect x="16" y="16" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+          <rect x="44" y="16" width="24" height="24" rx="6" fill="#22c55e"/>
+          <rect x="72" y="16" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+          <rect x="16" y="44" width="24" height="24" rx="6" fill="#ef4444"/>
+          <rect x="44" y="44" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+          <rect x="72" y="44" width="24" height="24" rx="6" fill="#22c55e"/>
+          <rect x="16" y="72" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+          <rect x="44" y="72" width="24" height="24" rx="6" fill="#22c55e"/>
+          <rect x="72" y="72" width="24" height="24" rx="6" fill="#ef4444"/>
+          <defs>
+            <linearGradient id="logoGradFooter" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#000000"/>
+              <stop offset="100%" stop-color="#8081F8"/>
+            </linearGradient>
+          </defs>
+        </svg><span class="brand-word"><span class="brand-trade">Trade</span><span class="brand-accent">Lista</span></span>
+      </div>
+      <p>The trading journal for MT4/MT5 traders who are done with PDFs and spreadsheets.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="index.html#features">Features</a>
+        <a href="index.html#pricing">Pricing</a>
+        <a href="app.html" class="js-calendar-link">Calendar demo</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="contact.html">Contact</a>
+        <a href="faq.html">FAQ</a>
+        <a href="#" onclick="return false;">Privacy Policy</a>
+        <a href="#" onclick="return false;">Imprint</a>
+        <a href="#" onclick="return false;">Terms</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 TradeLista. All rights reserved.</span>
+    <span>tradelista.com</span>
+  </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="auth.js"></script>
@@ -330,6 +387,7 @@
         <a href="faq.html">FAQ</a>
       `;
       if(await TLAuth.isPro()) document.getElementById('proRequiredCallout').style.display = 'none';
+      document.getElementById('finalCta').style.display = 'none';
     }
     await TLAuth.ui.renderAccountNav(document.getElementById('navRight'));
     document.getElementById('navLinks').style.visibility = 'visible';

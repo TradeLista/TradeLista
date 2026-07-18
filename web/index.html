@@ -62,7 +62,10 @@
   .brand-icon{flex-shrink:0; display:block;}
   .brand-trade{color:#f5f5f7;}
   .brand-accent{background:linear-gradient(135deg,#9d9ff5,#6366f1); -webkit-background-clip:text; background-clip:text; color:transparent;}
-  .navlinks{display:flex; gap:20px; font-size:14px; color:var(--text-dim);}
+  .navlinks{
+    display:flex; gap:20px; font-size:14px; color:var(--text-dim);
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  }
   .navlinks a{padding:6px 2px; border-bottom:2px solid transparent; transition:color .15s;}
   .navlinks a:hover{color:var(--text);}
   .navright{display:flex; align-items:center; gap:12px;}
@@ -454,6 +457,36 @@
   .footer-col a:hover{color:var(--text);}
   .footer-bottom{max-width:1180px; margin:36px auto 0; padding-top:24px; border-top:1px solid var(--border-soft); font-size:12px; color:var(--text-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
 
+  /* Contact modal */
+  .tl-cm-overlay{
+    display:none; position:fixed; inset:0; background:rgba(5,7,11,0.72); backdrop-filter:blur(3px);
+    align-items:center; justify-content:center; padding:16px; z-index:1000;
+  }
+  .tl-cm-overlay.open{display:flex;}
+  .tl-cm-modal{
+    position:relative; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
+    width:100%; max-width:460px; padding:28px; max-height:90vh; overflow-y:auto;
+  }
+  .tl-cm-close{
+    position:absolute; top:16px; right:16px; background:transparent; border:none; color:var(--text-faint);
+    font-size:16px; cursor:pointer; padding:4px;
+  }
+  .tl-cm-close:hover{color:var(--text);}
+  .tl-cm-modal h3{font-size:19px; font-weight:800; margin-bottom:8px;}
+  .tl-cm-modal p{font-size:13.5px; color:var(--text-dim); line-height:1.6; margin-bottom:20px;}
+  .tl-cm-row{margin-bottom:14px;}
+  .tl-cm-row label{display:block; font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px;}
+  .tl-cm-row input, .tl-cm-row textarea{
+    width:100%; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm);
+    color:var(--text); font-family:inherit; font-size:13.5px; padding:10px 12px; outline:none;
+  }
+  .tl-cm-row input:focus, .tl-cm-row textarea:focus{border-color:var(--accent);}
+  .tl-cm-row textarea{resize:vertical; min-height:100px;}
+  .tl-cm-grid-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  @media (max-width:480px){
+    .tl-cm-grid-2{grid-template-columns:1fr;}
+  }
+
   @media (max-width:860px){
     .pain-grid, .steps, .price-grid{grid-template-columns:1fr;}
     .navlinks{display:none;}
@@ -492,7 +525,8 @@
     <a href="app.html" class="js-calendar-link">Calendar</a>
     <a href="connect.html">Connect Account</a>
     <a href="#pricing">Pricing</a>
-    <a href="#contact">Contact</a>
+    <a href="#" class="js-contact-link">Contact</a>
+    <a href="faq.html">FAQ</a>
   </div>
   <div class="navright" id="navRight" style="visibility:hidden">
     <a class="btn btn-ghost" href="auth.html?mode=login">Log in</a>
@@ -805,7 +839,8 @@
       </div>
       <div class="footer-col">
         <h4>Company</h4>
-        <a href="#contact">Contact</a>
+        <a href="#" class="js-contact-link">Contact</a>
+        <a href="faq.html">FAQ</a>
         <a href="#" onclick="return false;">Privacy Policy</a>
         <a href="#" onclick="return false;">Imprint</a>
         <a href="#" onclick="return false;">Terms</a>
@@ -817,6 +852,39 @@
     <span>tradelista.com</span>
   </div>
 </footer>
+
+<div class="tl-cm-overlay" id="contactOverlay">
+  <div class="tl-cm-modal" role="dialog" aria-modal="true">
+    <button type="button" class="tl-cm-close" id="contactModalClose">✕</button>
+    <h3>Get in touch</h3>
+    <p>Have a question, found a bug, or want to request a feature? Send us a message and we'll get back to you by email.</p>
+    <form id="contactModalForm" novalidate>
+      <div class="tl-cm-grid-2">
+        <div class="tl-cm-row">
+          <label for="cmFirstName">First name</label>
+          <input type="text" id="cmFirstName" required>
+        </div>
+        <div class="tl-cm-row">
+          <label for="cmLastName">Last name</label>
+          <input type="text" id="cmLastName" required>
+        </div>
+      </div>
+      <div class="tl-cm-row">
+        <label for="cmEmail">Email</label>
+        <input type="email" id="cmEmail" required>
+      </div>
+      <div class="tl-cm-row">
+        <label for="cmSubject">Subject</label>
+        <input type="text" id="cmSubject" required>
+      </div>
+      <div class="tl-cm-row">
+        <label for="cmMessage">Message</label>
+        <textarea id="cmMessage" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Send message</button>
+    </form>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="auth.js"></script>
@@ -855,6 +923,39 @@
     await TLAuth.ui.renderAccountNav(document.getElementById('navRight'));
     document.getElementById('navRight').style.visibility = 'visible';
   })();
+
+  // ---- Contact modal (stays on the homepage instead of navigating away) ----
+  const CONTACT_EMAIL = 'info@tradelista.com';
+  const contactOverlay = document.getElementById('contactOverlay');
+
+  document.querySelectorAll('.js-contact-link').forEach(el=>{
+    el.addEventListener('click', async (e)=>{
+      e.preventDefault();
+      const user = await TLAuth.getCurrentUser();
+      if(user){
+        document.getElementById('cmFirstName').value = user.firstName || '';
+        document.getElementById('cmLastName').value = user.lastName || '';
+        document.getElementById('cmEmail').value = user.email || '';
+      }
+      contactOverlay.classList.add('open');
+    });
+  });
+  document.getElementById('contactModalClose').addEventListener('click', ()=>{
+    contactOverlay.classList.remove('open');
+  });
+  contactOverlay.addEventListener('click', (e)=>{
+    if(e.target === contactOverlay) contactOverlay.classList.remove('open');
+  });
+  document.getElementById('contactModalForm').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const firstName = document.getElementById('cmFirstName').value.trim();
+    const lastName = document.getElementById('cmLastName').value.trim();
+    const email = document.getElementById('cmEmail').value.trim();
+    const subject = document.getElementById('cmSubject').value.trim();
+    const message = document.getElementById('cmMessage').value.trim();
+    const body = `Name: ${firstName} ${lastName}\nEmail: ${email}\n\n${message}`;
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  });
   const goProBtn = document.getElementById('goProBtn');
   if(goProBtn){
     goProBtn.addEventListener('click', async (e)=>{

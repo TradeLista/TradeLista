@@ -209,6 +209,41 @@
       .tl-nav-menu-footer{border-top:1px solid var(--border-soft); margin-top:4px; padding-top:4px;}
       .tl-nav-menu-footer button{color:var(--red);}
       .tl-nav-menu-footer button:hover{background:var(--red-dim);}
+
+      .tl-am-overlay{
+        display:none; position:fixed; inset:0; background:rgba(5,7,11,0.72); backdrop-filter:blur(3px);
+        align-items:center; justify-content:center; padding:16px; z-index:1000;
+      }
+      .tl-am-overlay.open{display:flex;}
+      .tl-am-modal{
+        position:relative; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
+        width:100%; max-width:440px; padding:26px; max-height:90vh; overflow-y:auto; animation:tlPop .15s ease;
+      }
+      .tl-am-close{
+        position:absolute; top:16px; right:16px; background:transparent; border:none; color:var(--text-faint);
+        font-size:16px; cursor:pointer; padding:4px;
+      }
+      .tl-am-close:hover{color:var(--text);}
+      .tl-am-modal h3{font-size:17px; font-weight:700; margin-bottom:16px;}
+      .tl-am-row{margin-bottom:14px;}
+      .tl-am-row label{display:block; font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px;}
+      .tl-am-row label .tl-am-opt{text-transform:none; color:var(--text-faint); font-weight:400; letter-spacing:0;}
+      .tl-am-row input{
+        width:100%; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm);
+        color:var(--text); font-family:inherit; font-size:13.5px; padding:10px 12px; outline:none;
+      }
+      .tl-am-row input:focus{border-color:var(--accent);}
+      .tl-am-row input:disabled{opacity:.6;}
+      .tl-am-grid-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+      .tl-am-error{color:var(--red); font-size:12.5px; margin:-4px 0 10px; min-height:14px;}
+      .tl-am-section-label{font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.05em; margin:18px 0 8px;}
+      .tl-am-plan-box{
+        background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:var(--radius-sm);
+        padding:12px 14px; font-size:13px; color:var(--text-dim); margin-bottom:12px;
+      }
+      .tl-am-status{font-size:12.5px; color:var(--green); min-height:16px; margin-top:14px; text-align:center;}
+      .tl-am-modal .btn-danger{background:var(--red-dim); border-color:var(--red-border); color:var(--red); border:1px solid var(--red-border);}
+      .tl-am-modal .btn-danger:hover{background:var(--red); color:#fff;}
     `;
     document.head.appendChild(style);
   }
@@ -244,11 +279,148 @@
     overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.remove(); });
   }
 
+  // ---------- Shared account modal (profile, password, plan) ----------
+  // Lives in auth.js so "Account settings" opens in place on every page
+  // instead of navigating to app.html.
+  let accountModalMounted = false;
+
+  function ensureAccountModal(){
+    if(accountModalMounted) return;
+    accountModalMounted = true;
+    ensureStyles();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'tl-am-overlay';
+    overlay.id = 'tlAccountOverlay';
+    overlay.innerHTML = `
+      <div class="tl-am-modal" role="dialog" aria-modal="true">
+        <button type="button" class="tl-am-close" id="tlAmClose">✕</button>
+        <h3>Your account</h3>
+
+        <div class="tl-am-row">
+          <label>Email</label>
+          <input type="email" id="tlAmEmail" disabled>
+        </div>
+        <div class="tl-am-grid-2">
+          <div class="tl-am-row">
+            <label>First name</label>
+            <input type="text" id="tlAmFirstName">
+          </div>
+          <div class="tl-am-row">
+            <label>Last name</label>
+            <input type="text" id="tlAmLastName">
+          </div>
+        </div>
+        <div class="tl-am-error" id="tlAmNameError"></div>
+        <button type="button" class="btn btn-primary" id="tlAmSaveProfile" style="width:100%;">Save changes</button>
+
+        <div class="tl-am-section-label">Password</div>
+        <div class="tl-am-row">
+          <label>Current password</label>
+          <input type="password" id="tlAmCurrentPassword" autocomplete="current-password">
+        </div>
+        <div class="tl-am-row">
+          <label>New password <span class="tl-am-opt">(min. 8 characters)</span></label>
+          <input type="password" id="tlAmNewPassword" autocomplete="new-password">
+        </div>
+        <div class="tl-am-error" id="tlAmPasswordError"></div>
+        <button type="button" class="btn btn-ghost" id="tlAmChangePassword" style="width:100%;">Change password</button>
+
+        <div class="tl-am-section-label">Plan</div>
+        <div class="tl-am-plan-box" id="tlAmPlanStatus"></div>
+        <div id="tlAmPlanAction"></div>
+
+        <div class="tl-am-status" id="tlAmStatus"></div>
+        <button type="button" class="btn btn-ghost" id="tlAmLogout" style="width:100%; margin-top:8px;">Log out</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.classList.remove('open'); });
+    overlay.querySelector('#tlAmClose').addEventListener('click', () => overlay.classList.remove('open'));
+
+    overlay.querySelector('#tlAmSaveProfile').addEventListener('click', async () => {
+      const err = overlay.querySelector('#tlAmNameError');
+      const res = await TLAuth.updateProfile({
+        firstName: overlay.querySelector('#tlAmFirstName').value,
+        lastName: overlay.querySelector('#tlAmLastName').value
+      });
+      if(!res.ok){ err.textContent = res.error; return; }
+      err.textContent = '';
+      const navRight = document.getElementById('navRight');
+      if(navRight) await renderAccountNav(navRight, lastNavOpts);
+      overlay.querySelector('#tlAmStatus').textContent = 'Profile updated.';
+    });
+
+    overlay.querySelector('#tlAmChangePassword').addEventListener('click', async () => {
+      const err = overlay.querySelector('#tlAmPasswordError');
+      const res = await TLAuth.changePassword({
+        currentPassword: overlay.querySelector('#tlAmCurrentPassword').value,
+        newPassword: overlay.querySelector('#tlAmNewPassword').value
+      });
+      if(!res.ok){ err.textContent = res.error; return; }
+      err.textContent = '';
+      overlay.querySelector('#tlAmCurrentPassword').value = '';
+      overlay.querySelector('#tlAmNewPassword').value = '';
+      overlay.querySelector('#tlAmStatus').textContent = 'Password updated.';
+    });
+
+    overlay.querySelector('#tlAmLogout').addEventListener('click', async () => {
+      await TLAuth.logout();
+      location.reload();
+    });
+  }
+
+  async function renderAccountModalPlan(overlay){
+    const info = await TLAuth.getPlanInfo();
+    const box = overlay.querySelector('#tlAmPlanStatus');
+    const actionBox = overlay.querySelector('#tlAmPlanAction');
+    if(!info) return;
+    const fmt = ts => new Date(ts).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+    if(info.plan !== 'pro'){
+      box.innerHTML = `<strong style="color:var(--text);">Free plan</strong>`;
+      actionBox.innerHTML = `<a class="btn btn-primary" style="width:100%; display:block; text-align:center;" href="index.html#pricing">Upgrade to Pro</a>`;
+    } else if(info.cancelAtPeriodEnd){
+      box.innerHTML = `<strong style="color:var(--text);">Pro plan</strong> — cancelled, active until <strong>${fmt(info.periodEnd)}</strong>`;
+      actionBox.innerHTML = `<button type="button" class="btn btn-ghost" id="tlAmManagePro" style="width:100%;">Manage subscription</button>`;
+    } else {
+      box.innerHTML = `<strong style="color:var(--text);">Pro plan</strong> — renews on <strong>${fmt(info.periodEnd)}</strong>`;
+      actionBox.innerHTML = `<button type="button" class="btn btn-danger" id="tlAmManagePro" style="width:100%;">Manage subscription</button>`;
+    }
+    const manageBtn = actionBox.querySelector('#tlAmManagePro');
+    if(manageBtn){
+      manageBtn.onclick = async () => {
+        const res = await TLAuth.openBillingPortal();
+        if(!res.ok){ overlay.querySelector('#tlAmStatus').textContent = res.error; return; }
+        location.href = res.url;
+      };
+    }
+  }
+
+  async function openAccountModal(){
+    ensureAccountModal();
+    const overlay = document.getElementById('tlAccountOverlay');
+    const user = await TLAuth.getCurrentUser();
+    if(!user) return;
+    overlay.querySelector('#tlAmEmail').value = user.email;
+    overlay.querySelector('#tlAmFirstName').value = user.firstName;
+    overlay.querySelector('#tlAmLastName').value = user.lastName;
+    overlay.querySelector('#tlAmNameError').textContent = '';
+    overlay.querySelector('#tlAmCurrentPassword').value = '';
+    overlay.querySelector('#tlAmNewPassword').value = '';
+    overlay.querySelector('#tlAmPasswordError').textContent = '';
+    overlay.querySelector('#tlAmStatus').textContent = '';
+    await renderAccountModalPlan(overlay);
+    overlay.classList.add('open');
+  }
+
   // Renders the logged-out (Log in / Start free) or logged-in (avatar +
   // dropdown) nav state into containerEl. Used identically on every page so
   // the top-right corner never looks different when navigating around.
+  let lastNavOpts = {};
   async function renderAccountNav(containerEl, opts){
     opts = opts || {};
+    lastNavOpts = opts;
     ensureStyles();
     if(!(await TLAuth.isLoggedIn())){
       containerEl.innerHTML = `
@@ -274,7 +446,7 @@
             </div>
           </div>
           ${opts.hideCalendarLink ? '' : '<a href="app.html"><span class="tl-nav-menu-ic">📅</span>Go to Calendar</a>'}
-          <a href="app.html?openProfile=1"><span class="tl-nav-menu-ic">⚙️</span>Account settings</a>
+          <a href="#" id="tlNavAccountSettingsLink"><span class="tl-nav-menu-ic">⚙️</span>Account settings</a>
           ${isPro ? '' : '<a href="index.html#pricing"><span class="tl-nav-menu-ic">⭐</span>Upgrade to Pro</a>'}
           <div class="tl-nav-menu-footer">
             <button type="button" id="tlNavLogoutBtn"><span class="tl-nav-menu-ic">↪</span>Log out</button>
@@ -290,6 +462,11 @@
       menu.classList.toggle('open');
     });
     document.addEventListener('click', () => menu.classList.remove('open'));
+    containerEl.querySelector('#tlNavAccountSettingsLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      menu.classList.remove('open');
+      openAccountModal();
+    });
     containerEl.querySelector('#tlNavLogoutBtn').addEventListener('click', async () => {
       await TLAuth.logout();
       location.reload();
@@ -298,6 +475,7 @@
 
   TLAuth.ui = {
     renderAccountNav,
+    openAccountModal,
     requireAuth(redirectTo){
       const redirect = redirectTo ? `&redirect=${encodeURIComponent(redirectTo)}` : '';
       showModal({
