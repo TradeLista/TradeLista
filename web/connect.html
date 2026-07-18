@@ -180,7 +180,7 @@
       </defs>
     </svg><span class="brand-word"><span class="brand-trade">Trade</span><span class="brand-accent">Lista</span></span>
   </a>
-  <div class="navlinks" id="navLinks">
+  <div class="navlinks" id="navLinks" style="visibility:hidden">
     <a href="index.html#hero">Why TradeLista</a>
     <a href="index.html#features">Features</a>
     <a href="index.html#how-it-works">How it works</a>
@@ -323,23 +323,16 @@
   });
   (async function initNavAuthState(){
     if(await TLAuth.isLoggedIn()){
-      const user = await TLAuth.getCurrentUser();
       document.getElementById('navLinks').innerHTML = `
         <a href="app.html" class="js-calendar-link">Calendar</a>
         <a class="active" href="connect.html">Connect Account</a>
         <a href="contact.html">Contact</a>
         <a href="faq.html">FAQ</a>
       `;
-      document.getElementById('navRight').innerHTML = `
-        <a class="btn btn-ghost" href="#" id="logoutLink">Log out</a>
-        <a class="btn btn-primary js-calendar-link" href="app.html">Hi, ${user.firstName} · Calendar</a>
-      `;
-      document.getElementById('logoutLink').addEventListener('click', async (e)=>{
-        e.preventDefault();
-        await TLAuth.logout();
-        location.reload();
-      });
+      const isPro = await TLAuth.isPro();
+      document.getElementById('navRight').innerHTML = isPro ? '' : `<a class="btn btn-ghost" href="index.html#pricing">Upgrade to Pro</a>`;
     }
+    document.getElementById('navLinks').style.visibility = 'visible';
     document.getElementById('navRight').style.visibility = 'visible';
   })();
 </script>

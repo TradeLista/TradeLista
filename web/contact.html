@@ -207,15 +207,8 @@
       document.getElementById('cFirstName').value = user.firstName || '';
       document.getElementById('cLastName').value = user.lastName || '';
       document.getElementById('cEmail').value = user.email || '';
-      document.getElementById('navRight').innerHTML = `
-        <a class="btn btn-ghost" href="#" id="logoutLink">Log out</a>
-        <a class="btn btn-primary" href="app.html">Hi, ${user.firstName} · Calendar</a>
-      `;
-      document.getElementById('logoutLink').addEventListener('click', async (e)=>{
-        e.preventDefault();
-        await TLAuth.logout();
-        location.reload();
-      });
+      const isPro = await TLAuth.isPro();
+      document.getElementById('navRight').innerHTML = isPro ? '' : `<a class="btn btn-ghost" href="index.html#pricing">Upgrade to Pro</a>`;
     }
     document.getElementById('navRight').style.visibility = 'visible';
   })();
