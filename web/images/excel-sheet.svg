@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 184" width="250" height="184" font-family="Manrope, Arial, sans-serif">
+  <rect x="0" y="0" width="250" height="184" rx="7" fill="#fff"></rect>
+  <clipPath id="cp"><rect x="0" y="0" width="250" height="184" rx="7"></rect></clipPath>
+  <g clip-path="url(#cp)">
+    <rect x="0" y="0" width="250" height="22" fill="#217346"></rect>
+    <text x="10" y="15" font-size="9.5" font-weight="800" fill="#fff">Symbol</text>
+    <text x="98" y="15" font-size="9.5" font-weight="800" fill="#fff">Side</text>
+    <text x="150" y="15" font-size="9.5" font-weight="800" fill="#fff">Size</text>
+    <text x="240" y="15" font-size="9.5" font-weight="800" fill="#fff" text-anchor="end">P/L</text>
+    <rect x="0" y="22" width="250" height="20" fill="#ffffff"></rect>
+  <line x1="0" y1="42" x2="250" y2="42" stroke="#eee" stroke-width="1"></line>
+  <text x="10" y="35" font-size="9.5" font-weight="700" fill="#2b2b2b">EURUSD</text>
+  <text x="98" y="35" font-size="9.5" fill="#888">Long</text>
+  <text x="150" y="35" font-size="9.5" fill="#2b2b2b">1.2</text>
+  <text x="240" y="35" font-size="9.5" font-weight="700" fill="#dc2626" text-anchor="end">-320</text><rect x="0" y="42" width="250" height="20" fill="#fafafa"></rect>
+  <line x1="0" y1="62" x2="250" y2="62" stroke="#eee" stroke-width="1"></line>
+  <text x="10" y="55" font-size="9.5" font-weight="700" fill="#2b2b2b">NAS100</text>
+  <text x="98" y="55" font-size="9.5" fill="#888">Short</text>
+  <text x="150" y="55" font-size="9.5" fill="#2b2b2b">0.5</text>
+  <text x="240" y="55" font-size="9.5" font-weight="700" fill="#dc2626" text-anchor="end">-95</text><rect x="0" y="62" width="250" height="20" fill="#ffffff"></rect>
+  <line x1="0" y1="82" x2="250" y2="82" stroke="#eee" stroke-width="1"></line>
+  <text x="10" y="75" font-size="9.5" font-weight="700" fill="#2b2b2b">GBPJPY</text>
+  <text x="98" y="75" font-size="9.5" fill="#888">Long</text>
+  <text x="150" y="75" font-size="9.5" fill="#2b2b2b">0.8</text>
+  <text x="240" y="75" font-size="9.5" font-weight="700" fill="#16a34a" text-anchor="end">+180</text><rect x="0" y="82" width="250" height="20" fill="#fafafa"></rect>
+  <line x1="0" y1="102" x2="250" y2="102" stroke="#eee" stroke-width="1"></line>
+  <text x="10" y="95" font-size="9.5" font-weight="700" fill="#2b2b2b">XAUUSD</text>
+  <text x="98" y="95" font-size="9.5" fill="#888">Short</text>
+  <text x="150" y="95" font-size="9.5" fill="#2b2b2b">0.3</text>
+  <text x="240" y="95" font-size="9.5" font-weight="700" fill="#dc2626" text-anchor="end">-410</text><rect x="0" y="102" width="250" height="20" fill="#ffffff"></rect>
+  <line x1="0" y1="122" x2="250" y2="122" stroke="#eee" stroke-width="1"></line>
+  <text x="10" y="115" font-size="9.5" font-weight="700" fill="#2b2b2b">BTCUSD</text>
+  <text x="98" y="115" font-size="9.5" fill="#888">Long</text>
+  <text x="150" y="115" font-size="9.5" fill="#2b2b2b">0.1</text>
+  <text x="240" y="115" font-size="9.5" font-weight="700" fill="#dc2626" text-anchor="end">-260</text><rect x="0" y="122" width="250" height="20" fill="#fafafa"></rect>
+  <line x1="0" y1="142" x2="250" y2="142" stroke="#eee" stroke-width="1"></line>
+  <text x="10" y="135" font-size="9.5" font-weight="700" fill="#2b2b2b">US30</text>
+  <text x="98" y="135" font-size="9.5" fill="#888">Short</text>
+  <text x="150" y="135" font-size="9.5" fill="#2b2b2b">0.4</text>
+  <text x="240" y="135" font-size="9.5" font-weight="700" fill="#dc2626" text-anchor="end">-335</text>
+    <rect x="0" y="142" width="250" height="22" fill="#fbecec"></rect>
+    <line x1="0" y1="142" x2="250" y2="142" stroke="#dc2626" stroke-width="1.5"></line>
+    <text x="10" y="157" font-size="9.5" font-weight="800" fill="#dc2626">TOTAL</text>
+    <text x="240" y="157" font-size="9.5" font-weight="800" fill="#dc2626" text-anchor="end">-1.240</text>
+    <rect x="0" y="164" width="250" height="20" fill="#e9e9ee"></rect>
+    <rect x="6" y="168" width="38" height="16" rx="3" fill="#fff"></rect>
+    <text x="25" y="179" font-size="8" font-weight="700" fill="#217346" text-anchor="middle">Sheet1</text>
+    <text x="60" y="179" font-size="8" fill="#999">Notes</text>
+  </g>
+</svg>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 220" width="260" height="220" font-family="Manrope, Arial, sans-serif">
+  <defs><linearGradient id="folder" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7aa3ff"></stop><stop offset="1" stop-color="#5a85e6"></stop></linearGradient></defs>
+  
+  <g transform="rotate(-13 60 90)"><rect x="34" y="52" width="54" height="72" rx="4" fill="#fff"></rect><rect x="41" y="59" width="14" height="14" rx="3" fill="#ef4444"></rect><text x="48" y="69" font-size="5.5" font-weight="800" fill="#fff" text-anchor="middle">PDF</text><rect x="41" y="79" width="40" height="3" rx="1.5" fill="#e5e5ea"></rect><rect x="41" y="85" width="32" height="3" rx="1.5" fill="#e5e5ea"></rect><rect x="41" y="91" width="36" height="3" rx="1.5" fill="#eff0f4"></rect></g>
+  <g transform="rotate(-1 130 88)"><rect x="102" y="48" width="56" height="74" rx="4" fill="#fff"></rect><rect x="109" y="55" width="14" height="14" rx="3" fill="#ef4444"></rect><text x="116" y="65" font-size="5.5" font-weight="800" fill="#fff" text-anchor="middle">PDF</text><rect x="109" y="75" width="38" height="3" rx="1.5" fill="#e5e5ea"></rect><rect x="109" y="81" width="42" height="3" rx="1.5" fill="#e5e5ea"></rect><rect x="109" y="87" width="30" height="3" rx="1.5" fill="#eff0f4"></rect></g>
+  <g transform="rotate(11 200 90)"><rect x="172" y="52" width="54" height="72" rx="4" fill="#fff"></rect><rect x="179" y="59" width="14" height="14" rx="3" fill="#ef4444"></rect><text x="186" y="69" font-size="5.5" font-weight="800" fill="#fff" text-anchor="middle">PDF</text><rect x="179" y="79" width="36" height="3" rx="1.5" fill="#e5e5ea"></rect><rect x="179" y="85" width="42" height="3" rx="1.5" fill="#e5e5ea"></rect><rect x="179" y="91" width="30" height="3" rx="1.5" fill="#eff0f4"></rect></g>
+  
+  <path d="M40 120 h70 v14 h110 v72 a6 6 0 0 1 -6 6 H46 a6 6 0 0 1 -6 -6 Z" fill="url(#folder)"></path>
+  <text x="130" y="192" font-size="26" font-weight="800" letter-spacing="2" fill="#fff" text-anchor="middle">PDF</text>
+</svg>

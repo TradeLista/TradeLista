@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TradeLista — Connect MT4 / MT5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0e14;
+    --bg-elevated:#11161f;
+    --bg-card:#151b26;
+    --bg-hover:#1b2330;
+    --border:#232b3a;
+    --border-soft:#1a2130;
+    --text:#e7edf5;
+    --text-dim:#8b96a8;
+    --text-faint:#5c6678;
+    --green:#1fd18a;
+    --green-dim:rgba(31,209,138,0.14);
+    --green-border:rgba(31,209,138,0.35);
+    --red:#f0475a;
+    --red-dim:rgba(240,71,90,0.14);
+    --red-border:rgba(240,71,90,0.35);
+    --accent:#4f8cff;
+    --accent-dim:rgba(79,140,255,0.14);
+    --accent2:#8b6cff;
+    --radius:14px;
+    --radius-sm:9px;
+    --font-ui:'Inter',system-ui,-apple-system,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(79,140,255,0.08), transparent),
+      radial-gradient(ellipse 700px 400px at 100% 0%, rgba(139,108,255,0.06), transparent),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--font-ui);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit; cursor:pointer;}
+  ::selection{background:var(--accent-dim);}
+
+  /* Top nav */
+  .topnav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px; position:sticky; top:0; z-index:50;
+    background:rgba(10,14,20,0.7); backdrop-filter:blur(10px);
+    border-bottom:1px solid transparent; transition:border-color .2s, background .2s;
+  }
+  .topnav.scrolled{border-bottom-color:var(--border-soft); background:rgba(10,14,20,0.92);}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:21px; letter-spacing:-0.02em;}
+  .brand-icon{flex-shrink:0; display:block;}
+  .brand-trade{color:#f5f5f7;}
+  .brand-accent{background:linear-gradient(135deg,#9d9ff5,#6366f1); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .navlinks{display:flex; gap:20px; font-size:14px; color:var(--text-dim);}
+  .navlinks a{padding:6px 2px; border-bottom:2px solid transparent; transition:color .15s;}
+  .navlinks a:hover{color:var(--text);}
+  .navlinks a.active{color:var(--text); border-bottom-color:var(--accent);}
+  .navright{display:flex; align-items:center; gap:12px;}
+  .navright .btn{padding:8px 15px; font-size:13px;}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:10px 18px; border-radius:99px; font-size:14px; font-weight:600; border:1px solid transparent;
+    transition:transform .12s, box-shadow .12s, border-color .12s, background .12s;
+    white-space:nowrap;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; box-shadow:0 8px 24px -8px rgba(79,140,255,0.6);}
+  .btn-primary:hover{box-shadow:0 10px 30px -6px rgba(79,140,255,0.75);}
+  .btn-ghost{background:var(--bg-card); border-color:var(--border); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--accent); color:var(--accent);}
+  .btn-lg{padding:14px 26px; font-size:15px;}
+
+  @media (max-width:860px){
+    .navlinks{display:none;}
+  }
+
+  /* Page */
+  .page{max-width:820px; margin:0 auto; padding:56px 24px 100px;}
+  .page-head{text-align:center; margin-bottom:36px;}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; background:var(--bg-card); border:1px solid var(--border);
+    padding:6px 14px; border-radius:99px; font-size:12.5px; color:var(--text-dim); margin-bottom:18px;
+  }
+  .eyebrow .dotpulse{width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green);}
+  .page-head h1{font-size:clamp(26px,4vw,38px); font-weight:800; letter-spacing:-0.02em;}
+  .page-head p{color:var(--text-dim); font-size:15px; margin-top:12px; max-width:560px; margin-left:auto; margin-right:auto; line-height:1.6;}
+
+  .callout{
+    display:flex; align-items:flex-start; gap:12px; background:var(--accent-dim); border:1px solid rgba(79,140,255,0.35);
+    border-radius:var(--radius); padding:14px 18px; margin-bottom:40px; font-size:13.5px; color:var(--text-dim); line-height:1.6;
+  }
+  .callout .ic{flex-shrink:0; font-size:16px;}
+  .callout strong{color:var(--text);}
+
+  /* Guide steps */
+  .guide{position:relative;}
+  .guide::before{
+    content:''; position:absolute; left:21px; top:8px; bottom:8px; width:2px;
+    background:linear-gradient(var(--border), var(--border-soft));
+  }
+  .gstep{position:relative; padding:0 0 36px 62px;}
+  .gstep:last-child{padding-bottom:0;}
+  .gstep .gnum{
+    position:absolute; left:0; top:0; width:44px; height:44px; border-radius:50%;
+    background:var(--bg-card); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:700; font-size:16px;
+    color:var(--accent); z-index:1;
+    box-shadow:0 0 0 1px rgba(79,140,255,0.1), 0 0 22px -6px rgba(79,140,255,0.5);
+  }
+  .gstep h3{font-size:16.5px; font-weight:700; margin-bottom:8px;}
+  .gstep p{font-size:13.5px; color:var(--text-dim); line-height:1.65; margin-bottom:10px;}
+  .gstep p:last-child{margin-bottom:0;}
+  .gstep ul{margin:10px 0; padding-left:18px; color:var(--text-dim); font-size:13.5px; line-height:1.7;}
+  .gstep code{
+    background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:5px;
+    padding:2px 6px; font-family:var(--font-mono); font-size:12.5px; color:var(--accent);
+  }
+  .code-box{
+    background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm);
+    padding:12px 14px; font-family:var(--font-mono); font-size:12.5px; color:var(--green); margin-top:10px;
+    word-break:break-all;
+  }
+
+  .section-label{font-size:12px; color:var(--accent); text-transform:uppercase; letter-spacing:.07em; font-weight:700; margin:56px 0 18px; display:block;}
+
+  /* FAQ */
+  .faq-item{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:10px; overflow:hidden;}
+  .faq-item summary{
+    list-style:none; cursor:pointer; padding:14px 16px; font-size:13.5px; font-weight:600;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .faq-item summary::-webkit-details-marker{display:none;}
+  .faq-item summary::after{content:'+'; color:var(--text-faint); font-size:18px; font-weight:400; transition:transform .2s;}
+  .faq-item[open] summary::after{transform:rotate(45deg);}
+  .faq-item .faq-body{padding:0 16px 16px; font-size:13.5px; color:var(--text-dim); line-height:1.6;}
+
+  .final-cta{
+    text-align:center; background:var(--bg-card); border:1px solid var(--border); border-radius:20px;
+    padding:44px 28px; margin-top:56px; position:relative; overflow:hidden;
+  }
+  .final-cta::before{
+    content:''; position:absolute; inset:0; background:radial-gradient(ellipse 400px 220px at 50% 0%, rgba(79,140,255,0.16), transparent);
+  }
+  .final-cta h2{font-size:20px; font-weight:800; position:relative;}
+  .final-cta p{color:var(--text-dim); margin:10px 0 20px; font-size:13.5px; position:relative;}
+  .final-cta .ctas{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; position:relative;}
+
+  /* Footer */
+  footer{border-top:1px solid var(--border-soft); padding:32px 24px; text-align:center; color:var(--text-faint); font-size:12.5px;}
+</style>
+</head>
+<body>
+
+<div class="topnav" id="topnav">
+  <a class="brand" href="index.html">
+    <svg class="brand-icon" width="28" height="28" viewBox="0 0 112 112" aria-hidden="true">
+      <rect width="112" height="112" rx="28" fill="url(#logoGrad)"/>
+      <rect x="16" y="16" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+      <rect x="44" y="16" width="24" height="24" rx="6" fill="#22c55e"/>
+      <rect x="72" y="16" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+      <rect x="16" y="44" width="24" height="24" rx="6" fill="#ef4444"/>
+      <rect x="44" y="44" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+      <rect x="72" y="44" width="24" height="24" rx="6" fill="#22c55e"/>
+      <rect x="16" y="72" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+      <rect x="44" y="72" width="24" height="24" rx="6" fill="#22c55e"/>
+      <rect x="72" y="72" width="24" height="24" rx="6" fill="#ef4444"/>
+      <defs>
+        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#000000"/>
+          <stop offset="100%" stop-color="#8081F8"/>
+        </linearGradient>
+      </defs>
+    </svg><span class="brand-word"><span class="brand-trade">Trade</span><span class="brand-accent">Lista</span></span>
+  </a>
+  <div class="navlinks">
+    <a href="app.html" class="js-calendar-link">Calendar</a>
+    <a class="active" href="connect.html">Connect Account</a>
+  </div>
+  <div class="navright" id="navRight" style="visibility:hidden">
+    <a class="btn btn-ghost" href="auth.html?mode=login">Log in</a>
+    <a class="btn btn-primary js-start-free" href="auth.html?mode=signup&amp;redirect=app.html">Start free</a>
+  </div>
+</div>
+
+<div class="page">
+  <div class="page-head">
+    <div class="eyebrow"><span class="dotpulse"></span> MT4 / MT5 setup guide</div>
+    <h1>Connect your MT4 or MT5 account</h1>
+    <p>Attach the TradeLista Expert Advisor once, and every closed trade — balance, equity, currency included — lands on your calendar automatically.</p>
+  </div>
+
+  <div class="guide">
+    <div class="gstep">
+      <div class="gnum">1</div>
+      <h3>Get your account API key</h3>
+      <p>In TradeLista, go to your <strong>Profile → Accounts</strong> and create a new account (choose <em>MT4/MT5</em> as the source). TradeLista generates a unique API key for that account — this is how the EA is matched to your calendar. Keep it private, it's tied to your data only.</p>
+    </div>
+
+    <div class="gstep">
+      <div class="gnum">2</div>
+      <h3>Download the TradeLista Expert Advisor</h3>
+      <p>Download <code>TradeListaConnect.ex4</code> (MT4) or <code>TradeListaConnect.ex5</code> (MT5) from your account page. It's a lightweight EA that only reports closed trades — it never places or modifies orders.</p>
+    </div>
+
+    <div class="gstep">
+      <div class="gnum">3</div>
+      <h3>Install it in MetaTrader</h3>
+      <p>In MetaTrader, open <code>File → Open Data Folder</code>, then copy the downloaded file into:</p>
+      <ul>
+        <li>MT4: <code>MQL4 / Experts</code></li>
+        <li>MT5: <code>MQL5 / Experts</code></li>
+      </ul>
+      <p>Right-click <strong>Navigator → Expert Advisors</strong> and choose <em>Refresh</em> so it shows up in the list.</p>
+    </div>
+
+    <div class="gstep">
+      <div class="gnum">4</div>
+      <h3>Allow WebRequests to the TradeLista API</h3>
+      <p>Go to <code>Tools → Options → Expert Advisors</code>, tick <strong>"Allow WebRequest for listed URL"</strong>, and add:</p>
+      <div class="code-box">https://api.tradelista.com</div>
+      <p>Without this, MetaTrader silently blocks the EA from sending your closed trades.</p>
+    </div>
+
+    <div class="gstep">
+      <div class="gnum">5</div>
+      <h3>Attach the EA and paste your API key</h3>
+      <p>Drag <code>TradeListaConnect</code> onto any chart (symbol/timeframe doesn't matter — it just listens for closed trades on the account). In the EA's input parameters, paste the <code>api_key</code> from step 1. Make sure <strong>AutoTrading</strong> is enabled (top toolbar) and a smiling face icon appears in the top-right of the chart.</p>
+    </div>
+
+    <div class="gstep">
+      <div class="gnum">6</div>
+      <h3>Close a trade and check your calendar</h3>
+      <p>The EA fires automatically whenever a trade closes — no manual export, no PDF. Open your <a href="app.html" class="js-calendar-link" style="color:var(--accent); text-decoration:underline;">Calendar</a> and the trade should appear on the matching day within a few seconds, already colored green or red with balance, equity and currency filled in.</p>
+    </div>
+  </div>
+
+  <span class="section-label">Troubleshooting</span>
+
+  <details class="faq-item">
+    <summary>Trades aren't showing up on the calendar</summary>
+    <div class="faq-body">Double-check step 4 — the API URL must be added exactly under "Allow WebRequest for listed URL". Also confirm AutoTrading is enabled (the button in the MetaTrader toolbar should be green, not red).</div>
+  </details>
+  <details class="faq-item">
+    <summary>The EA icon in the top-right shows a sad face</summary>
+    <div class="faq-body">That means AutoTrading is disabled for that chart. Click the AutoTrading button in the toolbar, or right-click the chart → Expert Advisors → "Allow live trading".</div>
+  </details>
+  <details class="faq-item">
+    <summary>Can I connect more than one account?</summary>
+    <div class="faq-body">Yes — Pro supports up to 5 connected accounts. Repeat steps 1 and 5 for each additional account (each gets its own API key), then switch between them using the account selector on your Calendar page.</div>
+  </details>
+  <details class="faq-item">
+    <summary>Does the EA place or modify trades?</summary>
+    <div class="faq-body">
+      No — and it's built so that it can't. TradeListaConnect contains no order-placement code at all: it only reads your account's closed trade history (symbol, lot size, entry/exit, profit) and reports it to your calendar over a one-way connection. It can't open, close or modify a position, and it never touches your balance, withdrawals, or your MetaTrader login.
+      <br><br>
+      The <strong>AutoTrading</strong> toggle from step 5 can look like you're granting trading permissions — you're not. MetaTrader requires that toggle to be on for <em>any</em> Expert Advisor to run at all, including a purely read-only one like this. It's a MetaTrader-wide switch, not a permission specific to TradeListaConnect.
+      <br><br>
+      And your <strong>API key</strong> only authorizes writing that one account's trade data into your own TradeLista calendar — it can't be used to access your broker account, place trades, or touch any other account.
+    </div>
+  </details>
+  <details class="faq-item">
+    <summary>I don't use an EA — can I still use TradeLista?</summary>
+    <div class="faq-body">Yes. Manual entry works on both Free and Pro plans — just add each trade's symbol, lot size, entry, exit and profit/loss straight from the Calendar page.</div>
+  </details>
+
+  <div class="callout" style="margin-top:40px; margin-bottom:0;">
+    <span class="ic">⭐</span>
+    <div><strong>Pro plan required.</strong> EA auto-sync, up to 5 connected accounts and unlimited trades are part of the Pro plan.</div>
+  </div>
+
+  <div class="final-cta">
+    <h2>Ready to connect your account?</h2>
+    <p>Grab your API key from your profile and you'll be synced in a couple of minutes.</p>
+    <div class="ctas">
+      <a class="btn btn-primary btn-lg js-calendar-link" href="app.html">Go to Calendar →</a>
+      <a class="btn btn-ghost btn-lg" href="index.html#pricing">See pricing</a>
+    </div>
+  </div>
+</div>
+
+<footer>© 2026 TradeLista. All rights reserved.</footer>
+
+<script src="auth.js"></script>
+<script>
+  const nav = document.getElementById('topnav');
+  window.addEventListener('scroll', ()=>{
+    nav.classList.toggle('scrolled', window.scrollY > 12);
+  });
+
+  // ---- Auth-aware navigation ----
+  document.querySelectorAll('.js-calendar-link').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      if(!TLAuth.isLoggedIn()){
+        e.preventDefault();
+        TLAuth.ui.requireAuth('app.html');
+      }
+    });
+  });
+  document.querySelectorAll('.js-start-free').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      if(TLAuth.isLoggedIn()){
+        e.preventDefault();
+        location.href = 'app.html';
+      }
+    });
+  });
+  if(TLAuth.isLoggedIn()){
+    const user = TLAuth.getCurrentUser();
+    document.getElementById('navRight').innerHTML = `
+      <a class="btn btn-ghost" href="#" id="logoutLink">Log out</a>
+      <a class="btn btn-primary js-calendar-link" href="app.html">Hi, ${user.firstName} · Calendar</a>
+    `;
+    document.getElementById('logoutLink').addEventListener('click', (e)=>{
+      e.preventDefault();
+      TLAuth.logout();
+      location.reload();
+    });
+  }
+  document.getElementById('navRight').style.visibility = 'visible';
+</script>
+</body>
+</html>
