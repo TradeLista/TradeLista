@@ -454,6 +454,8 @@
   <div class="navlinks">
     <a class="active" href="app.html">Calendar</a>
     <a href="connect.html">Connect Account</a>
+    <a href="contact.html">Contact</a>
+    <a href="faq.html">FAQ</a>
   </div>
   <div class="navright" id="navRight" style="visibility:hidden">
     <a class="btn btn-ghost" href="auth.html?mode=login">Log in</a>
@@ -782,7 +784,7 @@ window.addEventListener('scroll', ()=>{
   } else {
     document.querySelector('.page').style.display = '';
     const isPro = await TLAuth.isPro();
-    document.getElementById('navRight').innerHTML = `<a class="btn btn-ghost" href="index.html#pricing">${isPro ? 'Pro plan' : 'Upgrade to Pro'}</a>`;
+    document.getElementById('navRight').innerHTML = isPro ? '' : `<a class="btn btn-ghost" href="index.html#pricing">Upgrade to Pro</a>`;
     const avatarBtn = document.getElementById('avatarBtn');
     avatarBtn.textContent = await TLAuth.initials();
     avatarBtn.addEventListener('click', openProfile);

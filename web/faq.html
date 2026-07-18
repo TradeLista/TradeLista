@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TradeLista — FAQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0e14;
+    --bg-elevated:#11161f;
+    --bg-card:#151b26;
+    --bg-hover:#1b2330;
+    --border:#232b3a;
+    --border-soft:#1a2130;
+    --text:#e7edf5;
+    --text-dim:#8b96a8;
+    --text-faint:#5c6678;
+    --accent:#4f8cff;
+    --accent-dim:rgba(79,140,255,0.14);
+    --accent2:#8b6cff;
+    --radius:14px;
+    --radius-sm:9px;
+    --font-ui:'Inter',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(79,140,255,0.08), transparent),
+      radial-gradient(ellipse 700px 400px at 100% 0%, rgba(139,108,255,0.06), transparent),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--font-ui);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit; cursor:pointer;}
+  ::selection{background:var(--accent-dim);}
+
+  .topnav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px; position:sticky; top:0; z-index:50;
+    background:rgba(10,14,20,0.7); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border-soft);
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:21px; letter-spacing:-0.02em;}
+  .brand-icon{flex-shrink:0; display:block;}
+  .brand-trade{color:#f5f5f7;}
+  .brand-accent{background:linear-gradient(135deg,#9d9ff5,#6366f1); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .navlinks{display:flex; gap:20px; font-size:14px; color:var(--text-dim);}
+  .navlinks a{padding:6px 2px; border-bottom:2px solid transparent; transition:color .15s;}
+  .navlinks a:hover{color:var(--text);}
+  .navlinks a.active{color:var(--text); border-bottom-color:var(--accent);}
+  .navright{display:flex; align-items:center; gap:12px;}
+  .navright .btn{padding:8px 15px; font-size:13px;}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:10px 18px; border-radius:99px; font-size:14px; font-weight:600; border:1px solid transparent;
+    transition:transform .12s, box-shadow .12s, border-color .12s, background .12s;
+    white-space:nowrap;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; box-shadow:0 8px 24px -8px rgba(79,140,255,0.6);}
+  .btn-primary:hover{box-shadow:0 10px 30px -6px rgba(79,140,255,0.75);}
+  .btn-ghost{background:var(--bg-card); border-color:var(--border); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--accent); color:var(--accent);}
+
+  .page{max-width:720px; margin:0 auto; padding:48px 24px 80px;}
+  .page-eyebrow{
+    display:inline-flex; align-items:center; gap:8px; font-size:11.5px; font-weight:700; color:var(--accent);
+    text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px;
+  }
+  .page-eyebrow{width:100%; justify-content:center;}
+  .page h1{font-size:26px; font-weight:800; letter-spacing:-0.01em; margin-bottom:8px; text-align:center;}
+  .page > p.lead{color:var(--text-dim); font-size:14.5px; margin:0 auto 28px; line-height:1.6; text-align:center; max-width:520px;}
+
+  .faq-item{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:10px; overflow:hidden;}
+  .faq-q{
+    width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:transparent; border:none; color:var(--text); font-family:inherit; font-size:14.5px; font-weight:600;
+    padding:16px 18px; text-align:left;
+  }
+  .faq-q .chevron{transition:transform .15s; color:var(--text-faint); flex-shrink:0;}
+  .faq-item.open .faq-q .chevron{transform:rotate(180deg);}
+  .faq-a{max-height:0; overflow:hidden; transition:max-height .2s ease;}
+  .faq-a p{padding:0 18px 16px; color:var(--text-dim); font-size:13.5px; line-height:1.6;}
+  .faq-item.open .faq-a{max-height:220px;}
+
+  .auth-gate{
+    display:none; min-height:70vh; align-items:center; justify-content:center; flex-direction:column; text-align:center;
+    padding:80px 24px; max-width:480px; margin:0 auto;
+  }
+  .auth-gate.show{display:flex;}
+  .auth-gate .ic{
+    width:56px; height:56px; border-radius:16px; background:var(--accent-dim); color:var(--accent);
+    display:flex; align-items:center; justify-content:center; font-size:26px; margin-bottom:20px;
+  }
+  .auth-gate h2{font-size:22px; font-weight:800; margin-bottom:10px;}
+  .auth-gate p{font-size:14px; color:var(--text-dim); line-height:1.6; margin-bottom:24px;}
+  .auth-gate .actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+</style>
+</head>
+<body>
+
+<div class="topnav" id="topnav">
+  <a class="brand" href="index.html">
+    <svg class="brand-icon" width="28" height="28" viewBox="0 0 112 112" aria-hidden="true">
+      <rect width="112" height="112" rx="28" fill="url(#logoGrad)"/>
+      <rect x="16" y="16" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+      <rect x="44" y="16" width="24" height="24" rx="6" fill="#22c55e"/>
+      <rect x="72" y="16" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+      <rect x="16" y="44" width="24" height="24" rx="6" fill="#ef4444"/>
+      <rect x="44" y="44" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+      <rect x="72" y="44" width="24" height="24" rx="6" fill="#22c55e"/>
+      <rect x="16" y="72" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+      <rect x="44" y="72" width="24" height="24" rx="6" fill="#22c55e"/>
+      <rect x="72" y="72" width="24" height="24" rx="6" fill="#ef4444"/>
+      <defs>
+        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#000000"/>
+          <stop offset="100%" stop-color="#8081F8"/>
+        </linearGradient>
+      </defs>
+    </svg><span class="brand-word"><span class="brand-trade">Trade</span><span class="brand-accent">Lista</span></span>
+  </a>
+  <div class="navlinks">
+    <a href="app.html">Calendar</a>
+    <a href="connect.html">Connect Account</a>
+    <a href="contact.html">Contact</a>
+    <a class="active" href="faq.html">FAQ</a>
+  </div>
+  <div class="navright" id="navRight" style="visibility:hidden"></div>
+</div>
+
+<div class="page" style="display:none">
+  <div class="page-eyebrow">FAQ</div>
+  <h1>Frequently asked questions</h1>
+  <p class="lead">Answers to the most common questions. Don't see yours? <a href="contact.html" style="color:var(--accent);">Contact us</a>.</p>
+
+  <div id="faqList">
+    <div class="faq-item">
+      <button type="button" class="faq-q"><span>Question 1 — placeholder</span><span class="chevron">▾</span></button>
+      <div class="faq-a"><p>Answer coming soon.</p></div>
+    </div>
+    <div class="faq-item">
+      <button type="button" class="faq-q"><span>Question 2 — placeholder</span><span class="chevron">▾</span></button>
+      <div class="faq-a"><p>Answer coming soon.</p></div>
+    </div>
+    <div class="faq-item">
+      <button type="button" class="faq-q"><span>Question 3 — placeholder</span><span class="chevron">▾</span></button>
+      <div class="faq-a"><p>Answer coming soon.</p></div>
+    </div>
+    <div class="faq-item">
+      <button type="button" class="faq-q"><span>Question 4 — placeholder</span><span class="chevron">▾</span></button>
+      <div class="faq-a"><p>Answer coming soon.</p></div>
+    </div>
+    <div class="faq-item">
+      <button type="button" class="faq-q"><span>Question 5 — placeholder</span><span class="chevron">▾</span></button>
+      <div class="faq-a"><p>Answer coming soon.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="auth-gate" id="authGate">
+  <div class="ic">🔒</div>
+  <h2>Create a free account to open the FAQ</h2>
+  <p>Log in to view frequently asked questions.</p>
+  <div class="actions">
+    <a class="btn btn-primary" href="auth.html?mode=signup&amp;redirect=faq.html">Create free account</a>
+    <a class="btn btn-ghost" href="auth.html?mode=login&amp;redirect=faq.html">I already have one — log in</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="auth.js"></script>
+<script>
+  (async function initAuthGate(){
+    if(!(await TLAuth.isLoggedIn())){
+      document.getElementById('authGate').classList.add('show');
+    } else {
+      document.querySelector('.page').style.display = '';
+      const user = await TLAuth.getCurrentUser();
+      document.getElementById('navRight').innerHTML = `
+        <a class="btn btn-ghost" href="#" id="logoutLink">Log out</a>
+        <a class="btn btn-primary" href="app.html">Hi, ${user.firstName} · Calendar</a>
+      `;
+      document.getElementById('logoutLink').addEventListener('click', async (e)=>{
+        e.preventDefault();
+        await TLAuth.logout();
+        location.reload();
+      });
+    }
+    document.getElementById('navRight').style.visibility = 'visible';
+  })();
+
+  document.querySelectorAll('.faq-q').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      btn.parentElement.classList.toggle('open');
+    });
+  });
+</script>
+</body>
+</html>
