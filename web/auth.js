@@ -30,6 +30,53 @@
 
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  // ---------- Trades (real persistence for notes/images/reflections) ----------
+  async function getUserTrades(){
+    const { data: { session } } = await sb.auth.getSession();
+    if(!session) return [];
+    const { data, error } = await sb.from('trades').select('*').eq('user_id', session.user.id);
+    if(error) return [];
+    return data;
+  }
+
+  // `trade` is the full current state of one trade (base fields + note/images/
+  // answers) — the caller always sends the whole row, since Supabase upsert
+  // replaces it wholesale rather than merging individual columns.
+  async function upsertTrade(trade){
+    const { data: { session } } = await sb.auth.getSession();
+    if(!session) return { ok:false, error:'Not logged in.' };
+    const row = {
+      id: trade.id,
+      user_id: session.user.id,
+      is_manual: !!trade.is_manual,
+      is_deleted: !!trade.is_deleted,
+      date: trade.date || null,
+      symbol: trade.symbol || null,
+      lot: trade.lot ?? null,
+      entry: trade.entry ?? null,
+      exit_price: trade.exit ?? null,
+      profit: trade.profit ?? null,
+      note: trade.note || '',
+      images: trade.images || [],
+      answers: trade.answers || {},
+      updated_at: new Date().toISOString()
+    };
+    const { error } = await sb.from('trades').upsert(row);
+    if(error) return { ok:false, error: error.message };
+    return { ok:true };
+  }
+
+  async function uploadTradeImage(tradeId, file){
+    const { data: { session } } = await sb.auth.getSession();
+    if(!session) return { ok:false, error:'Not logged in.' };
+    const ext = (file.name.split('.').pop() || 'png').toLowerCase();
+    const path = `${session.user.id}/${tradeId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await sb.storage.from('trade-images').upload(path, file, { contentType: file.type });
+    if(error) return { ok:false, error: error.message };
+    const { data } = sb.storage.from('trade-images').getPublicUrl(path);
+    return { ok:true, url: data.publicUrl };
+  }
+
   async function getSessionUser(){
     const { data: { session } } = await sb.auth.getSession();
     return session ? session.user : null;
@@ -181,6 +228,9 @@
         display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; color:#fff;
         box-shadow:0 0 0 1px rgba(79,140,255,0.15), 0 0 16px -4px rgba(79,140,255,0.6);
         cursor:pointer; border:none; font-family:inherit;
+      }
+      .tl-nav-avatar.is-pro{
+        box-shadow:0 0 0 2px #151b26, 0 0 0 4px #f5c451, 0 0 16px -4px rgba(245,196,81,0.7);
       }
       .tl-nav-menu{
         display:none; position:absolute; top:calc(100% + 12px); right:0; min-width:240px; z-index:60;
@@ -436,7 +486,7 @@
 
     containerEl.innerHTML = `
       <div class="tl-nav-avatar-wrap">
-        <button type="button" class="tl-nav-avatar" id="tlNavAvatarBtn">${initials}</button>
+        <button type="button" class="tl-nav-avatar ${isPro ? 'is-pro' : ''}" id="tlNavAvatarBtn">${initials}</button>
         <div class="tl-nav-menu" id="tlNavMenu">
           <div class="tl-nav-menu-head">
             <div class="tl-nav-menu-avatar">${initials}</div>
@@ -498,6 +548,12 @@
       });
     },
     showModal
+  };
+
+  TLAuth.data = {
+    getUserTrades,
+    upsertTrade,
+    uploadTradeImage
   };
 
   window.TLAuth = TLAuth;
