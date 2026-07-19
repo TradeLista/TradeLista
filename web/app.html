@@ -381,16 +381,30 @@
       var(--bg-card);
   }
   .trade-modal-header{
-    display:flex; align-items:center; gap:14px; padding:18px 32px; border-bottom:1px solid var(--border-soft);
-    flex-shrink:0;
+    display:flex; align-items:center; gap:16px; padding:16px 32px; border-bottom:1px solid var(--border-soft);
+    flex-shrink:0; background:rgba(10,14,20,0.35); backdrop-filter:blur(8px);
   }
-  .trade-modal-header h3{font-size:19px; font-weight:800; flex:1; min-width:0;}
+  .trade-modal-header h3{font-size:20px; font-weight:800; min-width:0; letter-spacing:-0.01em;}
+  .trade-head-id{min-width:0;}
+  .trade-head-date{font-size:12px; color:var(--text-faint); margin-top:2px;}
+  .trade-result-badge{
+    font-size:11px; font-weight:800; letter-spacing:.07em; padding:5px 13px; border-radius:99px; flex-shrink:0;
+  }
+  .trade-result-badge.win{background:var(--green-dim); color:var(--green); border:1px solid var(--green-border); box-shadow:0 0 16px -5px rgba(31,209,138,0.7);}
+  .trade-result-badge.loss{background:var(--red-dim); color:var(--red); border:1px solid var(--red-border); box-shadow:0 0 16px -5px rgba(240,71,90,0.7);}
+  .trade-head-pnl{font-family:var(--font-mono); font-size:21px; font-weight:800; flex-shrink:0;}
+  .trade-head-pnl.pos{color:var(--green); text-shadow:0 0 20px rgba(31,209,138,0.45);}
+  .trade-head-pnl.neg{color:var(--red); text-shadow:0 0 20px rgba(240,71,90,0.45);}
+  .trade-head-spacer{flex:1;}
   .trade-modal-header .icon-btn{
     width:36px; height:36px; border-radius:10px; background:var(--bg-elevated); border:1px solid var(--border);
     color:var(--text-dim); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; transition:.15s;
   }
   .trade-modal-header .icon-btn:hover{color:var(--text); border-color:var(--accent);}
   .trade-modal-body{flex:1; overflow-y:auto; padding:28px 32px 40px;}
+  .trade-modal-body .trade-stats-row{animation:tradeFadeUp .3s ease both;}
+  .trade-modal-body .trade-layout{animation:tradeFadeUp .3s ease both; animation-delay:.06s;}
+  @keyframes tradeFadeUp{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;}}
   .trade-modal-footer{
     display:flex; align-items:center; gap:14px; padding:16px 32px; border-top:1px solid var(--border-soft); flex-shrink:0;
   }
@@ -400,8 +414,13 @@
   .trade-stats-row{display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin:0 auto 28px; max-width:1180px;}
   .trade-stat{
     background:rgba(21,27,38,0.72); backdrop-filter:blur(6px); border:1px solid var(--border-soft); border-radius:var(--radius);
-    padding:14px 16px; transition:border-color .15s, box-shadow .15s; position:relative; overflow:hidden;
+    padding:14px 16px; transition:border-color .15s, box-shadow .15s, transform .15s; position:relative; overflow:hidden;
   }
+  .trade-stat::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg, rgba(79,140,255,0.65), rgba(139,108,255,0.65)); opacity:.6;
+  }
+  .trade-stat:hover{transform:translateY(-1px); border-color:var(--border);}
   .trade-stat:focus-within{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent), 0 0 20px -6px rgba(79,140,255,0.5);}
   .trade-stat .l{
     display:flex; align-items:center; gap:6px; font-size:10.5px; color:var(--text-faint); text-transform:uppercase;
@@ -409,16 +428,27 @@
   }
   .trade-stat.is-pos{border-color:var(--green-border); box-shadow:0 0 24px -8px rgba(31,209,138,0.45);}
   .trade-stat.is-neg{border-color:var(--red-border); box-shadow:0 0 24px -8px rgba(240,71,90,0.45);}
+  .trade-stat.is-pos::before{background:var(--green); opacity:.8;}
+  .trade-stat.is-neg::before{background:var(--red); opacity:.8;}
 
   .trade-layout{display:grid; grid-template-columns:1fr 360px; gap:28px; align-items:start; max-width:1180px; margin:0 auto;}
-  .trade-main .rte-editor{min-height:440px;}
+  .trade-main .rte{border-radius:14px;}
+  .trade-main .rte-toolbar{padding:10px 12px; gap:7px;}
+  .trade-main .rte-editor{min-height:440px; max-height:none; font-size:14px; padding:16px 18px; line-height:1.65;}
   .trade-sidebar{display:flex; flex-direction:column; gap:20px;}
   .trade-sidebar-card{
     background:rgba(21,27,38,0.72); backdrop-filter:blur(6px); border:1px solid var(--border-soft); border-radius:var(--radius);
-    padding:18px; box-shadow:0 0 32px -14px rgba(139,108,255,0.35);
+    padding:18px; box-shadow:0 0 32px -14px rgba(139,108,255,0.35); position:relative; overflow:hidden;
+    transition:border-color .15s;
   }
+  .trade-sidebar-card::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg, rgba(79,140,255,0.65), rgba(139,108,255,0.65)); opacity:.6;
+  }
+  .trade-sidebar-card:hover{border-color:var(--border);}
   .trade-sidebar-card .section-label{margin-top:0;}
-  .rte{box-shadow:0 0 40px -18px rgba(79,140,255,0.4);}
+  .rte{box-shadow:0 0 40px -18px rgba(79,140,255,0.4); transition:border-color .15s, box-shadow .15s;}
+  .rte:focus-within{border-color:rgba(79,140,255,0.55); box-shadow:0 0 0 1px rgba(79,140,255,0.35), 0 0 44px -14px rgba(79,140,255,0.65);}
 
   .tag-chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;}
   .tag-chips:empty{margin-bottom:0;}
@@ -925,7 +955,13 @@
   <div class="modal modal-full">
     <div class="trade-modal-header">
       <button type="button" class="icon-btn" id="backToDayBtn" onclick="backToDay()" title="Back to day">←</button>
-      <h3 id="tradeModalTitle">Trade</h3>
+      <div class="trade-head-id">
+        <h3 id="tradeModalTitle">Trade</h3>
+        <div class="trade-head-date" id="tradeModalDate"></div>
+      </div>
+      <span class="trade-result-badge win" id="tradeResultBadge">WIN</span>
+      <div class="trade-head-pnl pos" id="tradeHeadPnl"></div>
+      <div class="trade-head-spacer"></div>
       <button type="button" class="icon-btn" onclick="closeTradeOverlay()" title="Close">✕</button>
     </div>
 
@@ -934,7 +970,7 @@
 
       <div class="trade-layout">
         <div class="trade-main">
-          <div class="section-label" style="margin-top:0;">Note</div>
+          <div class="section-label" style="margin-top:0;">📝 Note</div>
           <div class="rte">
             <div class="rte-toolbar" id="rteToolbar">
               <select id="rteBlock" title="Text style">
@@ -984,19 +1020,23 @@
 
         <div class="trade-sidebar">
           <div>
-            <div class="section-label" style="margin-top:0;">Tags</div>
+            <div class="section-label" style="margin-top:0;">🏷️ Tags</div>
             <div class="trade-sidebar-card">
               <div class="tag-chips" id="tagChips"></div>
               <input type="text" class="tag-input" id="tagInput" placeholder="Add a tag and press Enter (e.g. Breakout)">
             </div>
           </div>
-          <div class="trade-sidebar-card">
-            <div class="section-label">Images</div>
-            <div class="img-slots" id="imgSlots"></div>
+          <div>
+            <div class="section-label" style="margin-top:0;">🖼️ Images</div>
+            <div class="trade-sidebar-card">
+              <div class="img-slots" id="imgSlots"></div>
+            </div>
           </div>
-          <div class="trade-sidebar-card">
-            <div class="section-label">Reflection questions</div>
-            <div id="questionsList"></div>
+          <div>
+            <div class="section-label" style="margin-top:0;">🧠 Reflection questions</div>
+            <div class="trade-sidebar-card">
+              <div id="questionsList"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -2252,7 +2292,8 @@ async function openTrade(id){
   updateTradeUrl(id);
   const isPro = await TLAuth.isPro();
   const t = findTrade(id);
-  document.getElementById('tradeModalTitle').textContent = t.symbol + ' — ' + new Date(t.date).toLocaleDateString('en-US',{month:'short', day:'numeric'});
+  document.getElementById('tradeModalTitle').textContent = t.symbol;
+  document.getElementById('tradeModalDate').textContent = new Date(t.date + 'T00:00:00').toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric', year:'numeric'});
   document.getElementById('tradeDetailGrid').innerHTML = `
     <div class="trade-stat"><div class="l">🏷️ Symbol / pair</div><input class="cell-input" id="editSymbol" type="text" value="${t.symbol}"></div>
     <div class="trade-stat"><div class="l">↗️ Entry</div><input class="cell-input" id="editEntry" type="number" step="0.00001" value="${t.entry ?? ''}"></div>
@@ -2263,10 +2304,18 @@ async function openTrade(id){
   const profitInput = document.getElementById('editProfit');
   const profitStat = document.getElementById('profitStat');
   const updateProfitColor = ()=>{
-    const isPos = parseFloat(profitInput.value) >= 0;
+    const v = parseFloat(profitInput.value) || 0;
+    const isPos = v >= 0;
     profitInput.style.color = isPos ? 'var(--green)' : 'var(--red)';
     profitStat.classList.toggle('is-pos', isPos);
     profitStat.classList.toggle('is-neg', !isPos);
+    // header mirrors the edited profit live: WIN/LOSS badge + big PnL
+    const badge = document.getElementById('tradeResultBadge');
+    badge.textContent = isPos ? 'WIN' : 'LOSS';
+    badge.className = 'trade-result-badge ' + (isPos ? 'win' : 'loss');
+    const headPnl = document.getElementById('tradeHeadPnl');
+    headPnl.textContent = (isPos ? '+' : '') + v.toLocaleString('en-US',{style:'currency',currency:CURRENCY});
+    headPnl.className = 'trade-head-pnl ' + (isPos ? 'pos' : 'neg');
   };
   updateProfitColor();
   profitInput.addEventListener('input', updateProfitColor);
