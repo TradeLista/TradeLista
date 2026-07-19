@@ -881,7 +881,8 @@
         <label for="cmMessage">Message</label>
         <textarea id="cmMessage" required></textarea>
       </div>
-      <button type="submit" class="btn btn-primary" style="width:100%;">Send message</button>
+      <div id="contactModalStatus" style="font-size:12.5px; min-height:16px; margin-bottom:8px; text-align:center;"></div>
+      <button type="submit" class="btn btn-primary" id="contactModalSubmit" style="width:100%;">Send message</button>
     </form>
   </div>
 </div>
@@ -925,7 +926,6 @@
   })();
 
   // ---- Contact modal (stays on the homepage instead of navigating away) ----
-  const CONTACT_EMAIL = 'info@tradelista.com';
   const contactOverlay = document.getElementById('contactOverlay');
 
   document.querySelectorAll('.js-contact-link').forEach(el=>{
@@ -946,15 +946,33 @@
   contactOverlay.addEventListener('click', (e)=>{
     if(e.target === contactOverlay) contactOverlay.classList.remove('open');
   });
-  document.getElementById('contactModalForm').addEventListener('submit', (e)=>{
+  document.getElementById('contactModalForm').addEventListener('submit', async (e)=>{
     e.preventDefault();
     const firstName = document.getElementById('cmFirstName').value.trim();
     const lastName = document.getElementById('cmLastName').value.trim();
     const email = document.getElementById('cmEmail').value.trim();
     const subject = document.getElementById('cmSubject').value.trim();
     const message = document.getElementById('cmMessage').value.trim();
-    const body = `Name: ${firstName} ${lastName}\nEmail: ${email}\n\n${message}`;
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const status = document.getElementById('contactModalStatus');
+    const submitBtn = document.getElementById('contactModalSubmit');
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
+    status.style.color = 'var(--text-dim)';
+    status.textContent = '';
+
+    const res = await TLAuth.sendContactMessage({ firstName, lastName, email, subject, message });
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Send message';
+    if(!res.ok){
+      status.style.color = 'var(--red)';
+      status.textContent = res.error;
+      return;
+    }
+    status.style.color = 'var(--green)';
+    status.textContent = 'Message sent — we\'ll get back to you by email.';
+    document.getElementById('contactModalForm').reset();
   });
   const goProBtn = document.getElementById('goProBtn');
   if(goProBtn){

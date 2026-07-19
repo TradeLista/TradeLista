@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
+    color-scheme:dark;
     --bg:#0a0e14;
     --bg-elevated:#11161f;
     --bg-card:#151b26;
@@ -99,11 +100,32 @@
   .page-head h1{font-size:23px; font-weight:800; letter-spacing:-0.01em;}
   .page-head p{color:var(--text-dim); font-size:13.5px; margin-top:4px;}
   .page-head-right{display:flex; align-items:center; gap:10px;}
-  .account-pill{
+  .account-pill{position:relative; font-size:13px; color:var(--text-dim);}
+  .account-pill-btn{
     display:flex; align-items:center; gap:8px; background:var(--bg-card); border:1px solid var(--border);
-    padding:7px 12px; border-radius:99px; font-size:13px; color:var(--text-dim);
+    padding:7px 12px; border-radius:99px; font-size:13px; color:var(--text); font-family:inherit; cursor:pointer;
   }
-  .account-pill select{background:transparent; border:none; color:var(--text); font-family:inherit; font-size:13px; outline:none;}
+  .account-pill-btn:hover{border-color:var(--accent);}
+  .account-pill-dot{width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); flex-shrink:0;}
+  .account-pill-dot.is-demo{background:var(--text-faint); box-shadow:none;}
+  .account-pill-caret{color:var(--text-faint); font-size:11px;}
+  .account-pill-menu{
+    display:none; position:absolute; top:calc(100% + 8px); left:0; min-width:230px; z-index:60;
+    background:var(--bg-card); border:1px solid var(--border); border-radius:12px;
+    padding:6px; box-shadow:0 20px 48px -12px rgba(0,0,0,0.65);
+  }
+  .account-pill-menu.open{display:block;}
+  .account-pill-item{
+    display:flex; align-items:center; gap:8px; width:100%; text-align:left; background:transparent; border:none;
+    font-family:inherit; color:var(--text); font-size:13px; padding:8px 10px; border-radius:8px; cursor:pointer;
+  }
+  .account-pill-item:hover{background:var(--bg-hover);}
+  .account-pill-item.is-active{background:var(--bg-elevated);}
+  .account-pill-item-dot{width:7px; height:7px; border-radius:50%; flex-shrink:0;}
+  .account-pill-item-dot.is-live{background:var(--green); box-shadow:0 0 6px -1px var(--green);}
+  .account-pill-item-dot.is-demo{background:var(--text-faint);}
+  .account-pill-item-label{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .account-pill-item-check{color:var(--accent); font-weight:700;}
 
   /* Auth gate */
   .auth-gate{
@@ -596,12 +618,13 @@
       <p>Demo data — click a colored day to see trades, click a trade to add notes, images and reflection.</p>
     </div>
     <div class="page-head-right">
-      <div class="account-pill">
-        <span>●</span>
-        <select id="accountSelect">
-          <option>Live — FTMO 100k (USD)</option>
-          <option>Demo — IC Markets (EUR)</option>
-        </select>
+      <div class="account-pill" id="accountPillWrap">
+        <button type="button" class="account-pill-btn" id="accountPillBtn">
+          <span class="account-pill-dot" id="accountPillDot"></span>
+          <span id="accountPillLabel">—</span>
+          <span class="account-pill-caret">▾</span>
+        </button>
+        <div class="account-pill-menu" id="accountPillMenu"></div>
       </div>
       <button class="btn btn-primary" id="addTradeBtn" style="padding:9px 16px; font-size:13.5px;">+ Add trade</button>
     </div>
@@ -970,10 +993,6 @@ async function renderTopNav(){
     renderAll();
     renderRules();
 
-    document.getElementById('accountSelect').addEventListener('change', (e) => {
-      switchActiveAccount(e.target.value);
-    });
-
     // Deep-link: reopen whichever trade was open when the URL still has
     // ?trade=<id> (see updateTradeUrl), so refreshing the page doesn't drop
     // the user back to the bare calendar.
@@ -1020,11 +1039,40 @@ function resolveActiveAccount(){
 }
 
 function populateAccountSelect(){
-  const select = document.getElementById('accountSelect');
-  select.innerHTML = accountsList.map(a =>
-    `<option value="${a.id}">${a.account_type === 'live' ? 'Live' : 'Demo'} — ${a.label} (${a.currency})</option>`
-  ).join('');
-  if(activeAccount) select.value = activeAccount.id;
+  const btn = document.getElementById('accountPillBtn');
+  const dot = document.getElementById('accountPillDot');
+  const label = document.getElementById('accountPillLabel');
+  const menu = document.getElementById('accountPillMenu');
+
+  if(activeAccount){
+    dot.className = 'account-pill-dot ' + (activeAccount.account_type === 'live' ? '' : 'is-demo');
+    label.textContent = `${activeAccount.account_type === 'live' ? 'Live' : 'Demo'} — ${activeAccount.label} (${activeAccount.currency})`;
+  }
+
+  menu.innerHTML = accountsList.map(a => `
+    <button type="button" class="account-pill-item ${activeAccount && a.id === activeAccount.id ? 'is-active' : ''}" data-id="${a.id}">
+      <span class="account-pill-item-dot ${a.account_type === 'live' ? 'is-live' : 'is-demo'}"></span>
+      <span class="account-pill-item-label">${a.account_type === 'live' ? 'Live' : 'Demo'} — ${a.label} (${a.currency})</span>
+      ${activeAccount && a.id === activeAccount.id ? '<span class="account-pill-item-check">✓</span>' : ''}
+    </button>
+  `).join('');
+
+  menu.querySelectorAll('.account-pill-item').forEach(item => {
+    item.addEventListener('click', () => {
+      menu.classList.remove('open');
+      if(activeAccount && item.dataset.id === activeAccount.id) return;
+      switchActiveAccount(item.dataset.id);
+    });
+  });
+
+  if(!btn.dataset.wired){
+    btn.dataset.wired = '1';
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.classList.toggle('open');
+    });
+    document.addEventListener('click', () => menu.classList.remove('open'));
+  }
 }
 
 function updateEyebrow(){

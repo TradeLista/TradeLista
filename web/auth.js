@@ -28,6 +28,18 @@
     return { ok:true, url: body.url };
   }
 
+  // Unauthenticated on purpose — contact-form visitors aren't logged in.
+  async function sendContactMessage({ firstName, lastName, email, subject, message }){
+    const res = await fetch(`${FUNCTIONS_URL}/send-contact-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firstName, lastName, email, subject, message })
+    });
+    const body = await res.json().catch(() => ({}));
+    if(!res.ok) return { ok:false, error: body.error || 'Something went wrong. Please try again.' };
+    return { ok:true };
+  }
+
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   // ---------- Trades (real persistence for notes/images/reflections) ----------
@@ -270,7 +282,9 @@
       const { error } = await sb.auth.updateUser({ password: newPassword });
       if(error) return { ok:false, error: error.message };
       return { ok:true };
-    }
+    },
+
+    sendContactMessage
   };
 
   /* ---------- Shared modal UI ---------- */
@@ -473,38 +487,40 @@
     overlay.innerHTML = `
       <div class="tl-am-modal" role="dialog" aria-modal="true">
         <button type="button" class="tl-am-close" id="tlAmClose">✕</button>
-        <h3>Your account</h3>
+        <h3 id="tlAmTitle">Your account</h3>
 
-        <div class="tl-am-row">
-          <label>Email</label>
-          <input type="email" id="tlAmEmail" disabled>
-        </div>
-        <div class="tl-am-grid-2">
+        <div id="tlAmProfileSection">
           <div class="tl-am-row">
-            <label>First name</label>
-            <input type="text" id="tlAmFirstName">
+            <label>Email</label>
+            <input type="email" id="tlAmEmail" disabled>
+          </div>
+          <div class="tl-am-grid-2">
+            <div class="tl-am-row">
+              <label>First name</label>
+              <input type="text" id="tlAmFirstName">
+            </div>
+            <div class="tl-am-row">
+              <label>Last name</label>
+              <input type="text" id="tlAmLastName">
+            </div>
+          </div>
+          <div class="tl-am-error" id="tlAmNameError"></div>
+          <button type="button" class="btn btn-primary" id="tlAmSaveProfile" style="width:100%;">Save changes</button>
+
+          <div class="tl-am-section-label">Password</div>
+          <div class="tl-am-row">
+            <label>Current password</label>
+            <input type="password" id="tlAmCurrentPassword" autocomplete="current-password">
           </div>
           <div class="tl-am-row">
-            <label>Last name</label>
-            <input type="text" id="tlAmLastName">
+            <label>New password <span class="tl-am-opt">(min. 8 characters)</span></label>
+            <input type="password" id="tlAmNewPassword" autocomplete="new-password">
           </div>
+          <div class="tl-am-error" id="tlAmPasswordError"></div>
+          <button type="button" class="btn btn-ghost" id="tlAmChangePassword" style="width:100%;">Change password</button>
         </div>
-        <div class="tl-am-error" id="tlAmNameError"></div>
-        <button type="button" class="btn btn-primary" id="tlAmSaveProfile" style="width:100%;">Save changes</button>
 
-        <div class="tl-am-section-label">Password</div>
-        <div class="tl-am-row">
-          <label>Current password</label>
-          <input type="password" id="tlAmCurrentPassword" autocomplete="current-password">
-        </div>
-        <div class="tl-am-row">
-          <label>New password <span class="tl-am-opt">(min. 8 characters)</span></label>
-          <input type="password" id="tlAmNewPassword" autocomplete="new-password">
-        </div>
-        <div class="tl-am-error" id="tlAmPasswordError"></div>
-        <button type="button" class="btn btn-ghost" id="tlAmChangePassword" style="width:100%;">Change password</button>
-
-        <div class="tl-am-section-label">Trading accounts</div>
+        <div class="tl-am-section-label" id="tlAmAccountsLabel">Trading accounts</div>
         <div id="tlAmAccountsList"></div>
         <button type="button" class="btn btn-ghost" id="tlAmAddAccountBtn" style="width:100%;">+ Add trading account</button>
         <div class="tl-am-acct-limit-note" id="tlAmAccountLimitNote" style="display:none;"></div>
@@ -534,9 +550,11 @@
           </div>
         </div>
 
-        <div class="tl-am-section-label">Plan</div>
-        <div class="tl-am-plan-box" id="tlAmPlanStatus"></div>
-        <div id="tlAmPlanAction"></div>
+        <div id="tlAmPlanSection">
+          <div class="tl-am-section-label">Plan</div>
+          <div class="tl-am-plan-box" id="tlAmPlanStatus"></div>
+          <div id="tlAmPlanAction"></div>
+        </div>
 
         <div class="tl-am-status" id="tlAmStatus"></div>
         <button type="button" class="btn btn-ghost" id="tlAmLogout" style="width:100%; margin-top:8px;">Log out</button>
@@ -693,7 +711,8 @@
     }
   }
 
-  async function openAccountModal(){
+  async function openAccountModal(opts){
+    opts = opts || {};
     ensureAccountModal();
     const overlay = document.getElementById('tlAccountOverlay');
     const user = await TLAuth.getCurrentUser();
@@ -710,8 +729,21 @@
     addForm.style.display = 'none';
     overlay.querySelector('#tlAmAddAccountBtn').style.display = 'block';
     overlay.querySelector('#tlAmAccountError').textContent = '';
+
+    // "Manage accounts" (from the nav dropdown) shows only the trading-accounts
+    // list — profile/password/plan are a distinct concern reached via
+    // "Account settings" instead, so the two entry points don't land on the
+    // same overloaded screen.
+    const accountsOnly = !!opts.accountsOnly;
+    overlay.querySelector('#tlAmTitle').textContent = accountsOnly ? 'Trading accounts' : 'Your account';
+    overlay.querySelector('#tlAmProfileSection').style.display = accountsOnly ? 'none' : 'block';
+    overlay.querySelector('#tlAmPlanSection').style.display = accountsOnly ? 'none' : 'block';
+    overlay.querySelector('#tlAmStatus').style.display = accountsOnly ? 'none' : 'block';
+    overlay.querySelector('#tlAmLogout').style.display = accountsOnly ? 'none' : 'block';
+    overlay.querySelector('#tlAmAccountsLabel').style.display = accountsOnly ? 'none' : 'block';
+
     await renderAccountModalAccounts(overlay);
-    await renderAccountModalPlan(overlay);
+    if(!accountsOnly) await renderAccountModalPlan(overlay);
     overlay.classList.add('open');
   }
 
@@ -787,7 +819,7 @@
     containerEl.querySelector('#tlNavManageAccountsLink').addEventListener('click', (e) => {
       e.preventDefault();
       menu.classList.remove('open');
-      openAccountModal();
+      openAccountModal({ accountsOnly: true });
     });
     containerEl.querySelector('#tlNavAccountSettingsLink').addEventListener('click', (e) => {
       e.preventDefault();

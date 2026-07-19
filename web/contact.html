@@ -256,8 +256,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="auth.js"></script>
 <script>
-  const CONTACT_EMAIL = 'info@tradelista.com';
-
   (async function initAuthGate(){
     if(!(await TLAuth.isLoggedIn())){
       document.getElementById('authGate').classList.add('show');
@@ -272,19 +270,32 @@
     document.getElementById('navRight').style.visibility = 'visible';
   })();
 
-  document.getElementById('contactForm').addEventListener('submit', (e)=>{
+  document.getElementById('contactForm').addEventListener('submit', async (e)=>{
     e.preventDefault();
     const firstName = document.getElementById('cFirstName').value.trim();
     const lastName = document.getElementById('cLastName').value.trim();
     const email = document.getElementById('cEmail').value.trim();
     const subject = document.getElementById('cSubject').value.trim();
     const message = document.getElementById('cMessage').value.trim();
+    const status = document.getElementById('contactSuccess');
+    const submitBtn = document.getElementById('contactSubmit');
 
-    const body = `Name: ${firstName} ${lastName}\nEmail: ${email}\n\n${message}`;
-    const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
+    status.style.color = '';
+    status.textContent = '';
 
-    document.getElementById('contactSuccess').textContent = 'Opening your email app…';
-    window.location.href = mailto;
+    const res = await TLAuth.sendContactMessage({ firstName, lastName, email, subject, message });
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Send message';
+    if(!res.ok){
+      status.style.color = 'var(--red)';
+      status.textContent = res.error;
+      return;
+    }
+    status.textContent = 'Message sent — we\'ll get back to you by email.';
+    document.getElementById('contactForm').reset();
   });
 </script>
 </body>
