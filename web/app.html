@@ -153,6 +153,22 @@
     padding:6px 12px; font-size:12px; font-weight:700;
   }
 
+  .insights-section-label{
+    font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; font-weight:700;
+    margin:14px 0 8px;
+  }
+  .insights-section-label:first-child{margin-top:0;}
+  .insight-row{
+    display:flex; align-items:center; gap:8px; padding:7px 2px; font-size:12.5px; border-bottom:1px solid var(--border-soft);
+  }
+  .insight-row:last-child{border-bottom:none;}
+  .insight-row > span:first-child{flex-shrink:0; font-weight:600; color:var(--text); min-width:36px;}
+  .insight-mid{flex:1; color:var(--text-faint); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .insight-row.is-pos, .insight-row .is-pos{color:var(--green); font-weight:700;}
+  .insight-row.is-neg, .insight-row .is-neg{color:var(--red); font-weight:700;}
+  .insight-row-empty{color:var(--text-faint);}
+  .insights-empty{font-size:12.5px; color:var(--text-faint); padding:4px 2px;}
+
   /* KPI row */
   .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px;}
   .kpi{
@@ -365,6 +381,22 @@
   }
   .trade-sidebar-card .section-label{margin-top:0;}
   .rte{box-shadow:0 0 40px -18px rgba(79,140,255,0.4);}
+
+  .tag-chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;}
+  .tag-chips:empty{margin-bottom:0;}
+  .tag-chip{
+    display:inline-flex; align-items:center; gap:6px; background:var(--accent-dim); border:1px solid rgba(79,140,255,0.35);
+    color:var(--accent); font-size:12px; font-weight:600; padding:4px 6px 4px 10px; border-radius:99px;
+  }
+  .tag-chip button{
+    background:transparent; border:none; color:var(--accent); font-size:13px; line-height:1; padding:2px; cursor:pointer; opacity:.75;
+  }
+  .tag-chip button:hover{opacity:1;}
+  .tag-input{
+    width:100%; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm);
+    color:var(--text); font-family:inherit; font-size:13px; padding:9px 11px; outline:none;
+  }
+  .tag-input:focus{border-color:var(--accent);}
 
   @media (max-width:960px){
     .trade-layout{grid-template-columns:1fr;}
@@ -699,6 +731,17 @@
 
   <div class="sidebar">
   <div class="card">
+    <div class="cal-head">
+      <h2>📊 Insights <span style="color:var(--text-faint); font-weight:500; font-size:12.5px;">— by tag &amp; weekday</span></h2>
+    </div>
+    <div id="insightsBody">
+      <div class="insights-section-label">By tag</div>
+      <div id="insightsTagList"></div>
+      <div class="insights-section-label">By weekday</div>
+      <div id="insightsWeekdayList"></div>
+    </div>
+  </div>
+  <div class="card">
     <div class="rules-toggle" id="rulesToggle">
       <h2>🏅 Golden Trading Rules <span style="color:var(--text-faint); font-weight:500; font-size:12.5px;">(&nbsp;<span id="rulesCount">0</span>/10)</span></h2>
       <span class="chev">▾</span>
@@ -893,6 +936,11 @@
         </div>
 
         <div class="trade-sidebar">
+          <div class="trade-sidebar-card">
+            <div class="section-label">Tags</div>
+            <div class="tag-chips" id="tagChips"></div>
+            <input type="text" class="tag-input" id="tagInput" placeholder="Add a tag and press Enter (e.g. Breakout)">
+          </div>
           <div class="trade-sidebar-card">
             <div class="section-label">Images</div>
             <div class="img-slots" id="imgSlots"></div>
@@ -1259,8 +1307,8 @@ async function hydrateFromSupabase(){
     } else {
       overrides[row.id] = { symbol: row.symbol, lot: row.lot, entry: row.entry, exit: row.exit_price, profit: row.profit };
     }
-    const hasMeta = row.note || (row.images && row.images.length) || (row.answers && Object.keys(row.answers).length);
-    if(hasMeta) meta[row.id] = { note: row.note || '', images: row.images || [], answers: row.answers || {} };
+    const hasMeta = row.note || (row.images && row.images.length) || (row.answers && Object.keys(row.answers).length) || (row.tags && row.tags.length);
+    if(hasMeta) meta[row.id] = { note: row.note || '', images: row.images || [], answers: row.answers || {}, tags: row.tags || [] };
   });
   saveManualTrades(manual);
   saveDeleted(deleted);
@@ -1274,7 +1322,7 @@ async function persistTrade(id, opts){
   opts = opts || {};
   const t = findTrade(id);
   if(!t && !opts.deleted) return;
-  const m = loadMeta()[id] || { note:'', images:[], answers:{} };
+  const m = loadMeta()[id] || { note:'', images:[], answers:{}, tags:[] };
   const key = id.split('-').slice(0,3).join('-');
   const manual = loadManualTrades();
   const isManual = !!(manual[key] && manual[key].some(mt=>mt.id===id));
@@ -1291,7 +1339,8 @@ async function persistTrade(id, opts){
     profit: t ? t.profit : null,
     note: m.note,
     images: m.images,
-    answers: m.answers
+    answers: m.answers,
+    tags: m.tags
   });
 }
 
@@ -1461,6 +1510,7 @@ function renderAll(){
   renderCalendar();
   renderKPIs();
   renderEquityChart();
+  renderInsights();
 }
 
 /* ---------- Equity curve chart (with date-range picker) ---------- */
@@ -1508,6 +1558,90 @@ function computeEquitySeries(from, to){
     d.setDate(d.getDate()+1);
   }
   return series;
+}
+
+function collectTradesInRange(from, to){
+  const cursor = new Date(from.getFullYear(), from.getMonth(), 1);
+  const endCursor = new Date(to.getFullYear(), to.getMonth(), 1);
+  while(cursor <= endCursor){
+    genMonthTrades(cursor.getFullYear(), cursor.getMonth());
+    cursor.setMonth(cursor.getMonth()+1);
+  }
+  mergeManualTrades();
+  applyDeletions();
+  applyOverrides();
+
+  const trades = [];
+  const d = new Date(from);
+  while(d <= to){
+    const key = fmtDateKey(d);
+    (tradesByDate[key] || []).forEach(t=>trades.push(t));
+    d.setDate(d.getDate()+1);
+  }
+  return trades;
+}
+
+const WEEKDAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function insightRowHTML(label, stat){
+  if(!stat.count) return `<div class="insight-row insight-row-empty"><span>${escapeHtml(label)}</span><span class="insight-mid">—</span></div>`;
+  const winRate = Math.round(stat.wins / stat.count * 100);
+  const pnlClass = stat.pnl >= 0 ? 'is-pos' : 'is-neg';
+  const pnlSign = stat.pnl >= 0 ? '+' : '';
+  return `<div class="insight-row"><span>${escapeHtml(label)}</span><span class="insight-mid">${stat.count} trade${stat.count===1?'':'s'} · ${winRate}% win</span><span class="${pnlClass}">${pnlSign}${stat.pnl.toFixed(2)}</span></div>`;
+}
+
+async function renderInsights(){
+  const body = document.getElementById('insightsBody');
+  const lockId = 'insightsLock';
+  let lock = document.getElementById(lockId);
+  const isPro = await TLAuth.isPro();
+
+  if(!isPro){
+    body.style.display = 'none';
+    if(!lock){
+      lock = document.createElement('div');
+      lock.className = 'pro-lock';
+      lock.id = lockId;
+      lock.innerHTML = `<strong>⭐ Pro feature</strong> Trade insights are part of the Pro plan. <button type="button">Upgrade</button>`;
+      lock.querySelector('button').onclick = ()=> TLAuth.ui.requirePro('Trade insights');
+      body.parentElement.insertBefore(lock, body);
+    }
+    return;
+  }
+  if(lock) lock.remove();
+  body.style.display = '';
+
+  const { from, to } = getChartRange();
+  const trades = collectTradesInRange(from, to);
+  const meta = loadMeta();
+
+  const weekdayStats = WEEKDAY_NAMES.map(()=>({ count:0, wins:0, pnl:0 }));
+  const tagStats = {};
+
+  trades.forEach(t=>{
+    const dow = (new Date(t.date+'T00:00:00').getDay() + 6) % 7; // Mon=0..Sun=6
+    weekdayStats[dow].count++;
+    weekdayStats[dow].pnl += t.profit;
+    if(t.profit >= 0) weekdayStats[dow].wins++;
+
+    const tags = (meta[t.id] && meta[t.id].tags) || [];
+    tags.forEach(tag=>{
+      if(!tagStats[tag]) tagStats[tag] = { count:0, wins:0, pnl:0 };
+      tagStats[tag].count++;
+      tagStats[tag].pnl += t.profit;
+      if(t.profit >= 0) tagStats[tag].wins++;
+    });
+  });
+
+  document.getElementById('insightsWeekdayList').innerHTML =
+    WEEKDAY_NAMES.map((name,i)=>insightRowHTML(name, weekdayStats[i])).join('');
+
+  const tagEntries = Object.entries(tagStats).sort((a,b)=>b[1].count-a[1].count);
+  const tagList = document.getElementById('insightsTagList');
+  tagList.innerHTML = tagEntries.length
+    ? tagEntries.map(([tag, stat])=>insightRowHTML(tag, stat)).join('')
+    : `<div class="insights-empty">No tagged trades in this period — open a trade and add a tag to see a breakdown here.</div>`;
 }
 
 function renderEquityChart(){
@@ -1595,8 +1729,8 @@ function renderEquityChart(){
   });
 }
 
-document.getElementById('chartFrom').addEventListener('change', renderEquityChart);
-document.getElementById('chartTo').addEventListener('change', renderEquityChart);
+document.getElementById('chartFrom').addEventListener('change', ()=>{ renderEquityChart(); renderInsights(); });
+document.getElementById('chartTo').addEventListener('change', ()=>{ renderEquityChart(); renderInsights(); });
 
 function renderKPIs(){
   const year = viewDate.getFullYear(), month = viewDate.getMonth();
@@ -1863,6 +1997,32 @@ function backToDay(){
   if(currentDayKey) openDay(currentDayKey);
 }
 
+function renderTagChips(id, tags){
+  const container = document.getElementById('tagChips');
+  container.innerHTML = '';
+  tags.forEach(tag=>{
+    const chip = document.createElement('span');
+    chip.className = 'tag-chip';
+    const label = document.createElement('span');
+    label.textContent = tag;
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.textContent = '✕';
+    removeBtn.onclick = ()=>{
+      const meta = loadMeta();
+      if(!meta[id]) return;
+      meta[id].tags = (meta[id].tags || []).filter(t=>t!==tag);
+      saveMeta(meta);
+      renderTagChips(id, meta[id].tags);
+      renderInsights();
+      persistTrade(id);
+    };
+    chip.appendChild(label);
+    chip.appendChild(removeBtn);
+    container.appendChild(chip);
+  });
+}
+
 async function openTrade(id){
   currentTradeId = id;
   updateTradeUrl(id);
@@ -1888,11 +2048,30 @@ async function openTrade(id){
   profitInput.addEventListener('input', updateProfitColor);
 
   const meta = loadMeta();
-  const m = meta[id] || { note:'', images:[], answers:{} };
+  const m = meta[id] || { note:'', images:[], answers:{}, tags:[] };
 
   const noteField = document.getElementById('tradeNote');
   noteField.innerHTML = sanitizeNoteHTML(m.note || '');
   wrapEditorImages(noteField);
+
+  renderTagChips(id, m.tags || []);
+  const tagInput = document.getElementById('tagInput');
+  tagInput.value = '';
+  tagInput.onkeydown = (e)=>{
+    if(e.key !== 'Enter') return;
+    e.preventDefault();
+    const tag = tagInput.value.trim();
+    if(!tag) return;
+    const meta = loadMeta();
+    if(!meta[id]) meta[id] = { note:'', images:[], answers:{}, tags:[] };
+    if(!meta[id].tags) meta[id].tags = [];
+    if(!meta[id].tags.some(existing=>existing.toLowerCase()===tag.toLowerCase())) meta[id].tags.push(tag);
+    saveMeta(meta);
+    renderTagChips(id, meta[id].tags);
+    renderInsights();
+    tagInput.value = '';
+    persistTrade(id);
+  };
 
   const imgSlots = document.getElementById('imgSlots');
   imgSlots.innerHTML = '';
@@ -1957,7 +2136,7 @@ async function openTrade(id){
       return;
     }
     const meta = loadMeta();
-    if(!meta[id]) meta[id] = { note:'', images:[], answers:{} };
+    if(!meta[id]) meta[id] = { note:'', images:[], answers:{}, tags:[] };
     if(!meta[id].images) meta[id].images = [];
     meta[id].images = meta[id].images.filter(Boolean);
     meta[id].images.push(res.url);
@@ -2001,7 +2180,7 @@ async function openTrade(id){
     qtextInput.disabled = !isPro;
     qtextInput.oninput = ()=>{
       const meta = loadMeta();
-      if(!meta[id]) meta[id] = { note:'', images:[], answers:{} };
+      if(!meta[id]) meta[id] = { note:'', images:[], answers:{}, tags:[] };
       if(!meta[id].answers[qi]) meta[id].answers[qi] = {};
       meta[id].answers[qi].text = qtextInput.value;
       saveMeta(meta);
@@ -2011,7 +2190,7 @@ async function openTrade(id){
     function setAnswer(v){
       if(!isPro){ TLAuth.ui.requirePro('Reflection questions'); return; }
       const meta = loadMeta();
-      if(!meta[id]) meta[id] = { note:'', images:[], answers:{} };
+      if(!meta[id]) meta[id] = { note:'', images:[], answers:{}, tags:[] };
       if(!meta[id].answers[qi]) meta[id].answers[qi] = {};
       meta[id].answers[qi].value = v;
       saveMeta(meta);
@@ -2025,7 +2204,7 @@ async function openTrade(id){
     noBtn.onclick = ()=>setAnswer('no');
     explainArea.oninput = ()=>{
       const meta = loadMeta();
-      if(!meta[id]) meta[id] = { note:'', images:[], answers:{} };
+      if(!meta[id]) meta[id] = { note:'', images:[], answers:{}, tags:[] };
       if(!meta[id].answers[qi]) meta[id].answers[qi] = {};
       meta[id].answers[qi].explain = explainArea.value;
       saveMeta(meta);
@@ -2065,7 +2244,7 @@ function saveTradeNote(){
   });
   const clean = sanitizeNoteHTML(clone.innerHTML);
   const meta = loadMeta();
-  if(!meta[currentTradeId]) meta[currentTradeId] = { note:'', images:[], answers:{} };
+  if(!meta[currentTradeId]) meta[currentTradeId] = { note:'', images:[], answers:{}, tags:[] };
   const prevNote = meta[currentTradeId].note;
   meta[currentTradeId].note = clean;
   if(saveMeta(meta)){
@@ -2535,7 +2714,7 @@ document.getElementById('addTradeForm').addEventListener('submit', e=>{
   if(!manual[key]) manual[key] = [];
   manual[key].push(trade);
   saveManualTrades(manual);
-  TLAuth.data.upsertTrade({ id: trade.id, account_id: activeAccount ? activeAccount.id : null, is_manual: true, ...trade, note:'', images:[], answers:{} });
+  TLAuth.data.upsertTrade({ id: trade.id, account_id: activeAccount ? activeAccount.id : null, is_manual: true, ...trade, note:'', images:[], answers:{}, tags:[] });
 
   closeModal('addTradeOverlay');
   viewDate = new Date(d.getFullYear(), d.getMonth(), 1);
