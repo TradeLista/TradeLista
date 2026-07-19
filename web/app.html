@@ -269,6 +269,63 @@
   .modal-head h3{font-size:16px; font-weight:700;}
   .modal-head button{background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-dim); width:28px; height:28px; border-radius:8px; flex-shrink:0;}
   .modal-head button:hover{color:var(--text);}
+
+  /* Full-window trade detail modal */
+  #tradeOverlay{padding:0; align-items:stretch;}
+  .modal-full{
+    width:100%; max-width:none; height:100dvh; border-radius:0;
+    display:flex; flex-direction:column; padding:0; animation:none;
+    background:
+      radial-gradient(ellipse 900px 480px at 8% -8%, rgba(79,140,255,0.12), transparent),
+      radial-gradient(ellipse 800px 460px at 100% 0%, rgba(139,108,255,0.10), transparent),
+      radial-gradient(ellipse 700px 420px at 90% 100%, rgba(31,209,138,0.06), transparent),
+      var(--bg-card);
+  }
+  .trade-modal-header{
+    display:flex; align-items:center; gap:14px; padding:18px 32px; border-bottom:1px solid var(--border-soft);
+    flex-shrink:0;
+  }
+  .trade-modal-header h3{font-size:19px; font-weight:800; flex:1; min-width:0;}
+  .trade-modal-header .icon-btn{
+    width:36px; height:36px; border-radius:10px; background:var(--bg-elevated); border:1px solid var(--border);
+    color:var(--text-dim); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; transition:.15s;
+  }
+  .trade-modal-header .icon-btn:hover{color:var(--text); border-color:var(--accent);}
+  .trade-modal-body{flex:1; overflow-y:auto; padding:28px 32px 40px;}
+  .trade-modal-footer{
+    display:flex; align-items:center; gap:14px; padding:16px 32px; border-top:1px solid var(--border-soft); flex-shrink:0;
+  }
+  .trade-modal-footer .save-note{flex:1; margin:0; text-align:left;}
+  .trade-modal-footer .btn{width:auto; padding:11px 26px;}
+
+  .trade-stats-row{display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin:0 auto 28px; max-width:1180px;}
+  .trade-stat{
+    background:rgba(21,27,38,0.72); backdrop-filter:blur(6px); border:1px solid var(--border-soft); border-radius:var(--radius);
+    padding:14px 16px; transition:border-color .15s, box-shadow .15s; position:relative; overflow:hidden;
+  }
+  .trade-stat:focus-within{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent), 0 0 20px -6px rgba(79,140,255,0.5);}
+  .trade-stat .l{
+    display:flex; align-items:center; gap:6px; font-size:10.5px; color:var(--text-faint); text-transform:uppercase;
+    letter-spacing:.05em; margin-bottom:8px;
+  }
+  .trade-stat.is-pos{border-color:var(--green-border); box-shadow:0 0 24px -8px rgba(31,209,138,0.45);}
+  .trade-stat.is-neg{border-color:var(--red-border); box-shadow:0 0 24px -8px rgba(240,71,90,0.45);}
+
+  .trade-layout{display:grid; grid-template-columns:1fr 360px; gap:28px; align-items:start; max-width:1180px; margin:0 auto;}
+  .trade-main .rte-editor{min-height:440px;}
+  .trade-sidebar{display:flex; flex-direction:column; gap:20px;}
+  .trade-sidebar-card{
+    background:rgba(21,27,38,0.72); backdrop-filter:blur(6px); border:1px solid var(--border-soft); border-radius:var(--radius);
+    padding:18px; box-shadow:0 0 32px -14px rgba(139,108,255,0.35);
+  }
+  .trade-sidebar-card .section-label{margin-top:0;}
+  .rte{box-shadow:0 0 40px -18px rgba(79,140,255,0.4);}
+
+  @media (max-width:960px){
+    .trade-layout{grid-template-columns:1fr;}
+    .trade-stats-row{grid-template-columns:repeat(2,1fr);}
+    .trade-modal-header, .trade-modal-body, .trade-modal-footer{padding-left:18px; padding-right:18px;}
+  }
   .modal-back{display:flex; align-items:center; justify-content:center; font-size:15px;}
   .trade-row{
     display:flex; align-items:center; gap:8px; background:var(--bg-elevated);
@@ -288,11 +345,6 @@
   }
   .trade-del:hover{background:var(--red); color:#fff; border-color:var(--red); transform:scale(1.06);}
 
-  .detail-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;}
-  .detail-grid .cell{background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:var(--radius-sm); padding:10px 12px;}
-  .detail-grid .cell.full{grid-column:1 / -1;}
-  .detail-grid .cell .l{font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px;}
-  .detail-grid .cell .v{font-family:var(--font-mono); font-size:14px; font-weight:600;}
   .cell-input{
     width:100%; background:transparent; border:none; border-bottom:1px dashed transparent; outline:none; padding:1px 0;
     font-family:var(--font-mono); font-size:14px; font-weight:600; color:var(--text); transition:border-color .15s;
@@ -426,7 +478,6 @@
   @media (max-width:720px){
     .kpis{grid-template-columns:repeat(2,1fr);}
     .navlinks{display:none;}
-    .detail-grid{grid-template-columns:1fr;}
   }
   footer{border-top:1px solid var(--border-soft); padding:48px 24px 32px;}
   .footer-inner{max-width:1180px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:32px;}
@@ -694,71 +745,84 @@
 
 <!-- Trade detail overlay -->
 <div class="overlay" id="tradeOverlay">
-  <div class="modal modal-lg">
-    <div class="modal-head">
+  <div class="modal modal-full">
+    <div class="trade-modal-header">
+      <button type="button" class="icon-btn" id="backToDayBtn" onclick="backToDay()" title="Back to day">←</button>
       <h3 id="tradeModalTitle">Trade</h3>
-      <button type="button" class="modal-back" id="backToDayBtn" onclick="backToDay()" title="Back to day">←</button>
+      <button type="button" class="icon-btn" onclick="closeModal('tradeOverlay')" title="Close">✕</button>
     </div>
 
-    <div class="detail-grid" id="tradeDetailGrid"></div>
+    <div class="trade-modal-body">
+      <div class="trade-stats-row" id="tradeDetailGrid"></div>
 
-    <div class="section-label">Note</div>
-    <div class="rte">
-      <div class="rte-toolbar" id="rteToolbar">
-        <select id="rteBlock" title="Text style">
-          <option value="p">Normal</option>
-          <option value="h3">Title</option>
-          <option value="blockquote">Quote</option>
-        </select>
-        <span class="rte-sep"></span>
-        <button type="button" class="rte-btn" data-cmd="bold" title="Bold"><b>B</b></button>
-        <button type="button" class="rte-btn" data-cmd="italic" title="Italic"><i>I</i></button>
-        <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><u>U</u></button>
-        <button type="button" class="rte-btn" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
-        <span class="rte-sep"></span>
-        <button type="button" class="rte-btn" data-cmd="justifyLeft" title="Align left">
-          <svg viewBox="0 0 16 12" width="15" height="11"><rect x="0" y="0" width="16" height="1.7" rx="0.8" fill="currentColor"/><rect x="0" y="3.5" width="10" height="1.7" rx="0.8" fill="currentColor"/><rect x="0" y="7" width="13" height="1.7" rx="0.8" fill="currentColor"/><rect x="0" y="10.3" width="8" height="1.7" rx="0.8" fill="currentColor"/></svg>
-        </button>
-        <button type="button" class="rte-btn" data-cmd="justifyCenter" title="Align center">
-          <svg viewBox="0 0 16 12" width="15" height="11"><rect x="0" y="0" width="16" height="1.7" rx="0.8" fill="currentColor"/><rect x="3" y="3.5" width="10" height="1.7" rx="0.8" fill="currentColor"/><rect x="1.5" y="7" width="13" height="1.7" rx="0.8" fill="currentColor"/><rect x="4" y="10.3" width="8" height="1.7" rx="0.8" fill="currentColor"/></svg>
-        </button>
-        <button type="button" class="rte-btn" data-cmd="justifyRight" title="Align right">
-          <svg viewBox="0 0 16 12" width="15" height="11"><rect x="0" y="0" width="16" height="1.7" rx="0.8" fill="currentColor"/><rect x="6" y="3.5" width="10" height="1.7" rx="0.8" fill="currentColor"/><rect x="3" y="7" width="13" height="1.7" rx="0.8" fill="currentColor"/><rect x="8" y="10.3" width="8" height="1.7" rx="0.8" fill="currentColor"/></svg>
-        </button>
-        <span class="rte-sep"></span>
-        <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Bullet list">•</button>
-        <button type="button" class="rte-btn" data-cmd="insertOrderedList" title="Numbered list">1.</button>
-        <span class="rte-sep"></span>
-        <div class="rte-swatches" data-kind="fore" title="Text color">
-          <span class="rte-swatch-label">A</span>
-          <button type="button" class="rte-swatch" style="background:#e7edf5" data-value="#e7edf5" aria-label="Default text color"></button>
-          <button type="button" class="rte-swatch" style="background:#1fd18a" data-value="#1fd18a" aria-label="Green text"></button>
-          <button type="button" class="rte-swatch" style="background:#f0475a" data-value="#f0475a" aria-label="Red text"></button>
-          <button type="button" class="rte-swatch" style="background:#4f8cff" data-value="#4f8cff" aria-label="Blue text"></button>
-          <button type="button" class="rte-swatch" style="background:#f5c542" data-value="#f5c542" aria-label="Yellow text"></button>
-          <button type="button" class="rte-swatch" style="background:#8b6cff" data-value="#8b6cff" aria-label="Purple text"></button>
-          <button type="button" class="rte-swatch" style="background:#f2994a" data-value="#f2994a" aria-label="Orange text"></button>
-          <button type="button" class="rte-swatch" style="background:#ec6bb0" data-value="#ec6bb0" aria-label="Pink text"></button>
-          <button type="button" class="rte-swatch" style="background:#2dd9c8" data-value="#2dd9c8" aria-label="Teal text"></button>
+      <div class="trade-layout">
+        <div class="trade-main">
+          <div class="section-label" style="margin-top:0;">Note</div>
+          <div class="rte">
+            <div class="rte-toolbar" id="rteToolbar">
+              <select id="rteBlock" title="Text style">
+                <option value="p">Normal</option>
+                <option value="h3">Title</option>
+                <option value="blockquote">Quote</option>
+              </select>
+              <span class="rte-sep"></span>
+              <button type="button" class="rte-btn" data-cmd="bold" title="Bold"><b>B</b></button>
+              <button type="button" class="rte-btn" data-cmd="italic" title="Italic"><i>I</i></button>
+              <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><u>U</u></button>
+              <button type="button" class="rte-btn" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
+              <span class="rte-sep"></span>
+              <button type="button" class="rte-btn" data-cmd="justifyLeft" title="Align left">
+                <svg viewBox="0 0 16 12" width="15" height="11"><rect x="0" y="0" width="16" height="1.7" rx="0.8" fill="currentColor"/><rect x="0" y="3.5" width="10" height="1.7" rx="0.8" fill="currentColor"/><rect x="0" y="7" width="13" height="1.7" rx="0.8" fill="currentColor"/><rect x="0" y="10.3" width="8" height="1.7" rx="0.8" fill="currentColor"/></svg>
+              </button>
+              <button type="button" class="rte-btn" data-cmd="justifyCenter" title="Align center">
+                <svg viewBox="0 0 16 12" width="15" height="11"><rect x="0" y="0" width="16" height="1.7" rx="0.8" fill="currentColor"/><rect x="3" y="3.5" width="10" height="1.7" rx="0.8" fill="currentColor"/><rect x="1.5" y="7" width="13" height="1.7" rx="0.8" fill="currentColor"/><rect x="4" y="10.3" width="8" height="1.7" rx="0.8" fill="currentColor"/></svg>
+              </button>
+              <button type="button" class="rte-btn" data-cmd="justifyRight" title="Align right">
+                <svg viewBox="0 0 16 12" width="15" height="11"><rect x="0" y="0" width="16" height="1.7" rx="0.8" fill="currentColor"/><rect x="6" y="3.5" width="10" height="1.7" rx="0.8" fill="currentColor"/><rect x="3" y="7" width="13" height="1.7" rx="0.8" fill="currentColor"/><rect x="8" y="10.3" width="8" height="1.7" rx="0.8" fill="currentColor"/></svg>
+              </button>
+              <span class="rte-sep"></span>
+              <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Bullet list">•</button>
+              <button type="button" class="rte-btn" data-cmd="insertOrderedList" title="Numbered list">1.</button>
+              <span class="rte-sep"></span>
+              <div class="rte-swatches" data-kind="fore" title="Text color">
+                <span class="rte-swatch-label">A</span>
+                <button type="button" class="rte-swatch" style="background:#e7edf5" data-value="#e7edf5" aria-label="Default text color"></button>
+                <button type="button" class="rte-swatch" style="background:#1fd18a" data-value="#1fd18a" aria-label="Green text"></button>
+                <button type="button" class="rte-swatch" style="background:#f0475a" data-value="#f0475a" aria-label="Red text"></button>
+                <button type="button" class="rte-swatch" style="background:#4f8cff" data-value="#4f8cff" aria-label="Blue text"></button>
+                <button type="button" class="rte-swatch" style="background:#f5c542" data-value="#f5c542" aria-label="Yellow text"></button>
+                <button type="button" class="rte-swatch" style="background:#8b6cff" data-value="#8b6cff" aria-label="Purple text"></button>
+                <button type="button" class="rte-swatch" style="background:#f2994a" data-value="#f2994a" aria-label="Orange text"></button>
+                <button type="button" class="rte-swatch" style="background:#ec6bb0" data-value="#ec6bb0" aria-label="Pink text"></button>
+                <button type="button" class="rte-swatch" style="background:#2dd9c8" data-value="#2dd9c8" aria-label="Teal text"></button>
+              </div>
+              <span class="rte-sep"></span>
+              <button type="button" class="rte-btn" id="rteImageBtn" title="Insert image">🖼️</button>
+              <button type="button" class="rte-btn" data-cmd="removeFormat" title="Clear formatting"><span style="text-decoration:line-through;">A</span></button>
+              <input type="file" id="rteImageInput" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;">
+            </div>
+            <div class="rte-editor" id="tradeNote" contenteditable="true" data-placeholder="What happened on this trade? Paste a screenshot with Ctrl+V or use the image button above."></div>
+          </div>
         </div>
-        <span class="rte-sep"></span>
-        <button type="button" class="rte-btn" id="rteImageBtn" title="Insert image">🖼️</button>
-        <button type="button" class="rte-btn" data-cmd="removeFormat" title="Clear formatting"><span style="text-decoration:line-through;">A</span></button>
-        <input type="file" id="rteImageInput" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;">
+
+        <div class="trade-sidebar">
+          <div class="trade-sidebar-card">
+            <div class="section-label">Images</div>
+            <div class="img-slots" id="imgSlots"></div>
+          </div>
+          <div class="trade-sidebar-card">
+            <div class="section-label">Reflection questions</div>
+            <div id="questionsList"></div>
+          </div>
+        </div>
       </div>
-      <div class="rte-editor" id="tradeNote" contenteditable="true" data-placeholder="What happened on this trade? Paste a screenshot with Ctrl+V or use the image button above."></div>
     </div>
 
-    <div class="section-label">Images</div>
-    <div class="img-slots" id="imgSlots"></div>
-
-    <div class="section-label">Reflection questions</div>
-    <div id="questionsList"></div>
-
-    <button type="button" class="btn btn-primary" id="saveTradeBtn" style="width:100%; margin-top:18px;">Save changes</button>
-    <button type="button" class="btn btn-danger" id="deleteTradeBtn" style="width:100%; margin-top:10px;">Delete trade</button>
-
-    <div class="save-note" id="saveNote">Saved to your account as you go.</div>
+    <div class="trade-modal-footer">
+      <div class="save-note" id="saveNote">Saved to your account as you go.</div>
+      <button type="button" class="btn btn-danger" id="deleteTradeBtn">Delete trade</button>
+      <button type="button" class="btn btn-primary" id="saveTradeBtn">Save changes</button>
+    </div>
   </div>
 </div>
 
@@ -1449,14 +1513,20 @@ async function openTrade(id){
   const t = findTrade(id);
   document.getElementById('tradeModalTitle').textContent = t.symbol + ' — ' + new Date(t.date).toLocaleDateString('en-US',{month:'short', day:'numeric'});
   document.getElementById('tradeDetailGrid').innerHTML = `
-    <div class="cell full"><div class="l">Symbol / pair</div><input class="cell-input" id="editSymbol" type="text" value="${t.symbol}"></div>
-    <div class="cell"><div class="l">Entry</div><input class="cell-input" id="editEntry" type="number" step="0.00001" value="${t.entry ?? ''}"></div>
-    <div class="cell"><div class="l">Exit</div><input class="cell-input" id="editExit" type="number" step="0.00001" value="${t.exit ?? ''}"></div>
-    <div class="cell"><div class="l">Lot size</div><input class="cell-input" id="editLot" type="number" step="0.01" min="0" value="${t.lot}"></div>
-    <div class="cell"><div class="l">Profit (${CURRENCY})</div><input class="cell-input" id="editProfit" type="number" step="0.01" value="${t.profit}"></div>
+    <div class="trade-stat"><div class="l">🏷️ Symbol / pair</div><input class="cell-input" id="editSymbol" type="text" value="${t.symbol}"></div>
+    <div class="trade-stat"><div class="l">↗️ Entry</div><input class="cell-input" id="editEntry" type="number" step="0.00001" value="${t.entry ?? ''}"></div>
+    <div class="trade-stat"><div class="l">↘️ Exit</div><input class="cell-input" id="editExit" type="number" step="0.00001" value="${t.exit ?? ''}"></div>
+    <div class="trade-stat"><div class="l">📦 Lot size</div><input class="cell-input" id="editLot" type="number" step="0.01" min="0" value="${t.lot}"></div>
+    <div class="trade-stat" id="profitStat"><div class="l">💰 Profit (${CURRENCY})</div><input class="cell-input" id="editProfit" type="number" step="0.01" value="${t.profit}"></div>
   `;
   const profitInput = document.getElementById('editProfit');
-  const updateProfitColor = ()=>{ profitInput.style.color = (parseFloat(profitInput.value)>=0) ? 'var(--green)' : 'var(--red)'; };
+  const profitStat = document.getElementById('profitStat');
+  const updateProfitColor = ()=>{
+    const isPos = parseFloat(profitInput.value) >= 0;
+    profitInput.style.color = isPos ? 'var(--green)' : 'var(--red)';
+    profitStat.classList.toggle('is-pos', isPos);
+    profitStat.classList.toggle('is-neg', !isPos);
+  };
   updateProfitColor();
   profitInput.addEventListener('input', updateProfitColor);
 
