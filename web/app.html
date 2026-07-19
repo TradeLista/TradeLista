@@ -35,8 +35,10 @@
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
     background:
-      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(79,140,255,0.08), transparent),
-      radial-gradient(ellipse 700px 400px at 100% 0%, rgba(139,108,255,0.06), transparent),
+      radial-gradient(ellipse 1000px 560px at 6% -10%, rgba(79,140,255,0.14), transparent),
+      radial-gradient(ellipse 900px 520px at 102% -6%, rgba(139,108,255,0.12), transparent),
+      radial-gradient(ellipse 800px 480px at 96% 60%, rgba(31,209,138,0.08), transparent),
+      radial-gradient(ellipse 700px 420px at -4% 100%, rgba(240,71,90,0.06), transparent),
       var(--bg);
     color:var(--text);
     font-family:var(--font-ui);
@@ -132,9 +134,19 @@
   .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px;}
   .kpi{
     background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px;
-    position:relative; overflow:hidden; transition:border-color .15s, transform .15s;
+    position:relative; overflow:visible; transition:border-color .15s, transform .15s;
   }
   .kpi:hover{border-color:var(--border); transform:translateY(-2px);}
+  .kpi[data-tip]::after{
+    content:attr(data-tip);
+    position:absolute; top:calc(100% + 10px); left:50%; transform:translateX(-50%) translateY(4px);
+    background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px;
+    padding:10px 14px; font-size:12px; font-weight:400; text-transform:none; letter-spacing:normal;
+    color:var(--text-dim); width:230px; line-height:1.55;
+    box-shadow:0 16px 40px -10px rgba(0,0,0,0.7); z-index:30;
+    opacity:0; pointer-events:none; transition:opacity .15s, transform .15s;
+  }
+  .kpi[data-tip]:hover::after{opacity:1; transform:translateX(-50%) translateY(0);}
   .kpi-icon{
     width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center;
     font-size:15px; margin-bottom:12px; background:var(--accent-dim); color:var(--accent);
@@ -263,6 +275,14 @@
     background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
     width:100%; max-width:520px; padding:22px; animation:pop .15s ease;
   }
+  #dayOverlay{align-items:center;}
+  #dayOverlay .modal{
+    background:
+      radial-gradient(ellipse 480px 300px at 10% -12%, rgba(79,140,255,0.16), transparent),
+      radial-gradient(ellipse 420px 280px at 105% 8%, rgba(139,108,255,0.14), transparent),
+      radial-gradient(ellipse 380px 240px at 90% 105%, rgba(31,209,138,0.10), transparent),
+      var(--bg-card);
+  }
   .modal-lg{max-width:860px;}
   @keyframes pop{from{opacity:0; transform:translateY(8px) scale(.98);} to{opacity:1; transform:none;}}
   .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
@@ -276,9 +296,11 @@
     width:100%; max-width:none; height:100dvh; border-radius:0;
     display:flex; flex-direction:column; padding:0; animation:none;
     background:
-      radial-gradient(ellipse 900px 480px at 8% -8%, rgba(79,140,255,0.12), transparent),
-      radial-gradient(ellipse 800px 460px at 100% 0%, rgba(139,108,255,0.10), transparent),
-      radial-gradient(ellipse 700px 420px at 90% 100%, rgba(31,209,138,0.06), transparent),
+      radial-gradient(ellipse 1000px 560px at 6% -10%, rgba(79,140,255,0.20), transparent),
+      radial-gradient(ellipse 900px 520px at 102% -6%, rgba(139,108,255,0.18), transparent),
+      radial-gradient(ellipse 800px 480px at 96% 104%, rgba(31,209,138,0.14), transparent),
+      radial-gradient(ellipse 700px 420px at -4% 100%, rgba(240,71,90,0.10), transparent),
+      radial-gradient(ellipse 900px 500px at 50% 50%, rgba(245,196,81,0.05), transparent),
       var(--bg-card);
   }
   .trade-modal-header{
@@ -375,6 +397,12 @@
   }
   .rte-btn:hover{color:var(--text);}
   .rte-btn.active{background:var(--accent-dim); border-color:rgba(79,140,255,0.35); color:var(--accent);}
+  #rteImageBtn{
+    width:auto; padding:0 10px; gap:5px; background:linear-gradient(135deg,var(--accent),var(--accent2));
+    border-color:transparent; color:#fff; font-weight:600; font-size:12px; box-shadow:0 0 14px -4px rgba(79,140,255,0.7);
+  }
+  #rteImageBtn:hover{box-shadow:0 0 20px -3px rgba(79,140,255,0.9); transform:translateY(-1px);}
+  #rteImageBtn::after{content:"Add image";}
   .rte-sep{width:1px; height:20px; background:var(--border);}
   .rte-swatches{display:flex; align-items:center; gap:4px;}
   .rte-swatch-label{font-size:11px; color:var(--text-faint); margin-right:2px;}
@@ -449,6 +477,41 @@
     cursor:pointer;
   }
   .img-slot-remove:hover{background:var(--red);}
+  .img-slot-draw{
+    position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:6px; border:none;
+    background:rgba(5,7,11,0.75); color:var(--text); font-size:9px; display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  .img-slot-draw:hover{background:var(--accent);}
+
+  /* Image lightbox */
+  #imageLightbox{background:rgba(5,7,11,0.94); padding:0; align-items:center;}
+  #imageLightbox img{max-width:92vw; max-height:92vh; border-radius:12px; box-shadow:0 30px 90px -20px rgba(0,0,0,0.85);}
+  .lightbox-close{
+    position:fixed; top:24px; left:24px; width:44px; height:44px; border-radius:12px; z-index:210;
+    background:rgba(21,27,38,0.9); border:1px solid var(--border); color:var(--text); font-size:17px;
+    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(6px); transition:.15s;
+  }
+  .lightbox-close:hover{background:var(--accent); border-color:var(--accent); color:#fff;}
+
+  /* Draw-on-image editor */
+  #drawOverlay{background:rgba(5,7,11,0.94); padding:16px;}
+  .draw-modal{
+    width:96vw; height:94vh; max-width:none; display:flex; flex-direction:column; gap:14px; padding:16px;
+  }
+  .draw-toolbar{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .draw-colors{display:flex; gap:6px;}
+  .draw-color{width:26px; height:26px; border-radius:50%; border:2px solid var(--border); cursor:pointer; flex-shrink:0;}
+  .draw-color.active{border-color:#fff; box-shadow:0 0 0 2px var(--accent);}
+  .draw-sizes{display:flex; gap:6px;}
+  .draw-size{padding:7px 14px; border-radius:8px; background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-dim); font-size:12.5px;}
+  .draw-size.active{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .draw-toolbar .save-note{margin:0;}
+  .draw-canvas-wrap{
+    flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden;
+    background:rgba(0,0,0,0.35); border-radius:12px; border:1px solid var(--border-soft);
+  }
+  #drawCanvas{max-width:100%; max-height:100%; cursor:crosshair; touch-action:none;}
 
   .qbox{border:1px solid var(--border-soft); border-radius:var(--radius-sm); margin-bottom:8px; overflow:hidden;}
   .qhead{display:flex; align-items:center; justify-content:space-between; padding:11px 13px; background:var(--bg-elevated);}
@@ -557,13 +620,13 @@
       <div class="value" id="kpiUsd">—</div>
       <div class="sub" id="kpiCurrency">USD</div>
     </div>
-    <div class="kpi">
+    <div class="kpi" id="kpiWinrateCard">
       <div class="kpi-icon">🎯</div>
       <div class="label" id="kpiWinrateLabel">Win rate</div>
       <div class="value" id="kpiWinrate">—</div>
       <div class="sub" id="kpiTradeCount">— trades</div>
     </div>
-    <div class="kpi is-pos">
+    <div class="kpi is-pos" id="kpiBestDayCard">
       <div class="kpi-icon">🏆</div>
       <div class="label" id="kpiBestDayLabel">Best day</div>
       <div class="value pos" id="kpiBestDay">—</div>
@@ -749,7 +812,7 @@
     <div class="trade-modal-header">
       <button type="button" class="icon-btn" id="backToDayBtn" onclick="backToDay()" title="Back to day">←</button>
       <h3 id="tradeModalTitle">Trade</h3>
-      <button type="button" class="icon-btn" onclick="closeModal('tradeOverlay')" title="Close">✕</button>
+      <button type="button" class="icon-btn" onclick="closeTradeOverlay()" title="Close">✕</button>
     </div>
 
     <div class="trade-modal-body">
@@ -843,6 +906,41 @@
   </div>
 </div>
 
+<!-- Image lightbox -->
+<div class="overlay" id="imageLightbox">
+  <button type="button" class="lightbox-close" onclick="closeModal('imageLightbox')" title="Close">✕</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<!-- Draw-on-image editor -->
+<div class="overlay" id="drawOverlay">
+  <div class="modal draw-modal">
+    <div class="draw-toolbar">
+      <div class="draw-colors">
+        <button type="button" class="draw-color active" style="background:#f0475a" data-value="#f0475a" title="Red"></button>
+        <button type="button" class="draw-color" style="background:#1fd18a" data-value="#1fd18a" title="Green"></button>
+        <button type="button" class="draw-color" style="background:#4f8cff" data-value="#4f8cff" title="Blue"></button>
+        <button type="button" class="draw-color" style="background:#f5c542" data-value="#f5c542" title="Yellow"></button>
+        <button type="button" class="draw-color" style="background:#ffffff" data-value="#ffffff" title="White"></button>
+        <button type="button" class="draw-color" style="background:#000000" data-value="#000000" title="Black"></button>
+      </div>
+      <div class="draw-sizes">
+        <button type="button" class="draw-size" data-value="3">Thin</button>
+        <button type="button" class="draw-size active" data-value="6">Medium</button>
+        <button type="button" class="draw-size" data-value="12">Thick</button>
+      </div>
+      <button type="button" class="btn btn-ghost" id="drawClearBtn">Clear</button>
+      <div style="flex:1;"></div>
+      <div class="save-note" id="drawStatus"></div>
+      <button type="button" class="btn btn-ghost" id="drawCancelBtn">Cancel</button>
+      <button type="button" class="btn btn-primary" id="drawSaveBtn">Save drawing</button>
+    </div>
+    <div class="draw-canvas-wrap">
+      <canvas id="drawCanvas"></canvas>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="auth.js"></script>
 <script>
@@ -863,24 +961,92 @@ async function renderTopNav(){
   } else {
     document.querySelector('.page').style.display = '';
     await renderTopNav();
+    await loadAccountsAndResolveActive();
     await hydrateFromSupabase();
 
     const def = defaultChartRange();
     document.getElementById('chartFrom').value = fmtDateKey(def.from);
     document.getElementById('chartTo').value = fmtDateKey(def.to);
-    document.getElementById('eyebrowMonth').textContent = monthLabel(today);
     renderAll();
     renderRules();
+
+    document.getElementById('accountSelect').addEventListener('change', (e) => {
+      switchActiveAccount(e.target.value);
+    });
+
+    // Deep-link: reopen whichever trade was open when the URL still has
+    // ?trade=<id> (see updateTradeUrl), so refreshing the page doesn't drop
+    // the user back to the bare calendar.
+    const deepLinkTradeId = new URLSearchParams(location.search).get('trade');
+    if(deepLinkTradeId){
+      const dateKey = deepLinkTradeId.split('-').slice(0,3).join('-');
+      const d = new Date(dateKey + 'T00:00:00');
+      if(!isNaN(d)){
+        viewDate = new Date(d.getFullYear(), d.getMonth(), 1);
+        renderAll();
+      }
+      if(findTrade(deepLinkTradeId)) await openTrade(deepLinkTradeId);
+    }
   }
   document.getElementById('navRight').style.visibility = 'visible';
 })();
+
+// An account was added/deleted from the account modal (possibly opened via
+// the nav dropdown) — reload so the account switcher and every render path
+// that depends on accountsList/activeAccount picks up the change.
+document.addEventListener('tl-accounts-changed', () => {
+  if(document.querySelector('.page').style.display !== 'none') location.reload();
+});
 
 /* ---------- Mock data generation (deterministic) ---------- */
 function seeded(n){ let x = Math.sin(n*9973)*10000; return x - Math.floor(x); }
 
 const SYMBOLS = ['EURUSD','GBPUSD','XAUUSD','US30','NAS100','BTCUSD'];
 const STARTING_BALANCE = 10000;
-const CURRENCY = 'USD';
+let CURRENCY = 'USD';
+
+/* ---------- Trading accounts (Live/Demo, MT4/MT5) ---------- */
+let accountsList = [];
+let activeAccount = null;
+
+function resolveActiveAccount(){
+  const wantedId = TLAuth.data.getActiveAccountId();
+  activeAccount = accountsList.find(a => a.id === wantedId)
+    || accountsList.find(a => a.is_default)
+    || accountsList[0]
+    || null;
+  if(activeAccount) TLAuth.data.setActiveAccountId(activeAccount.id);
+  CURRENCY = activeAccount ? activeAccount.currency : 'USD';
+}
+
+function populateAccountSelect(){
+  const select = document.getElementById('accountSelect');
+  select.innerHTML = accountsList.map(a =>
+    `<option value="${a.id}">${a.account_type === 'live' ? 'Live' : 'Demo'} — ${a.label} (${a.currency})</option>`
+  ).join('');
+  if(activeAccount) select.value = activeAccount.id;
+}
+
+function updateEyebrow(){
+  const eyebrow = document.querySelector('.page-eyebrow');
+  if(!eyebrow || !activeAccount) return;
+  eyebrow.innerHTML = `<span class="dotpulse"></span> ${activeAccount.account_type === 'live' ? 'Live' : 'Demo'} account · ${activeAccount.platform} · <span id="eyebrowMonth">${monthLabel(viewDate)}</span>`;
+}
+
+async function loadAccountsAndResolveActive(){
+  accountsList = await TLAuth.data.ensureDefaultAccount();
+  resolveActiveAccount();
+  populateAccountSelect();
+  updateEyebrow();
+}
+
+// Switching accounts changes which rows hydrateFromSupabase pulls in, so the
+// simplest correct way to reflect it everywhere (calendar, KPIs, chart, open
+// modals) is a full reload rather than trying to patch every render path.
+async function switchActiveAccount(accountId){
+  TLAuth.data.setActiveAccountId(accountId);
+  location.reload();
+}
 
 // "Today" tracks the real device clock (midnight-normalized) instead of a
 // hardcoded date, so the demo automatically rolls over at midnight — no more
@@ -896,6 +1062,10 @@ function fmtDateKey(d){
 }
 
 function genMonthTrades(year, month){
+  // Demo (randomly-generated) trades only ever populate the default account —
+  // any other account is a fresh one the user just created, so it starts
+  // with a genuinely empty calendar until real trades (manual or EA) exist.
+  const showDemoData = !activeAccount || activeAccount.is_default;
   const daysInMonth = new Date(year, month+1, 0).getDate();
   for(let day=1; day<=daysInMonth; day++){
     const d = new Date(year, month, day);
@@ -904,6 +1074,7 @@ function genMonthTrades(year, month){
     if(dow===0 || dow===6) continue; // skip weekends
     const key = fmtDateKey(d);
     if(tradesByDate[key]) continue;
+    if(!showDemoData){ tradesByDate[key] = []; continue; }
     const seedBase = year*10000 + (month+1)*100 + day;
     const r = seeded(seedBase);
     if(r < 0.32){ tradesByDate[key] = []; continue; } // no trading that day
@@ -980,7 +1151,7 @@ function deleteTradeById(id){
   const overrides = loadOverrides();
   if(overrides[id]){ delete overrides[id]; saveOverrides(overrides); }
 
-  TLAuth.data.upsertTrade({ id, is_deleted: true, date: key });
+  TLAuth.data.upsertTrade({ id, account_id: activeAccount ? activeAccount.id : null, is_deleted: true, date: key });
 }
 
 /* ---------- localStorage-backed trade edits ---------- */
@@ -1016,7 +1187,16 @@ function saveMeta(meta){
    sync with, the `trades` table so a note/image/reflection answer actually
    survives a lost cache or a different device, not just this browser. */
 async function hydrateFromSupabase(){
-  const rows = await TLAuth.data.getUserTrades();
+  const allRows = await TLAuth.data.getUserTrades();
+  // A row with no account_id predates the multi-account feature — it's
+  // treated as belonging to whichever account is marked "default" so
+  // existing users don't lose anything the day this shipped. If accounts
+  // couldn't be resolved at all (e.g. the trading_accounts migration hasn't
+  // been applied yet), fall back to showing every row unfiltered rather
+  // than silently hiding all of a user's data.
+  const rows = !activeAccount ? allRows : allRows.filter(row =>
+    row.account_id === activeAccount.id || (!row.account_id && activeAccount.is_default)
+  );
   const manual = {};
   const deleted = [];
   const overrides = {};
@@ -1051,6 +1231,7 @@ async function persistTrade(id, opts){
   const isManual = !!(manual[key] && manual[key].some(mt=>mt.id===id));
   await TLAuth.data.upsertTrade({
     id,
+    account_id: activeAccount ? activeAccount.id : null,
     is_manual: isManual,
     is_deleted: !!opts.deleted,
     date: t ? t.date : key,
@@ -1378,6 +1559,18 @@ function renderKPIs(){
   document.getElementById('kpiWinrateLabel').textContent = `Win rate ${monthPhrase}`;
   document.getElementById('kpiBestDayLabel').textContent = `Best day ${monthPhrase}`;
 
+  // These 4 cards always follow the calendar month you're viewing above (◀ ▶
+  // to change it) — a separate, wider range for the equity curve further
+  // down is picked independently via its own date fields.
+  document.getElementById('kpiPctCard').setAttribute('data-tip',
+    `The % your account gained or lost ${monthPhrase}, measured against your starting balance. Use the ◀ ▶ arrows above the calendar to check a different month.`);
+  document.getElementById('kpiUsdCard').setAttribute('data-tip',
+    `Your total profit or loss in ${CURRENCY} ${monthPhrase}. Use the ◀ ▶ arrows above the calendar to check a different month.`);
+  document.getElementById('kpiWinrateCard').setAttribute('data-tip',
+    `The share of trades that closed in profit ${monthPhrase} — a breakeven trade counts as a win.`);
+  document.getElementById('kpiBestDayCard').setAttribute('data-tip',
+    `Your single most profitable day ${monthPhrase}, out of every day you traded.`);
+
   let totalProfit=0, wins=0, losses=0, tradeCount=0;
   let bestDayAmount=-Infinity, bestDayKey=null;
   Object.keys(tradesByDate).forEach(key=>{
@@ -1461,8 +1654,108 @@ document.getElementById('nextMonth').onclick = ()=>{ viewDate.setMonth(viewDate.
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 [...document.querySelectorAll('.overlay')].forEach(ov=>{
-  ov.addEventListener('click', e=>{ if(e.target===ov) ov.classList.remove('open'); });
+  ov.addEventListener('click', e=>{
+    if(e.target !== ov) return;
+    ov.classList.remove('open');
+    if(ov.id === 'tradeOverlay') updateTradeUrl(null);
+  });
 });
+
+/* ---------- Image lightbox ---------- */
+function openLightbox(src){
+  document.getElementById('lightboxImg').src = src;
+  openModal('imageLightbox');
+}
+
+/* ---------- Draw-on-image editor ----------
+   A single shared canvas overlay reused for both the sidebar image slots and
+   inline note images — the image is drawn once as the base layer, then the
+   user free-hands strokes on top; Save flattens both into one new PNG and
+   hands it to whichever caller-supplied callback knows how to persist it
+   (replace a slot URL vs. replace an inline <img src>). */
+const drawState = { color:'#f0475a', size:6, drawing:false, onSave:null };
+const drawCanvas = document.getElementById('drawCanvas');
+const drawCtx = drawCanvas.getContext('2d');
+
+function openDrawEditor(imgSrc, onSave){
+  drawState.onSave = onSave;
+  document.getElementById('drawStatus').textContent = '';
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = ()=>{
+    drawCanvas.width = img.naturalWidth;
+    drawCanvas.height = img.naturalHeight;
+    drawCtx.drawImage(img, 0, 0);
+    drawCanvas._baseImg = img;
+    openModal('drawOverlay');
+  };
+  img.onerror = ()=>{
+    document.getElementById('drawStatus').textContent = 'Could not load this image for drawing.';
+  };
+  img.src = imgSrc;
+}
+
+function drawPointerPos(e){
+  const rect = drawCanvas.getBoundingClientRect();
+  const point = e.touches ? e.touches[0] : e;
+  return {
+    x: (point.clientX - rect.left) * (drawCanvas.width / rect.width),
+    y: (point.clientY - rect.top) * (drawCanvas.height / rect.height)
+  };
+}
+let drawLast = null;
+function drawStart(e){ e.preventDefault(); drawState.drawing = true; drawLast = drawPointerPos(e); }
+function drawMove(e){
+  if(!drawState.drawing) return;
+  e.preventDefault();
+  const p = drawPointerPos(e);
+  drawCtx.strokeStyle = drawState.color;
+  drawCtx.lineWidth = drawState.size;
+  drawCtx.lineCap = 'round';
+  drawCtx.lineJoin = 'round';
+  drawCtx.beginPath();
+  drawCtx.moveTo(drawLast.x, drawLast.y);
+  drawCtx.lineTo(p.x, p.y);
+  drawCtx.stroke();
+  drawLast = p;
+}
+function drawEnd(){ drawState.drawing = false; }
+drawCanvas.addEventListener('mousedown', drawStart);
+drawCanvas.addEventListener('mousemove', drawMove);
+window.addEventListener('mouseup', drawEnd);
+drawCanvas.addEventListener('touchstart', drawStart);
+drawCanvas.addEventListener('touchmove', drawMove);
+drawCanvas.addEventListener('touchend', drawEnd);
+
+document.querySelectorAll('.draw-color').forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll('.draw-color').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    drawState.color = btn.dataset.value;
+  };
+});
+document.querySelectorAll('.draw-size').forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll('.draw-size').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    drawState.size = parseInt(btn.dataset.value, 10);
+  };
+});
+document.getElementById('drawClearBtn').onclick = ()=>{
+  drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+  if(drawCanvas._baseImg) drawCtx.drawImage(drawCanvas._baseImg, 0, 0);
+};
+document.getElementById('drawCancelBtn').onclick = ()=>{ closeModal('drawOverlay'); };
+document.getElementById('drawSaveBtn').onclick = ()=>{
+  const statusEl = document.getElementById('drawStatus');
+  drawCanvas.toBlob(async (blob)=>{
+    if(!blob){ statusEl.textContent = 'Could not save this drawing — please try again.'; return; }
+    const file = new File([blob], 'annotated.png', { type:'image/png' });
+    const onSave = drawState.onSave;
+    closeModal('drawOverlay');
+    if(onSave) await onSave(file);
+  }, 'image/png');
+};
 
 let currentDayKey = null;
 
@@ -1502,13 +1795,28 @@ function findTrade(id){
 
 let currentTradeId = null;
 
-function backToDay(){
+// Keeps the currently-open trade in the URL (?trade=<id>) so refreshing the
+// page reopens the same trade instead of dropping back to the calendar —
+// see the deep-link restore in initAuthGate.
+function updateTradeUrl(id){
+  const url = new URL(location.href);
+  if(id) url.searchParams.set('trade', id); else url.searchParams.delete('trade');
+  history.replaceState(null, '', url.pathname + url.search);
+}
+
+function closeTradeOverlay(){
   closeModal('tradeOverlay');
+  updateTradeUrl(null);
+}
+
+function backToDay(){
+  closeTradeOverlay();
   if(currentDayKey) openDay(currentDayKey);
 }
 
 async function openTrade(id){
   currentTradeId = id;
+  updateTradeUrl(id);
   const isPro = await TLAuth.isPro();
   const t = findTrade(id);
   document.getElementById('tradeModalTitle').textContent = t.symbol + ' — ' + new Date(t.date).toLocaleDateString('en-US',{month:'short', day:'numeric'});
@@ -1543,8 +1851,24 @@ async function openTrade(id){
   images.forEach((src, idx)=>{
     const slot = document.createElement('div');
     slot.className = 'img-slot has-img';
-    slot.innerHTML = `<img src="${src}"/><button type="button" class="img-slot-remove" title="Remove image">✕</button>`;
-    slot.querySelector('.img-slot-remove').onclick = async ()=>{
+    slot.innerHTML = `<img src="${src}"/><button type="button" class="img-slot-draw" title="Draw on image">✏️</button><button type="button" class="img-slot-remove" title="Remove image">✕</button>`;
+    slot.querySelector('img').onclick = ()=> openLightbox(src);
+    slot.querySelector('.img-slot-draw').onclick = (e)=>{
+      e.stopPropagation();
+      openDrawEditor(src, async (file)=>{
+        const res = await TLAuth.data.uploadTradeImage(id, file);
+        if(!res.ok){ flashSaved(res.error || 'Upload failed — please try again.', true); return; }
+        const meta = loadMeta();
+        if(!meta[id]) return;
+        meta[id].images = (meta[id].images || []).filter(Boolean);
+        meta[id].images[idx] = res.url;
+        saveMeta(meta);
+        await persistTrade(id);
+        openTrade(id);
+      });
+    };
+    slot.querySelector('.img-slot-remove').onclick = async (e)=>{
+      e.stopPropagation();
       const meta = loadMeta();
       if(!meta[id]) return;
       meta[id].images = (meta[id].images || []).filter(Boolean);
@@ -1906,6 +2230,7 @@ function wrapEditorImages(root){
     const controls = document.createElement('span');
     controls.className = 'rte-img-controls';
     controls.innerHTML =
+      '<button type="button" class="rte-img-btn" data-draw="1" title="Draw on this image">✏️</button>' +
       `<button type="button" class="rte-img-btn" data-resize="1" title="Click to resize this image">⤢ ${wrap.style.width}</button>` +
       `<button type="button" class="rte-img-btn" data-align="1">▤</button>` +
       '<button type="button" class="rte-img-btn" data-dir="up" title="Move up">▲</button>' +
@@ -1960,6 +2285,14 @@ tradeNoteEl.addEventListener('click', (e)=>{
   const unit = getMovableUnit(wrap);
   if(btn.classList.contains('rte-img-del')){
     unit.remove();
+  } else if(btn.dataset.draw){
+    const img = wrap.querySelector('img');
+    openDrawEditor(img.src, async (file)=>{
+      const res = await TLAuth.data.uploadTradeImage(currentTradeId, file);
+      if(!res.ok){ flashSaved(res.error || 'Upload failed — please try again.', true); return; }
+      img.src = res.url;
+      saveTradeNote();
+    });
   } else if(btn.dataset.resize){
     const sizes = ['100%','75%','50%','25%'];
     const next = sizes[(sizes.indexOf(wrap.style.width) + 1) % sizes.length];
@@ -2153,7 +2486,7 @@ document.getElementById('addTradeForm').addEventListener('submit', e=>{
   if(!manual[key]) manual[key] = [];
   manual[key].push(trade);
   saveManualTrades(manual);
-  TLAuth.data.upsertTrade({ id: trade.id, is_manual: true, ...trade, note:'', images:[], answers:{} });
+  TLAuth.data.upsertTrade({ id: trade.id, account_id: activeAccount ? activeAccount.id : null, is_manual: true, ...trade, note:'', images:[], answers:{} });
 
   closeModal('addTradeOverlay');
   viewDate = new Date(d.getFullYear(), d.getMonth(), 1);
@@ -2220,7 +2553,7 @@ document.getElementById('confirmDeleteBtn').onclick = ()=>{
   const deletedId = currentTradeId;
   deleteTradeById(deletedId);
   closeModal('confirmDeleteOverlay');
-  closeModal('tradeOverlay');
+  closeTradeOverlay();
   currentTradeId = null;
   renderAll();
   // if the day list is open, refresh it in place instead of dropping back to the calendar
