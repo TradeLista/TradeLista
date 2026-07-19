@@ -1034,14 +1034,15 @@ const RTE_ALIGN_RE = /^(left|right|center|justify)$/i;
 // image/svg+xml since an SVG can carry its own embedded <script>.
 const RTE_IMG_SRC_RE = /^(data:image\/(png|jpe?g|gif|webp);base64,[a-z0-9+/]+=*|https:\/\/xkmpknoughjnxalkoatx\.supabase\.co\/storage\/v1\/object\/public\/trade-images\/[^"'\s]+)$/i;
 // Lets the resize control (see wrapEditorImages) shrink an inline image
-// without opening up style injection generally — img is otherwise the one
-// element that never carries a style attribute through the sanitizer, so
-// this is deliberately narrower than sanitizeStyle: a fixed set of widths,
-// nothing else.
+// without opening up style injection generally — the image's wrapper <span>
+// is otherwise the one element that never carries a style attribute through
+// the sanitizer, so this is deliberately narrower than sanitizeStyle: a fixed
+// set of widths/floats/margins, nothing else.
 const RTE_IMG_WIDTH_RE = /^(25|50|75|100)%$/;
-// Same reasoning, for the align control: left/center/right map to a fixed
-// pair of margin-left/margin-right values, nothing else ever reaches style.
-const RTE_IMG_MARGIN_RE = /^(0px|auto)$/;
+const RTE_IMG_FLOAT_RE = /^(left|right|none)$/;
+// Same reasoning, for the align control: left/center/right map to one of
+// these exact margin values, nothing else ever reaches style.
+const RTE_IMG_MARGIN_RE = /^(0px|auto|10px|14px)$/;
 
 function sanitizeStyle(styleText){
   const out = [];
@@ -1059,6 +1060,14 @@ function sanitizeStyle(styleText){
   return out.join('; ');
 }
 
+// True for a <span> whose only real content is a single <img> — i.e. the
+// wrapper wrapEditorImages builds around every inserted image (its controls
+// are already stripped out by the time this runs, see saveTradeNote).
+function isImageWrapperSpan(node){
+  const kids = [...node.childNodes].filter(n => !(n.nodeType === Node.TEXT_NODE && !n.textContent.trim()));
+  return kids.length === 1 && kids[0].nodeType === Node.ELEMENT_NODE && kids[0].tagName === 'IMG';
+}
+
 function sanitizeNode(node, out){
   if(node.nodeType === Node.TEXT_NODE){
     out.appendChild(document.createTextNode(node.nodeValue));
@@ -1069,24 +1078,48 @@ function sanitizeNode(node, out){
   if(tag==='SCRIPT' || tag==='STYLE') return; // drop entirely, incl. text content
 
   if(tag==='IMG'){
-    // No attribute is ever copied from the source node as-is — src is rebuilt
-    // from scratch and only kept if it matches the strict inline-image
-    // pattern; width is rebuilt the same way against its own tiny allow-list.
-    // No href/on*/arbitrary style ever reaches an <img> this way.
+    // A bare <img> with no wrapper (e.g. from pasted rich HTML) — rebuilt
+    // from scratch with just a validated src, no size/float. wrapEditorImages
+    // gives it a wrapper + defaults the next time the note is rendered.
     const src = node.getAttribute('src') || '';
     if(RTE_IMG_SRC_RE.test(src)){
       const img = document.createElement('img');
       img.setAttribute('src', src);
       img.setAttribute('alt', '');
-      const width = (node.style && node.style.width) || '';
-      if(RTE_IMG_WIDTH_RE.test(width)) img.style.width = width;
-      const marginLeft = (node.style && node.style.marginLeft) || '';
-      const marginRight = (node.style && node.style.marginRight) || '';
-      if(RTE_IMG_MARGIN_RE.test(marginLeft)) img.style.marginLeft = marginLeft;
-      if(RTE_IMG_MARGIN_RE.test(marginRight)) img.style.marginRight = marginRight;
       out.appendChild(img);
     }
     return; // images never have meaningful children to recurse into
+  }
+
+  if(tag==='SPAN' && isImageWrapperSpan(node)){
+    // Our own image wrapper: width/float/margin live here (not on the <img>)
+    // so a floated, percentage-wide image resolves against the note's real
+    // width instead of its own auto-sized wrapper — see wrapEditorImages.
+    // No attribute is ever copied from the source as-is — src, width, float
+    // and margin are each rebuilt from scratch against their own tiny
+    // allow-list. No href/on*/arbitrary style ever reaches this <span>.
+    const imgNode = node.querySelector('img');
+    const src = imgNode.getAttribute('src') || '';
+    if(RTE_IMG_SRC_RE.test(src)){
+      const span = document.createElement('span');
+      const width = (node.style && node.style.width) || '';
+      const float = (node.style && node.style.float) || '';
+      const marginLeft = (node.style && node.style.marginLeft) || '';
+      const marginRight = (node.style && node.style.marginRight) || '';
+      const marginBottom = (node.style && node.style.marginBottom) || '';
+      if(RTE_IMG_WIDTH_RE.test(width)) span.style.width = width;
+      if(RTE_IMG_FLOAT_RE.test(float)) span.style.float = float;
+      if(RTE_IMG_MARGIN_RE.test(marginLeft)) span.style.marginLeft = marginLeft;
+      if(RTE_IMG_MARGIN_RE.test(marginRight)) span.style.marginRight = marginRight;
+      if(RTE_IMG_MARGIN_RE.test(marginBottom)) span.style.marginBottom = marginBottom;
+      const img = document.createElement('img');
+      img.setAttribute('src', src);
+      img.setAttribute('alt', '');
+      img.style.width = '100%';
+      span.appendChild(img);
+      out.appendChild(span);
+    }
+    return;
   }
 
   const passThrough = RTE_ALLOWED_TAGS.has(tag);
@@ -1574,13 +1607,18 @@ function saveTradeNote(){
   // DOM here, or the caret would jump to the start on every keystroke. Typed
   // text and execCommand output are already safe; paste is sanitized on the
   // way in (see the paste handler below), so this is a storage-side backstop.
-  // Work off a detached clone so the move/delete image controls (added only
-  // for the live UI, never meant to be stored) never reach the sanitizer —
-  // otherwise their ▲▼✕ glyphs would be unwrapped into stray saved text.
+  // Work off a detached clone so the move/delete/resize/align controls
+  // (added only for the live UI, never meant to be stored) never reach the
+  // sanitizer — otherwise their ▲▼⤢▤✕ glyphs would be unwrapped into stray
+  // saved text. The wrapper span itself stays — it carries the image's
+  // width/float/margin (see isImageWrapperSpan) — only its controls go, and
+  // its "selected" outline/contenteditable flag, which are live-UI-only too.
   const clone = noteEl.cloneNode(true);
   clone.querySelectorAll('.rte-img-wrap').forEach(wrap=>{
-    const img = wrap.querySelector('img');
-    if(img) wrap.replaceWith(img); else wrap.remove();
+    wrap.querySelector('.rte-img-controls')?.remove();
+    wrap.classList.remove('selected');
+    wrap.removeAttribute('contenteditable');
+    if(!wrap.querySelector('img')) wrap.remove();
   });
   const clean = sanitizeNoteHTML(clone.innerHTML);
   const meta = loadMeta();
@@ -1732,24 +1770,34 @@ document.querySelectorAll('.rte-swatches[data-kind="fore"] .rte-swatch').forEach
    text editing. The controls themselves are stripped out again before the
    note is sanitized/saved (see saveTradeNote), so only the plain <img> is
    ever persisted. */
-function imgAlignState(img){
-  if(img.style.marginLeft === 'auto' && img.style.marginRight === 'auto') return 'Center';
-  if(img.style.marginLeft === 'auto' && img.style.marginRight === '0px') return 'Right';
-  return 'Left';
+// Width lives on the WRAPPER (not the <img>) so a floated, percentage-wide
+// image resolves against the note's real width instead of racing its own
+// auto-sized wrapper (a plain img-with-%-width inside a floated, unsized
+// span collapses to ~0 — verified empirically). The <img> itself is always
+// 100% of that wrapper.
+function imgAlignState(wrap){
+  if(wrap.style.float === 'left') return 'Left';
+  if(wrap.style.float === 'right') return 'Right';
+  return 'Center';
 }
 
-// The align button only has something to do once the image is narrower than
-// the full line — at 100% width there's no room to shift it left/right, so
-// we grey the button out with an explanatory tooltip instead of leaving
-// users clicking it and seeing nothing happen (see updateAlignButton).
+function applyAlign(wrap, state){
+  if(state === 'Left'){ wrap.style.float = 'left'; wrap.style.margin = '0 14px 10px 0'; }
+  else if(state === 'Right'){ wrap.style.float = 'right'; wrap.style.margin = '0 0 10px 14px'; }
+  else { wrap.style.float = 'none'; wrap.style.margin = '0 auto 10px auto'; }
+}
+
+// Left/Right float the image so text can sit beside it; that only means
+// anything once the image is narrower than the full line, so we grey the
+// button out (with an explanatory tooltip) at 100% width instead of leaving
+// users clicking it and seeing nothing happen.
 function updateAlignButton(wrap){
-  const img = wrap.querySelector('img');
   const btn = wrap.querySelector('[data-align]');
-  if(!img || !btn) return;
-  const canAlign = img.style.width !== '100%';
+  if(!btn) return;
+  const canAlign = wrap.style.width !== '100%';
   btn.disabled = !canAlign;
-  btn.textContent = `▤ ${imgAlignState(img)}`;
-  btn.title = canAlign ? 'Click to change alignment' : 'Shrink the image first (⤢) to be able to align it';
+  btn.textContent = `▤ ${imgAlignState(wrap)}`;
+  btn.title = canAlign ? 'Click to change alignment — Left/Right let text flow beside the image' : 'Shrink the image first (⤢) to be able to align it';
 }
 
 // insertImage can leave the image as the very last thing in the note, with
@@ -1765,18 +1813,30 @@ function ensureTrailingLine(unit){
 
 function wrapEditorImages(root){
   root.querySelectorAll('img').forEach(img=>{
-    if(img.closest('.rte-img-wrap')) return; // already wrapped
-    const wrap = document.createElement('span');
-    wrap.className = 'rte-img-wrap';
+    if(img.closest('.rte-img-wrap')) return; // already fully set up
+    // A reloaded note already has the plain <span><img></span> the
+    // sanitizer persisted (see isImageWrapperSpan) — reuse that span as the
+    // wrap instead of nesting a second one around it.
+    const parent = img.parentNode;
+    const reusable = parent && parent.tagName === 'SPAN' &&
+      [...parent.childNodes].every(n => n === img || (n.nodeType === Node.TEXT_NODE && !n.textContent.trim()));
+    let wrap;
+    if(reusable){
+      wrap = parent;
+    } else {
+      wrap = document.createElement('span');
+      img.parentNode.insertBefore(wrap, img);
+      wrap.appendChild(img);
+    }
+    wrap.classList.add('rte-img-wrap');
     wrap.contentEditable = 'false';
-    img.parentNode.insertBefore(wrap, img);
-    wrap.appendChild(img);
-    if(!img.style.width) img.style.width = '100%';
-    if(!img.style.marginLeft && !img.style.marginRight){ img.style.marginLeft = '0px'; img.style.marginRight = 'auto'; }
+    if(!wrap.style.width) wrap.style.width = '100%';
+    img.style.width = '100%';
+    if(!wrap.style.float) applyAlign(wrap, 'Left');
     const controls = document.createElement('span');
     controls.className = 'rte-img-controls';
     controls.innerHTML =
-      `<button type="button" class="rte-img-btn" data-resize="1" title="Click to resize this image">⤢ ${img.style.width}</button>` +
+      `<button type="button" class="rte-img-btn" data-resize="1" title="Click to resize this image">⤢ ${wrap.style.width}</button>` +
       `<button type="button" class="rte-img-btn" data-align="1">▤</button>` +
       '<button type="button" class="rte-img-btn" data-dir="up" title="Move up">▲</button>' +
       '<button type="button" class="rte-img-btn" data-dir="down" title="Move down">▼</button>' +
@@ -1831,19 +1891,16 @@ tradeNoteEl.addEventListener('click', (e)=>{
   if(btn.classList.contains('rte-img-del')){
     unit.remove();
   } else if(btn.dataset.resize){
-    const img = wrap.querySelector('img');
     const sizes = ['100%','75%','50%','25%'];
-    const next = sizes[(sizes.indexOf(img.style.width) + 1) % sizes.length];
-    img.style.width = next;
+    const next = sizes[(sizes.indexOf(wrap.style.width) + 1) % sizes.length];
+    wrap.style.width = next;
     btn.textContent = `⤢ ${next}`;
     updateAlignButton(wrap);
   } else if(btn.dataset.align){
     if(btn.disabled) return;
-    const img = wrap.querySelector('img');
     const states = ['Left','Center','Right'];
-    const next = states[(states.indexOf(imgAlignState(img)) + 1) % states.length];
-    img.style.marginLeft = next === 'Left' ? '0px' : 'auto';
-    img.style.marginRight = next === 'Right' ? '0px' : 'auto';
+    const next = states[(states.indexOf(imgAlignState(wrap)) + 1) % states.length];
+    applyAlign(wrap, next);
     btn.textContent = `▤ ${next}`;
   } else if(btn.dataset.dir === 'up'){
     if(unit.previousSibling) unit.parentNode.insertBefore(unit, unit.previousSibling);
