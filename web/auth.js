@@ -72,6 +72,7 @@
       note: trade.note || '',
       images: trade.images || [],
       answers: trade.answers || {},
+      tags: trade.tags || [],
       updated_at: new Date().toISOString()
     };
     const { error } = await sb.from('trades').upsert(row);
