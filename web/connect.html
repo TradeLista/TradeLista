@@ -132,6 +132,23 @@
     word-break:break-all;
   }
 
+  /* Screenshot slot — shows a plain placeholder until a real file exists at
+     the given path, so the page never shows a broken-image icon while this
+     guide is still being filled in with screenshots. */
+  .gstep-shot{
+    margin-top:14px; border-radius:var(--radius-sm); overflow:hidden; border:1px dashed var(--border);
+    background:var(--bg-elevated);
+  }
+  .gstep-shot img{display:block; width:100%; height:auto;}
+  .gstep-shot .gstep-shot-fallback{
+    display:none; align-items:center; justify-content:center; gap:8px; padding:32px 16px;
+    color:var(--text-faint); font-size:12.5px;
+  }
+  .gstep-shot.missing{border-color:var(--border);}
+  .gstep-shot.missing img{display:none;}
+  .gstep-shot.missing .gstep-shot-fallback{display:flex;}
+  .gstep small.substep{display:block; color:var(--text-faint); font-size:12px; margin:2px 0 8px;}
+
   .section-label{font-size:12px; color:var(--accent); text-transform:uppercase; letter-spacing:.07em; font-weight:700; margin:56px 0 18px; display:block;}
 
   /* FAQ */
@@ -216,41 +233,94 @@
   <div class="guide">
     <div class="gstep">
       <div class="gnum">1</div>
-      <h3>Get your account API key</h3>
-      <p>In TradeLista, click your avatar (top right) → <strong>Account settings</strong>, then scroll to <strong>Trading accounts</strong> and add a new account. TradeLista generates a unique API key for that account — this is how the EA is matched to your calendar. Keep it private, it's tied to your data only.</p>
+      <h3>Install MetaTrader 5</h3>
+      <p>Already have it installed? Skip to step 2.</p>
+      <p>Go to <a href="https://www.mql5.com/en/download" target="_blank" rel="noopener" style="color:var(--accent); text-decoration:underline;">mql5.com/en/download</a> and click <strong>"Download MetaTrader 5"</strong>. Open the downloaded file and click through the installer — the default settings are fine.</p>
+      <figure class="gstep-shot"><img src="images/guide/mt5-01-install.png" alt="MetaTrader 5 installer window" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the MT5 installer window</div></figure>
     </div>
 
     <div class="gstep">
       <div class="gnum">2</div>
-      <h3>Download the TradeLista Expert Advisor</h3>
-      <p>Currently available for <strong>MT5</strong> only. Download <a href="downloads/TradeListaSync.mq5" download style="color:var(--accent); text-decoration:underline;"><code>TradeListaSync.mq5</code></a>. It's a lightweight EA that only reports closed trades — it never places or modifies orders.</p>
+      <h3>Open a trading account in MetaTrader</h3>
+      <p>Already have a demo or live account set up? Skip to step 3.</p>
+      <p>Open MetaTrader 5. A window called <strong>"Open an Account"</strong> should appear by itself. If it doesn't, click <code>File → Open an Account</code> at the top.</p>
+      <small class="substep">For a free demo account (no real money, good for testing):</small>
+      <p>Choose <strong>"MetaQuotes-Demo"</strong> as the server, then <strong>"New Demo Account"</strong>. Fill in a name, email and starting balance — any values work — and click through to finish.</p>
+      <p>If you already trade with a real broker, choose that broker's server instead and log in with the account details they gave you.</p>
+      <figure class="gstep-shot"><img src="images/guide/mt5-02-account.png" alt="MetaTrader 5 'Open an Account' window" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the "Open an Account" window</div></figure>
     </div>
 
     <div class="gstep">
       <div class="gnum">3</div>
-      <h3>Install it in MetaTrader</h3>
-      <p>In MetaTrader 5, open <code>File → Open Data Folder</code>, then copy the downloaded file into <code>MQL5 / Experts</code>.</p>
-      <p>Right-click <strong>Navigator → Expert Advisors</strong> and choose <em>Refresh</em> so it shows up in the list.</p>
+      <h3>Allow MetaTrader to talk to TradeLista</h3>
+      <p>This one setting lets the EA send your closed trades to TradeLista. Without it, nothing will arrive — and MetaTrader won't tell you why.</p>
+      <p>In MetaTrader 5, click <code>Tools</code> in the top menu bar, then <code>Options</code>. Open the <strong>"Expert Advisors"</strong> tab.</p>
+      <p>Check the box <strong>"Allow WebRequest for listed URL"</strong>. Click into the empty field below it, paste this address, and press Enter:</p>
+      <div class="code-box">https://xkmpknoughjnxalkoatx.supabase.co</div>
+      <p>Click <strong>OK</strong>.</p>
+      <figure class="gstep-shot"><img src="images/guide/mt5-03-weballow.png" alt="Tools > Options > Expert Advisors tab with the WebRequest URL added" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the WebRequest URL added in Options</div></figure>
     </div>
 
     <div class="gstep">
       <div class="gnum">4</div>
-      <h3>Allow WebRequests to the TradeLista API</h3>
-      <p>Go to <code>Tools → Options → Expert Advisors</code>, tick <strong>"Allow WebRequest for listed URL"</strong>, and add:</p>
-      <div class="code-box">https://xkmpknoughjnxalkoatx.supabase.co</div>
-      <p>Without this, MetaTrader silently blocks the EA from sending your closed trades.</p>
+      <h3>Get your personal API key from TradeLista</h3>
+      <p>This key is how TradeLista knows which account a trade belongs to. Log in at <a href="auth.html?mode=login" style="color:var(--accent); text-decoration:underline;">tradelista.com</a> (create a free account first if you don't have one yet).</p>
+      <p>Click your avatar in the top-right corner, then <strong>"Account settings"</strong>. Scroll down to <strong>"Trading accounts"</strong> and click <strong>"+ Add trading account"</strong>.</p>
+      <p>Give it a name (e.g. "My MT5"), choose Live or Demo, choose MT5 as the platform, and click <strong>"Add account"</strong>.</p>
+      <p>Click <strong>"🔑 Copy key"</strong> next to your new account. Keep this tab open — you'll paste this key in step 8.</p>
+      <figure class="gstep-shot"><img src="images/guide/tl-04-apikey.png" alt="TradeLista's Trading accounts section with the Copy key button" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: copying the API key in TradeLista</div></figure>
     </div>
 
     <div class="gstep">
       <div class="gnum">5</div>
-      <h3>Attach the EA and paste your API key</h3>
-      <p>Drag <code>TradeListaSync</code> onto any chart (symbol/timeframe doesn't matter — it just listens for closed trades on the account). In the EA's <strong>Inputs</strong> tab, paste the <code>ApiKey</code> from step 1. Make sure <strong>"Allow algorithmic trading"</strong> is checked and a smiling face icon appears in the top-right of the chart.</p>
+      <h3>Download the TradeLista Expert Advisor</h3>
+      <p>Currently available for <strong>MT5</strong> only. Click below to save the file to your computer (it usually lands in your <strong>Downloads</strong> folder):</p>
+      <p><a href="downloads/TradeListaSync.mq5" download style="color:var(--accent); text-decoration:underline;"><code>⬇ Download TradeListaSync.mq5</code></a></p>
+      <p>This EA is read-only: it only reports trades you've already closed. It never places, closes or changes a trade for you — see the FAQ below for details.</p>
     </div>
 
     <div class="gstep">
       <div class="gnum">6</div>
-      <h3>Close a trade and check your calendar</h3>
-      <p>The EA fires automatically whenever a trade closes — no manual export, no PDF. Open your <a href="app.html" class="js-calendar-link" style="color:var(--accent); text-decoration:underline;">Calendar</a>, switch to the matching account, and the trade should appear on the right day within a few seconds.</p>
+      <h3>Put the file where MetaTrader can find it</h3>
+      <p>In MetaTrader 5, click <code>File → Open Data Folder</code>. A Windows folder window opens.</p>
+      <p>Double-click the <strong>MQL5</strong> folder, then double-click <strong>Experts</strong>.</p>
+      <p>Copy the <code>TradeListaSync.mq5</code> file you downloaded in step 5 into this <strong>Experts</strong> folder (drag and drop, or copy-paste).</p>
+      <figure class="gstep-shot"><img src="images/guide/mt5-06-experts-folder.png" alt="The MQL5\Experts folder with TradeListaSync.mq5 copied in" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the file placed in the Experts folder</div></figure>
+    </div>
+
+    <div class="gstep">
+      <div class="gnum">7</div>
+      <h3>Compile it</h3>
+      <p>Back in MetaTrader 5, look at the <strong>Navigator</strong> panel on the left (press <code>Ctrl+N</code> if you don't see it).</p>
+      <p>Right-click <strong>"Expert Advisors"</strong> and click <strong>"Refresh"</strong>. <code>TradeListaSync</code> should now appear in that list.</p>
+      <p>Double-click it — this opens a second window called <strong>MetaEditor</strong> with the code inside. Click the <strong>"Compile"</strong> button near the top (or press <code>F7</code>). At the bottom it should say <strong>"0 errors, 0 warnings"</strong>.</p>
+      <figure class="gstep-shot"><img src="images/guide/mt5-07-compile.png" alt="MetaEditor showing '0 errors, 0 warnings' after compiling" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: successful compile in MetaEditor</div></figure>
+    </div>
+
+    <div class="gstep">
+      <div class="gnum">8</div>
+      <h3>Attach the EA to a chart and paste your key</h3>
+      <p>Switch back to the main MetaTrader 5 window. In the Navigator, under <strong>Expert Advisors</strong>, find <code>TradeListaSync</code> and drag it onto any open chart — the symbol and timeframe don't matter, it watches your whole account.</p>
+      <p>A window pops up. Click the <strong>"Inputs"</strong> tab and paste the API key you copied in step 4 into the <strong>ApiKey</strong> field.</p>
+      <p>Click the <strong>"General"</strong> tab and make sure <strong>"Allow algorithmic trading"</strong> is checked. Click <strong>OK</strong>.</p>
+      <figure class="gstep-shot"><img src="images/guide/mt5-08-attach.png" alt="The EA Inputs tab with the ApiKey field filled in" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: pasting the API key into the Inputs tab</div></figure>
+    </div>
+
+    <div class="gstep">
+      <div class="gnum">9</div>
+      <h3>Turn on Algo Trading</h3>
+      <p>Near the top of the MetaTrader window, find the button labeled <strong>"Algo Trading"</strong> (or "AutoTrading") — click it so it's turned on/highlighted.</p>
+      <p>Look at the top-right corner of your chart: a small smiling-face icon means <code>TradeListaSync</code> is active and running.</p>
+      <figure class="gstep-shot"><img src="images/guide/mt5-09-algotrading.png" alt="The Algo Trading button enabled and the EA's smiling-face icon on the chart" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: Algo Trading on, smiling face on the chart</div></figure>
+    </div>
+
+    <div class="gstep">
+      <div class="gnum">10</div>
+      <h3>Test it</h3>
+      <p>Open a small trade (e.g. the smallest lot size your account allows) and close it again right away — this is just to confirm everything works.</p>
+      <p>Go back to your <a href="app.html" class="js-calendar-link" style="color:var(--accent); text-decoration:underline;">TradeLista Calendar</a>, switch to the account you just connected (the account switcher near the top of the page, or in your avatar menu), and the trade should appear on today's date within a few seconds.</p>
+      <p>Every trade you close from now on will land there automatically — no more manual exporting.</p>
+      <figure class="gstep-shot"><img src="images/guide/tl-10-calendar.png" alt="The test trade appearing on today's date in the TradeLista calendar" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the test trade showing up on the calendar</div></figure>
     </div>
   </div>
 
@@ -258,22 +328,30 @@
 
   <details class="faq-item">
     <summary>Trades aren't showing up on the calendar</summary>
-    <div class="faq-body">Double-check step 4 — the API URL must be added exactly under "Allow WebRequest for listed URL". Also confirm AutoTrading is enabled (the button in the MetaTrader toolbar should be green, not red).</div>
+    <div class="faq-body">Double-check step 3 — the API URL must be added exactly under "Allow WebRequest for listed URL". Also confirm Algo Trading is enabled (the button in the MetaTrader toolbar should be highlighted, not greyed out).</div>
+  </details>
+  <details class="faq-item">
+    <summary>How do I see the exact error, if something's wrong?</summary>
+    <div class="faq-body">In MetaTrader, look at the bottom of the window for a tab called <strong>"Experts"</strong> (next to "Journal"). Every time a trade closes, TradeListaSync writes a line there — either "sent ... (HTTP 200)" (success), or a specific error message explaining what went wrong (e.g. a missing API key, or the URL not being whitelisted). That line tells you exactly which step to redo.</div>
+  </details>
+  <details class="faq-item">
+    <summary>My test trade didn't do anything when I clicked Buy/Sell</summary>
+    <div class="faq-body">Forex markets are closed on weekends (roughly Friday evening to Sunday evening, depending on your broker/timezone). If you try to place a trade while the market's closed, MetaTrader rejects it with a short error sound — that's normal, not a bug. Try again once the market's open, or check with your broker for exact hours.</div>
   </details>
   <details class="faq-item">
     <summary>The EA icon in the top-right shows a sad face</summary>
-    <div class="faq-body">That means AutoTrading is disabled for that chart. Click the AutoTrading button in the toolbar, or right-click the chart → Expert Advisors → "Allow live trading".</div>
+    <div class="faq-body">That means Algo Trading is disabled for that chart. Click the Algo Trading button in the toolbar, or right-click the chart → Expert Advisors → "Allow live trading".</div>
   </details>
   <details class="faq-item">
     <summary>Can I connect more than one account?</summary>
-    <div class="faq-body">Free plan: 1 account (manual entry only). Pro plan: up to 5 connected accounts. Repeat steps 1 and 5 for each additional account (each gets its own API key), then switch between them using the account switcher in your avatar menu or the account selector on your Calendar page.</div>
+    <div class="faq-body">Free plan: 1 account (manual entry only). Pro plan: up to 5 connected accounts. Repeat steps 4 and 8 for each additional account (each gets its own API key and its own EA on its own chart), then switch between them using the account switcher in your avatar menu or the account selector on your Calendar page.</div>
   </details>
   <details class="faq-item">
     <summary>Does the EA place or modify trades?</summary>
     <div class="faq-body">
       No — and it's built so that it can't. TradeListaSync contains no order-placement code at all: it only reads your account's closed trade history (symbol, lot size, entry/exit, profit) and reports it to your calendar over a one-way connection. It can't open, close or modify a position, and it never touches your balance, withdrawals, or your MetaTrader login.
       <br><br>
-      The <strong>"Allow algorithmic trading"</strong> toggle from step 5 can look like you're granting trading permissions — you're not. MetaTrader requires that toggle to be on for <em>any</em> Expert Advisor to run at all, including a purely read-only one like this. It's a MetaTrader-wide switch, not a permission specific to TradeListaSync.
+      The <strong>Algo Trading / "Allow algorithmic trading"</strong> toggle from steps 8–9 can look like you're granting trading permissions — you're not. MetaTrader requires that toggle to be on for <em>any</em> Expert Advisor to run at all, including a purely read-only one like this. It's a MetaTrader-wide switch, not a permission specific to TradeListaSync.
       <br><br>
       And your <strong>API key</strong> only authorizes writing that one account's trade data into your own TradeLista calendar — it can't be used to access your broker account, place trades, or touch any other account.
     </div>
