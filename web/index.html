@@ -315,7 +315,8 @@
   #pain{padding-bottom:60px;}
   #features{padding-top:60px;}
   #how-it-works{padding-bottom:60px;}
-  #pricing{padding-top:60px;}
+  #pricing{padding-top:60px; padding-bottom:60px;}
+  #pricing + section{padding-top:60px;}
   .feat-rows{position:relative; display:flex; flex-direction:column; gap:28px; margin-top:64px; padding:20px 0;}
   .feat-rows::before{
     content:''; position:absolute; inset:-20px 0; z-index:0; pointer-events:none;
@@ -692,25 +693,61 @@
 
   /* ---------- Final CTA ---------- */
   .final-cta{
-    text-align:center; background:var(--bg-card); border:1px solid var(--border); border-radius:24px;
-    padding:70px 32px; position:relative; overflow:hidden;
+    text-align:center; background:rgba(255,255,255,0.03); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--border-soft); border-radius:26px;
+    padding:64px 32px; position:relative; overflow:hidden;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.05), 0 20px 50px -24px rgba(0,0,0,0.6);
   }
   .final-cta::before{
-    content:''; position:absolute; inset:0;
+    content:''; position:absolute; inset:0; z-index:0;
     background:
       radial-gradient(ellipse 520px 280px at 30% -10%, rgba(79,140,255,0.22), transparent 70%),
       radial-gradient(ellipse 480px 260px at 75% 110%, rgba(139,108,255,0.18), transparent 70%),
       radial-gradient(ellipse 420px 240px at 95% 10%, rgba(31,209,138,0.10), transparent 70%);
   }
-  .final-cta h2{font-size:clamp(24px,3.4vw,36px); font-weight:800; letter-spacing:-0.02em; position:relative;}
+  /* faint grid texture, same language as the features section */
+  .final-cta::after{
+    content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(79,140,255,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79,140,255,0.07) 1px, transparent 1px);
+    background-size:34px 34px;
+    -webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 40%, #000 0%, transparent 75%);
+    mask-image:radial-gradient(ellipse 70% 60% at 50% 40%, #000 0%, transparent 75%);
+  }
+  /* slowly sweeping conic border, same trick as the Pro pricing card */
+  .final-cta-border{
+    position:absolute; inset:0; border-radius:inherit; padding:1.5px; z-index:0; pointer-events:none;
+    background:conic-gradient(from var(--pc-angle), var(--accent) 0%, var(--accent2) 14%, transparent 32%, transparent 68%, var(--accent2) 86%, var(--accent) 100%);
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude;
+    animation:proSpin 8s linear infinite; opacity:.7;
+  }
+  /* mouse-follow spotlight, same --mx/--my mechanism as the other cards */
+  .final-cta-glow{
+    position:absolute; inset:0; z-index:0; opacity:0; transition:opacity .3s; pointer-events:none;
+    background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%), rgba(79,140,255,0.12), transparent 65%);
+  }
+  .final-cta:hover .final-cta-glow{opacity:1;}
+  .final-cta-tag{position:relative; z-index:1;}
+  .final-cta h2{font-size:clamp(26px,3.6vw,40px); font-weight:800; letter-spacing:-0.02em; position:relative; z-index:1; margin-top:18px;}
   .final-cta h2 .shine{
     background:linear-gradient(90deg, #e7edf5 0%, var(--accent) 35%, var(--accent2) 50%, #e7edf5 65%, #e7edf5 100%);
     background-size:220% auto; -webkit-background-clip:text; background-clip:text; color:transparent;
     animation:ctaShine 5s linear infinite;
   }
   @keyframes ctaShine{to{background-position:-220% center;}}
-  .final-cta p{color:var(--text-dim); margin-top:14px; font-size:15px; position:relative;}
-  .final-cta .hero-ctas{position:relative;}
+  .final-cta p{color:var(--text-dim); margin-top:14px; font-size:15px; position:relative; z-index:1;}
+  .final-cta .hero-ctas{position:relative; z-index:1;}
+  .final-cta-trust{
+    position:relative; z-index:1; margin-top:26px; display:flex; align-items:center; justify-content:center;
+    gap:20px; flex-wrap:wrap; font-size:12.5px; color:var(--text-faint);
+  }
+  .final-cta-trust span{display:inline-flex; align-items:center; gap:6px;}
+  .final-cta-trust .chk{
+    width:15px; height:15px; border-radius:50%; background:var(--green-dim); border:1px solid var(--green-border);
+    color:var(--green); font-size:9px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
 
   /* ---------- Footer ---------- */
   footer{border-top:1px solid var(--border-soft); padding:48px 24px 32px;}
@@ -1225,10 +1262,18 @@
 <!-- FINAL CTA -->
 <section class="reveal">
   <div class="final-cta">
+    <div class="final-cta-border"></div>
+    <div class="final-cta-glow"></div>
+    <span class="section-tag final-cta-tag">Ready?</span>
     <h2>Stop losing your trade history in a <span class="shine">PDF graveyard.</span></h2>
     <p>Start today — takes less time than exporting one broker statement.</p>
     <div class="hero-ctas" style="margin-top:26px;">
       <a class="btn btn-primary btn-lg js-start-free" href="auth.html?mode=signup&amp;redirect=app.html">Start journaling free →</a>
+    </div>
+    <div class="final-cta-trust">
+      <span><span class="chk">✓</span> Free plan, no credit card</span>
+      <span><span class="chk">✓</span> 2-minute setup</span>
+      <span><span class="chk">✓</span> Cancel anytime</span>
     </div>
   </div>
 </section>
@@ -1362,7 +1407,7 @@
   // screen actually repaints, which is wasted work at best and visibly
   // janky at worst on the bigger, backdrop-filtered .feat-row cards.
   let spotlightFrame = null, spotlightCard = null, spotlightX = 0, spotlightY = 0;
-  document.querySelectorAll('.pain-card, .price-card, .step, .feat-row').forEach(card=>{
+  document.querySelectorAll('.pain-card, .price-card, .step, .feat-row, .final-cta').forEach(card=>{
     card.addEventListener('mousemove', (e)=>{
       const r = card.getBoundingClientRect();
       spotlightCard = card;
