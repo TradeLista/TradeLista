@@ -73,11 +73,14 @@
   .brand-trade{color:#f5f5f7;}
   .brand-accent{background:linear-gradient(135deg,#9d9ff5,#6366f1); -webkit-background-clip:text; background-clip:text; color:transparent;}
   .navlinks{
-    display:flex; gap:20px; font-size:14px; color:var(--text-dim);
+    display:flex; align-items:center; gap:2px; font-size:13.5px; color:var(--text-dim);
     position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    background:rgba(21,27,38,0.6); border:1px solid var(--border-soft);
+    padding:4px; border-radius:99px;
   }
-  .navlinks a{padding:6px 2px; border-bottom:2px solid transparent; transition:color .15s;}
-  .navlinks a:hover{color:var(--text);}
+  .navlinks a{padding:7px 14px; border-radius:99px; white-space:nowrap; transition:color .15s, background .15s;}
+  .navlinks a:hover{color:var(--text); background:var(--bg-hover);}
+  .navlinks a.active{color:var(--text); background:var(--bg-elevated);}
   .navright{display:flex; align-items:center; gap:12px;}
   .navright .btn{padding:8px 15px; font-size:13px;}
   .btn{
@@ -588,10 +591,14 @@
     .tl-cm-grid-2{grid-template-columns:1fr;}
   }
 
+  /* The 7-link pill nav is ~700px wide — hide it before it can collide
+     with the logo or the buttons on the right. */
+  @media (max-width:1100px){
+    .navlinks{display:none;}
+  }
   @media (max-width:860px){
     .pain-grid, .steps, .price-grid{grid-template-columns:1fr;}
     .steps-track{display:none;} /* the horizontal 1-2-3 rail makes no sense once cards stack */
-    .navlinks{display:none;}
     .float-chip{display:none;}
     section{padding:80px 20px;}
   }
@@ -623,7 +630,6 @@
     </svg><span class="brand-word"><span class="brand-trade">Trade</span><span class="brand-accent">Lista</span></span>
   </a>
   <div class="navlinks">
-    <a href="#hero">Why TradeLista</a>
     <a href="#features">Features</a>
     <a href="#how-it-works">How it works</a>
     <a href="app.html" class="js-calendar-link">Calendar</a>
