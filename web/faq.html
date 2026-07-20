@@ -146,7 +146,7 @@
       </defs>
     </svg><span class="brand-word"><span class="brand-trade">Trade</span><span class="brand-accent">Lista</span></span>
   </a>
-  <div class="navlinks">
+  <div class="navlinks" id="navLinks" style="visibility:hidden">
     <a href="index.html#features">Features</a>
     <a href="index.html#how-it-works">How it works</a>
     <a href="app.html" class="js-calendar-link">Calendar</a>
@@ -251,10 +251,24 @@
 <script src="auth.js"></script>
 <script>
   // The FAQ is public content — unlike app.html, it should never require an
-  // account to view, so there's no auth-gate here at all.
+  // account to view, so there's no auth-gate here at all. The full
+  // marketing nav (Features/How it works/Pricing) is only for logged-out
+  // visitors though — once you're logged in and already using the app, every
+  // page should keep the same compact Calendar/Connect Account/Contact/FAQ
+  // nav app.html uses, instead of bouncing you into the wider marketing nav
+  // that feels like leaving the app.
   (async function initPage(){
     document.querySelector('.page').style.display = '';
+    if(await TLAuth.isLoggedIn()){
+      document.getElementById('navLinks').innerHTML = `
+        <a href="app.html">Calendar</a>
+        <a href="connect.html">Connect Account</a>
+        <a href="contact.html">Contact</a>
+        <a class="active" href="faq.html">FAQ</a>
+      `;
+    }
     await TLAuth.ui.renderAccountNav(document.getElementById('navRight'));
+    document.getElementById('navLinks').style.visibility = 'visible';
     document.getElementById('navRight').style.visibility = 'visible';
   })();
 
