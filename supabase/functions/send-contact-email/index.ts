@@ -42,18 +42,33 @@ Deno.serve(async (req) => {
     });
   }
 
-  const smtpUser = Deno.env.get('SMTP_USER')!;
-  const transporter = nodemailer.createTransport({
-    host: Deno.env.get('SMTP_HOST'),
-    port: Number(Deno.env.get('SMTP_PORT') || '587'),
-    secure: Number(Deno.env.get('SMTP_PORT') || '587') === 465,
-    auth: {
-      user: smtpUser,
-      pass: Deno.env.get('SMTP_PASSWORD'),
-    },
-  });
-
+  // Everything below — including building the transporter — is wrapped in
+  // one try/catch. A missing/malformed SMTP secret throws synchronously
+  // from createTransport, and an uncaught throw here means Deno returns its
+  // own plain-text error page instead of JSON, which the client can't parse
+  // — it then falls back to a generic "something went wrong" with no way to
+  // tell what actually failed. This way every failure mode still comes back
+  // as valid JSON with a real error message, visible in the function logs too.
   try {
+    const smtpUser = Deno.env.get('SMTP_USER');
+    if (!smtpUser || !Deno.env.get('SMTP_HOST') || !Deno.env.get('SMTP_PASSWORD')) {
+      console.error('send-contact-email: missing SMTP_USER/SMTP_HOST/SMTP_PASSWORD secret.');
+      return new Response(JSON.stringify({ error: 'Contact form is misconfigured. Please email us directly instead.' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: Deno.env.get('SMTP_HOST'),
+      port: Number(Deno.env.get('SMTP_PORT') || '587'),
+      secure: Number(Deno.env.get('SMTP_PORT') || '587') === 465,
+      auth: {
+        user: smtpUser,
+        pass: Deno.env.get('SMTP_PASSWORD'),
+      },
+    });
+
     await transporter.sendMail({
       from: smtpUser,
       to: Deno.env.get('CONTACT_TO') || smtpUser,
