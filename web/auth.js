@@ -65,6 +65,7 @@
       is_deleted: !!trade.is_deleted,
       date: trade.date || null,
       time: trade.time || null,
+      tz_offset_minutes: trade.tz_offset_minutes ?? null,
       symbol: trade.symbol || null,
       lot: trade.lot ?? null,
       entry: trade.entry ?? null,

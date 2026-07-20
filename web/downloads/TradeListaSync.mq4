@@ -92,9 +92,15 @@ void sendClosedOrder(int ticket)
    string timeStr = TimeToString(localCloseTime, TIME_MINUTES); // "14:32"
    string ticketStr = IntegerToString(ticket);
 
+   // Minutes this computer's local clock sits east of UTC right now (e.g.
+   // +120 for UTC+2) — sent alongside the local date/time above so
+   // TradeLista's website can re-derive the true UTC instant and show it
+   // converted into whatever timezone the person viewing it is in.
+   int tzOffsetMinutes = (int)((TimeLocal() - TimeGMT()) / 60);
+
    string json = StringFormat(
-      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\",\"time\":\"%s\",\"deal_ticket\":\"%s\"}",
-      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr, timeStr, ticketStr
+      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\",\"time\":\"%s\",\"tz_offset_minutes\":%d,\"deal_ticket\":\"%s\"}",
+      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr, timeStr, tzOffsetMinutes, ticketStr
    );
 
    // Deliberately not passing a codepage here (MQL4's StringToCharArray

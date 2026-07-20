@@ -1428,12 +1428,12 @@ async function hydrateFromSupabase(){
   const isDefaultAccount = !!(activeAccount && activeAccount.is_default);
   rows.forEach(row=>{
     if(row.is_deleted){ deleted.push(row.id); return; }
-    const base = { id: row.id, date: row.date, time: row.time, symbol: row.symbol, lot: row.lot, entry: row.entry, exit: row.exit_price, profit: row.profit };
+    const base = { id: row.id, date: row.date, time: row.time, tz_offset_minutes: row.tz_offset_minutes, symbol: row.symbol, lot: row.lot, entry: row.entry, exit: row.exit_price, profit: row.profit };
     if(row.is_manual || !isDefaultAccount){
       if(!manual[row.date]) manual[row.date] = [];
       manual[row.date].push(base);
     } else {
-      overrides[row.id] = { symbol: row.symbol, lot: row.lot, entry: row.entry, exit: row.exit_price, profit: row.profit, time: row.time };
+      overrides[row.id] = { symbol: row.symbol, lot: row.lot, entry: row.entry, exit: row.exit_price, profit: row.profit, time: row.time, tz_offset_minutes: row.tz_offset_minutes };
     }
     const hasMeta = row.note || (row.images && row.images.length) || (row.answers && Object.keys(row.answers).length) || (row.tags && row.tags.length);
     if(hasMeta) meta[row.id] = { note: row.note || '', images: row.images || [], answers: row.answers || {}, tags: row.tags || [] };
@@ -1461,6 +1461,7 @@ async function persistTrade(id, opts){
     is_deleted: !!opts.deleted,
     date: t ? t.date : key,
     time: t ? t.time : null,
+    tz_offset_minutes: t ? t.tz_offset_minutes : null,
     symbol: t ? t.symbol : null,
     lot: t ? t.lot : null,
     entry: t ? t.entry : null,
@@ -2248,6 +2249,23 @@ document.getElementById('drawSaveBtn').onclick = ()=>{
   }, 'image/png');
 };
 
+// A trade's time is recorded in whatever timezone the recording device
+// (the EA's terminal, or a browser at manual-entry time) was in — tz_offset_
+// minutes captures that as minutes east of UTC. Re-deriving the true UTC
+// instant from date+time+offset and reformatting it lets every viewer see
+// the trade in their OWN current timezone, not the recording device's.
+// Trades with no offset recorded (older data, or an unset origin zone) just
+// show their stored time as-is — there's nothing to convert from.
+function localTimeHHMM(t){
+  if(!t.time) return '';
+  if(t.tz_offset_minutes == null) return t.time;
+  const [y, mo, d] = t.date.split('-').map(Number);
+  const [h, mi] = t.time.split(':').map(Number);
+  const utcMs = Date.UTC(y, mo-1, d, h, mi) - t.tz_offset_minutes*60000;
+  const local = new Date(utcMs);
+  return String(local.getHours()).padStart(2,'0') + ':' + String(local.getMinutes()).padStart(2,'0');
+}
+
 let currentDayKey = null;
 
 function openDay(key){
@@ -2274,7 +2292,7 @@ function openDay(key){
       <div class="trade-row">
         <div class="trade-row-main" onclick="openTrade('${t.id}')">
           <div>
-            <div class="sym">${t.time ? `<span class="trade-row-time">${t.time}</span> ` : ''}${t.symbol}</div>
+            <div class="sym">${t.time ? `<span class="trade-row-time">${localTimeHHMM(t)}</span> ` : ''}${t.symbol}</div>
             <div class="meta">${t.lot} lot · entry ${t.entry ?? '—'} → exit ${t.exit ?? '—'}</div>
           </div>
           <div class="profit ${t.profit>=0?'pos':'neg'}">${t.profit>=0?'+':''}${t.profit.toFixed(2)}</div>
@@ -2347,7 +2365,7 @@ async function openTrade(id){
   document.getElementById('tradeModalDate').textContent = new Date(t.date + 'T00:00:00').toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric', year:'numeric'});
   document.getElementById('tradeDetailGrid').innerHTML = `
     <div class="trade-stat"><div class="l">🏷️ Symbol / pair</div><input class="cell-input" id="editSymbol" type="text" value="${t.symbol}"></div>
-    <div class="trade-stat"><div class="l">🕐 Time</div><input class="cell-input" id="editTime" type="time" value="${t.time || ''}"></div>
+    <div class="trade-stat"><div class="l">🕐 Time</div><input class="cell-input" id="editTime" type="time" value="${localTimeHHMM(t)}"></div>
     <div class="trade-stat"><div class="l">↗️ Entry</div><input class="cell-input" id="editEntry" type="number" step="0.00001" value="${t.entry ?? ''}"></div>
     <div class="trade-stat"><div class="l">↘️ Exit</div><input class="cell-input" id="editExit" type="number" step="0.00001" value="${t.exit ?? ''}"></div>
     <div class="trade-stat"><div class="l">📦 Lot size</div><input class="cell-input" id="editLot" type="number" step="0.01" min="0" value="${t.lot}"></div>
@@ -3029,7 +3047,10 @@ document.getElementById('addTradeForm').addEventListener('submit', e=>{
   const trade = {
     id: key + '-m' + Date.now(),
     date: key,
+    // Tagged with this browser's current UTC offset, so the time can later
+    // be shown converted into whatever timezone it's being viewed from.
     time: timeVal || null,
+    tz_offset_minutes: timeVal ? -new Date().getTimezoneOffset() : null,
     symbol,
     lot,
     entry: entryVal !== '' ? parseFloat(entryVal) : null,
@@ -3067,7 +3088,10 @@ document.getElementById('saveTradeBtn').onclick = ()=>{
   const updates = {
     symbol,
     lot,
+    // Re-stamped with this browser's own current offset — once a time is
+    // (re-)entered here, "this device, right now" becomes its origin zone.
     time: timeVal || null,
+    tz_offset_minutes: timeVal ? -new Date().getTimezoneOffset() : null,
     entry: entryVal !== '' ? parseFloat(entryVal) : null,
     exit: exitVal !== '' ? parseFloat(exitVal) : null,
     profit

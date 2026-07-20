@@ -97,6 +97,7 @@ Deno.serve(async (req) => {
     source: 'ea',
     date: body.date,
     time: body.time ?? null,
+    tz_offset_minutes: body.tz_offset_minutes ?? null,
     symbol: body.symbol,
     lot: body.lot ?? null,
     entry: body.entry ?? null,
