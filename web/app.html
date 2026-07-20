@@ -1643,6 +1643,7 @@ function tradesFor(key){
   if(!tradeFilter) return list;
   if(!_filterMetaCache) _filterMetaCache = loadMeta();
   if(tradeFilter.type === 'symbol') return list.filter(t=>t.symbol === tradeFilter.value);
+  if(tradeFilter.type === 'result') return list.filter(t=>tradeFilter.value==='win' ? t.profit>=0 : t.profit<0);
   return list.filter(t=>{
     const m = _filterMetaCache[t.id];
     return m && (m.tags || []).includes(tradeFilter.value);
@@ -1658,6 +1659,9 @@ function renderFilterMenu(){
   Object.values(meta).forEach(m=>(m.tags || []).forEach(tag=>tags.add(tag)));
 
   let html = `<button type="button" class="cal-filter-item ${!tradeFilter?'is-active':''}" data-type="" data-value="">All trades</button>`;
+  html += `<div class="cal-filter-group">Result</div>`
+    + `<button type="button" class="cal-filter-item ${tradeFilter&&tradeFilter.type==='result'&&tradeFilter.value==='win'?'is-active':''}" data-type="result" data-value="win">Profitable trades only</button>`
+    + `<button type="button" class="cal-filter-item ${tradeFilter&&tradeFilter.type==='result'&&tradeFilter.value==='loss'?'is-active':''}" data-type="result" data-value="loss">Loss trades only</button>`;
   if(symbols.size){
     html += `<div class="cal-filter-group">Symbols</div>` + [...symbols].sort().map(s=>
       `<button type="button" class="cal-filter-item ${tradeFilter&&tradeFilter.type==='symbol'&&tradeFilter.value===s?'is-active':''}" data-type="symbol" data-value="${escapeHtml(s)}">${escapeHtml(s)}</button>`
@@ -1675,7 +1679,9 @@ function renderFilterMenu(){
       menu.classList.remove('open');
       tradeFilter = item.dataset.type ? { type:item.dataset.type, value:item.dataset.value } : null;
       const label = document.getElementById('calFilterLabel');
-      label.textContent = tradeFilter ? (tradeFilter.type==='tag' ? '#' : '') + tradeFilter.value : 'All trades';
+      label.textContent = !tradeFilter ? 'All trades'
+        : tradeFilter.type==='result' ? (tradeFilter.value==='win' ? 'Profitable trades only' : 'Loss trades only')
+        : (tradeFilter.type==='tag' ? '#' : '') + tradeFilter.value;
       document.getElementById('calFilterBtn').classList.toggle('is-filtering', !!tradeFilter);
       renderAll();
     };
