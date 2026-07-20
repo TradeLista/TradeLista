@@ -64,7 +64,13 @@ Deno.serve(async (req) => {
   // exact same row — if it's ever sent twice (MT5 firing the event twice,
   // or the EA attached to more than one chart on the same account), the
   // second POST just updates that row instead of creating a duplicate.
-  const id = body.deal_ticket ? `ea-${account.id}-${body.deal_ticket}` : `${body.date}-ea${Date.now()}`;
+  // Must still START with the YYYY-MM-DD date — the client derives a
+  // trade's date by splitting its id on '-' and taking the first 3 parts
+  // (see app.html's findTrade/deleteTradeById/etc.), so the date has to
+  // stay in that exact position regardless of what else is in the id.
+  const id = body.deal_ticket
+    ? `${body.date}-ea-${account.id}-${body.deal_ticket}`
+    : `${body.date}-ea${Date.now()}`;
   const { error } = await supabaseAdmin.from('trades').upsert({
     id,
     user_id: account.user_id,
