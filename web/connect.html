@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TradeLista — Connect MT5</title>
+<title>TradeLista — Connect MT4 / MT5</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -102,6 +102,24 @@
   }
   .callout .ic{flex-shrink:0; font-size:16px;}
   .callout strong{color:var(--text);}
+
+  /* Platform picker */
+  .platform-picker{
+    display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:40px;
+    font-size:13.5px; color:var(--text-dim);
+  }
+  .platform-btn{
+    background:var(--bg-card); border:1px solid var(--border); color:var(--text); font-family:inherit;
+    font-size:13.5px; font-weight:600; padding:9px 18px; border-radius:99px; cursor:pointer; transition:.15s;
+  }
+  .platform-btn:hover{border-color:var(--accent);}
+  .platform-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2)); border-color:transparent; color:#fff;}
+  /* Hide the guide until a platform is chosen, then show only the matching
+     mt4-only/mt5-only bits — everything without either class is shared. */
+  body:not([data-platform]) .guide .mt4-only, body:not([data-platform]) .guide .mt5-only{display:none;}
+  body:not([data-platform]) .guide{opacity:.35; pointer-events:none;}
+  body[data-platform="mt5"] .mt4-only{display:none;}
+  body[data-platform="mt4"] .mt5-only{display:none;}
 
   /* Guide steps */
   .guide{position:relative;}
@@ -225,40 +243,48 @@
 
 <div class="page">
   <div class="page-head">
-    <div class="eyebrow"><span class="dotpulse"></span> MT5 setup guide</div>
-    <h1>Connect your MT5 account</h1>
-    <p>Attach the TradeLista Expert Advisor once, and every closed trade lands on your calendar automatically. (MT4 support isn't available yet.)</p>
+    <div class="eyebrow"><span class="dotpulse"></span> MT4 &amp; MT5 setup guide</div>
+    <h1>Connect your MT4 or MT5 account</h1>
+    <p>Attach the TradeLista Expert Advisor once, and every closed trade lands on your calendar automatically.</p>
+  </div>
+
+  <div class="platform-picker">
+    <span>I use:</span>
+    <button type="button" class="platform-btn" data-platform="mt5">MetaTrader 5</button>
+    <button type="button" class="platform-btn" data-platform="mt4">MetaTrader 4</button>
   </div>
 
   <div class="guide">
     <div class="gstep">
       <div class="gnum">1</div>
-      <h3>Install MetaTrader 5</h3>
+      <h3>Install MetaTrader <span class="mt5-only">5</span><span class="mt4-only">4</span></h3>
       <p>Already have it installed? Skip to step 2.</p>
-      <p>Go to <a href="https://www.mql5.com/en/download" target="_blank" rel="noopener" style="color:var(--accent); text-decoration:underline;">mql5.com/en/download</a> and click <strong>"Download MetaTrader 5"</strong>. Open the downloaded file and click through the installer — the default settings are fine.</p>
-      <figure class="gstep-shot"><img src="images/guide/mt5-01-install.png" alt="MetaTrader 5 installer window" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the MT5 installer window</div></figure>
+      <p class="mt5-only">Go to <a href="https://www.mql5.com/en/download" target="_blank" rel="noopener" style="color:var(--accent); text-decoration:underline;">mql5.com/en/download</a> and click <strong>"Download MetaTrader 5"</strong>. Open the downloaded file and click through the installer — the default settings are fine.</p>
+      <p class="mt4-only">Go to <a href="https://www.mql5.com/en/download" target="_blank" rel="noopener" style="color:var(--accent); text-decoration:underline;">mql5.com/en/download</a> and scroll down to <strong>"Download MetaTrader 4"</strong> (or ask your broker for their MT4 installer, if they provide their own branded one). Open the downloaded file and click through the installer — the default settings are fine.</p>
+      <figure class="gstep-shot mt5-only"><img src="images/guide/mt5-01-install.png" alt="MetaTrader 5 installer window" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the MT5 installer window</div></figure>
+      <figure class="gstep-shot mt4-only"><img src="images/guide/mt4-01-install.png" alt="MetaTrader 4 installer window" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the MT4 installer window</div></figure>
     </div>
 
     <div class="gstep">
       <div class="gnum">2</div>
       <h3>Open a trading account in MetaTrader</h3>
       <p>Already have a demo or live account set up? Skip to step 3.</p>
-      <p>Open MetaTrader 5. A window called <strong>"Open an Account"</strong> should appear by itself. If it doesn't, click <code>File → Open an Account</code> at the top.</p>
+      <p>Open MetaTrader. A window called <strong>"Open an Account"</strong> should appear by itself. If it doesn't, click <code>File → Open an Account</code> at the top.</p>
       <small class="substep">For a free demo account (no real money, good for testing):</small>
       <p>Choose <strong>"MetaQuotes-Demo"</strong> as the server, then <strong>"New Demo Account"</strong>. Fill in a name, email and starting balance — any values work — and click through to finish.</p>
       <p>If you already trade with a real broker, choose that broker's server instead and log in with the account details they gave you.</p>
-      <figure class="gstep-shot"><img src="images/guide/mt5-02-account.png" alt="MetaTrader 5 'Open an Account' window" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the "Open an Account" window</div></figure>
+      <figure class="gstep-shot"><img src="images/guide/mt-02-account.png" alt="MetaTrader 'Open an Account' window" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the "Open an Account" window</div></figure>
     </div>
 
     <div class="gstep">
       <div class="gnum">3</div>
       <h3>Allow MetaTrader to talk to TradeLista</h3>
       <p>This one setting lets the EA send your closed trades to TradeLista. Without it, nothing will arrive — and MetaTrader won't tell you why.</p>
-      <p>In MetaTrader 5, click <code>Tools</code> in the top menu bar, then <code>Options</code>. Open the <strong>"Expert Advisors"</strong> tab.</p>
+      <p>In MetaTrader, click <code>Tools</code> in the top menu bar, then <code>Options</code>. Open the <strong>"Expert Advisors"</strong> tab.</p>
       <p>Check the box <strong>"Allow WebRequest for listed URL"</strong>. Click into the empty field below it, paste this address, and press Enter:</p>
       <div class="code-box">https://xkmpknoughjnxalkoatx.supabase.co</div>
       <p>Click <strong>OK</strong>.</p>
-      <figure class="gstep-shot"><img src="images/guide/mt5-03-weballow.png" alt="Tools > Options > Expert Advisors tab with the WebRequest URL added" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the WebRequest URL added in Options</div></figure>
+      <figure class="gstep-shot"><img src="images/guide/mt-03-weballow.png" alt="Tools > Options > Expert Advisors tab with the WebRequest URL added" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the WebRequest URL added in Options</div></figure>
     </div>
 
     <div class="gstep">
@@ -266,7 +292,7 @@
       <h3>Get your personal API key from TradeLista</h3>
       <p>This key is how TradeLista knows which account a trade belongs to. Log in at <a href="auth.html?mode=login" style="color:var(--accent); text-decoration:underline;">tradelista.com</a> (create a free account first if you don't have one yet).</p>
       <p>Click your avatar in the top-right corner, then <strong>"Account settings"</strong>. Scroll down to <strong>"Trading accounts"</strong> and click <strong>"+ Add trading account"</strong>.</p>
-      <p>Give it a name (e.g. "My MT5"), choose Live or Demo, choose MT5 as the platform, and click <strong>"Add account"</strong>.</p>
+      <p>Give it a name (e.g. <span class="mt5-only">"My MT5"</span><span class="mt4-only">"My MT4"</span>), choose Live or Demo, choose <span class="mt5-only">MT5</span><span class="mt4-only">MT4</span> as the platform, and click <strong>"Add account"</strong>.</p>
       <p>Click <strong>"🔑 Copy key"</strong> next to your new account. Keep this tab open — you'll paste this key in step 8.</p>
       <figure class="gstep-shot"><img src="images/guide/tl-04-apikey.png" alt="TradeLista's Trading accounts section with the Copy key button" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: copying the API key in TradeLista</div></figure>
     </div>
@@ -274,36 +300,39 @@
     <div class="gstep">
       <div class="gnum">5</div>
       <h3>Download the TradeLista Expert Advisor</h3>
-      <p>Currently available for <strong>MT5</strong> only. Click below to save the file to your computer (it usually lands in your <strong>Downloads</strong> folder):</p>
-      <p><a href="downloads/TradeListaSync.mq5" download style="color:var(--accent); text-decoration:underline;"><code>⬇ Download TradeListaSync.mq5</code></a></p>
+      <p class="mt5-only">Click below to save the file to your computer (it usually lands in your <strong>Downloads</strong> folder):</p>
+      <p class="mt5-only"><a href="downloads/TradeListaSync.mq5" download style="color:var(--accent); text-decoration:underline;"><code>⬇ Download TradeListaSync.mq5</code></a></p>
+      <p class="mt4-only">Click below to save the file to your computer (it usually lands in your <strong>Downloads</strong> folder):</p>
+      <p class="mt4-only"><a href="downloads/TradeListaSync.mq4" download style="color:var(--accent); text-decoration:underline;"><code>⬇ Download TradeListaSync.mq4</code></a></p>
       <p>This EA is read-only: it only reports trades you've already closed. It never places, closes or changes a trade for you — see the FAQ below for details.</p>
     </div>
 
     <div class="gstep">
       <div class="gnum">6</div>
       <h3>Put the file where MetaTrader can find it</h3>
-      <p>In MetaTrader 5, click <code>File → Open Data Folder</code>. A Windows folder window opens.</p>
-      <p>Double-click the <strong>MQL5</strong> folder, then double-click <strong>Experts</strong>.</p>
-      <p>Copy the <code>TradeListaSync.mq5</code> file you downloaded in step 5 into this <strong>Experts</strong> folder (drag and drop, or copy-paste).</p>
-      <figure class="gstep-shot"><img src="images/guide/mt5-06-experts-folder.png" alt="The MQL5\Experts folder with TradeListaSync.mq5 copied in" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the file placed in the Experts folder</div></figure>
+      <p>In MetaTrader, click <code>File → Open Data Folder</code>. A Windows folder window opens.</p>
+      <p>Double-click the <strong class="mt5-only">MQL5</strong><strong class="mt4-only">MQL4</strong> folder, then double-click <strong>Experts</strong>.</p>
+      <p>Copy the <code class="mt5-only">TradeListaSync.mq5</code><code class="mt4-only">TradeListaSync.mq4</code> file you downloaded in step 5 into this <strong>Experts</strong> folder (drag and drop, or copy-paste).</p>
+      <figure class="gstep-shot mt5-only"><img src="images/guide/mt5-06-experts-folder.png" alt="The MQL5\Experts folder with TradeListaSync.mq5 copied in" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the file placed in the MQL5\Experts folder</div></figure>
+      <figure class="gstep-shot mt4-only"><img src="images/guide/mt4-06-experts-folder.png" alt="The MQL4\Experts folder with TradeListaSync.mq4 copied in" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the file placed in the MQL4\Experts folder</div></figure>
     </div>
 
     <div class="gstep">
       <div class="gnum">7</div>
       <h3>Compile it</h3>
-      <p>Back in MetaTrader 5, look at the <strong>Navigator</strong> panel on the left (press <code>Ctrl+N</code> if you don't see it).</p>
+      <p>Back in MetaTrader, look at the <strong>Navigator</strong> panel on the left (press <code>Ctrl+N</code> if you don't see it).</p>
       <p>Right-click <strong>"Expert Advisors"</strong> and click <strong>"Refresh"</strong>. <code>TradeListaSync</code> should now appear in that list.</p>
       <p>Double-click it — this opens a second window called <strong>MetaEditor</strong> with the code inside. Click the <strong>"Compile"</strong> button near the top (or press <code>F7</code>). At the bottom it should say <strong>"0 errors, 0 warnings"</strong>.</p>
-      <figure class="gstep-shot"><img src="images/guide/mt5-07-compile.png" alt="MetaEditor showing '0 errors, 0 warnings' after compiling" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: successful compile in MetaEditor</div></figure>
+      <figure class="gstep-shot"><img src="images/guide/mt-07-compile.png" alt="MetaEditor showing '0 errors, 0 warnings' after compiling" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: successful compile in MetaEditor</div></figure>
     </div>
 
     <div class="gstep">
       <div class="gnum">8</div>
       <h3>Attach the EA to a chart and paste your key</h3>
-      <p>Switch back to the main MetaTrader 5 window. In the Navigator, under <strong>Expert Advisors</strong>, find <code>TradeListaSync</code> and drag it onto any open chart — the symbol and timeframe don't matter, it watches your whole account.</p>
+      <p>Switch back to the main MetaTrader window. In the Navigator, under <strong>Expert Advisors</strong>, find <code>TradeListaSync</code> and drag it onto any open chart — the symbol and timeframe don't matter, it watches your whole account.</p>
       <p>A window pops up. Click the <strong>"Inputs"</strong> tab and paste the API key you copied in step 4 into the <strong>ApiKey</strong> field.</p>
-      <p>Click the <strong>"General"</strong> tab and make sure <strong>"Allow algorithmic trading"</strong> is checked. Click <strong>OK</strong>.</p>
-      <figure class="gstep-shot"><img src="images/guide/mt5-08-attach.png" alt="The EA Inputs tab with the ApiKey field filled in" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: pasting the API key into the Inputs tab</div></figure>
+      <p>Click the <strong>"General"</strong> tab and make sure <strong>"Allow algorithmic trading"</strong> (or "Allow live trading") is checked. Click <strong>OK</strong>.</p>
+      <figure class="gstep-shot"><img src="images/guide/mt-08-attach.png" alt="The EA Inputs tab with the ApiKey field filled in" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: pasting the API key into the Inputs tab</div></figure>
     </div>
 
     <div class="gstep">
@@ -311,7 +340,7 @@
       <h3>Turn on Algo Trading</h3>
       <p>Near the top of the MetaTrader window, find the button labeled <strong>"Algo Trading"</strong> (or "AutoTrading") — click it so it's turned on/highlighted.</p>
       <p>Look at the top-right corner of your chart: a small smiling-face icon means <code>TradeListaSync</code> is active and running.</p>
-      <figure class="gstep-shot"><img src="images/guide/mt5-09-algotrading.png" alt="The Algo Trading button enabled and the EA's smiling-face icon on the chart" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: Algo Trading on, smiling face on the chart</div></figure>
+      <figure class="gstep-shot"><img src="images/guide/mt-09-algotrading.png" alt="The Algo Trading button enabled and the EA's smiling-face icon on the chart" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: Algo Trading on, smiling face on the chart</div></figure>
     </div>
 
     <div class="gstep">
@@ -431,6 +460,20 @@
   window.addEventListener('scroll', ()=>{
     nav.classList.toggle('scrolled', window.scrollY > 12);
   });
+
+  // ---- MT4/MT5 platform picker ----
+  // Remembered across visits so returning users don't have to re-pick it.
+  (function initPlatformPicker(){
+    const buttons = document.querySelectorAll('.platform-btn');
+    function setPlatform(platform){
+      document.body.dataset.platform = platform;
+      buttons.forEach(b => b.classList.toggle('active', b.dataset.platform === platform));
+      localStorage.setItem('tradelista_connect_platform', platform);
+    }
+    buttons.forEach(btn => btn.addEventListener('click', () => setPlatform(btn.dataset.platform)));
+    const saved = localStorage.getItem('tradelista_connect_platform');
+    if(saved === 'mt4' || saved === 'mt5') setPlatform(saved);
+  })();
 
   // ---- Auth-aware navigation ----
   document.querySelectorAll('.js-calendar-link').forEach(el=>{
