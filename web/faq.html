@@ -63,6 +63,9 @@
   .navlinks a{padding:7px 14px; border-radius:99px; white-space:nowrap; transition:color .15s, background .15s;}
   .navlinks a:hover{color:var(--text); background:var(--bg-hover);}
   .navlinks a.active{color:var(--text); background:var(--bg-elevated);}
+  @media (max-width:860px){
+    .navlinks{display:none;}
+  }
   .navright{display:flex; align-items:center; gap:12px;}
   .navright .btn{padding:8px 15px; font-size:13px;}
   .btn{
@@ -144,8 +147,11 @@
     </svg><span class="brand-word"><span class="brand-trade">Trade</span><span class="brand-accent">Lista</span></span>
   </a>
   <div class="navlinks">
-    <a href="app.html">Calendar</a>
+    <a href="index.html#features">Features</a>
+    <a href="index.html#how-it-works">How it works</a>
+    <a href="app.html" class="js-calendar-link">Calendar</a>
     <a href="connect.html">Connect Account</a>
+    <a href="index.html#pricing">Pricing</a>
     <a href="contact.html">Contact</a>
     <a class="active" href="faq.html">FAQ</a>
   </div>
@@ -251,6 +257,21 @@
     await TLAuth.ui.renderAccountNav(document.getElementById('navRight'));
     document.getElementById('navRight').style.visibility = 'visible';
   })();
+
+  // Calendar requires an account — clicking it here shows the same
+  // create-account prompt as everywhere else instead of silently landing on
+  // app.html's own gate, so a logged-out visitor never reaches the app
+  // without going through account creation first.
+  document.querySelectorAll('.js-calendar-link').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const href = el.getAttribute('href');
+      TLAuth.isLoggedIn().then(loggedIn=>{
+        if(loggedIn) location.href = href;
+        else TLAuth.ui.requireAuth('app.html');
+      });
+    });
+  });
 
   document.querySelectorAll('.faq-q').forEach(btn=>{
     btn.addEventListener('click', ()=>{
