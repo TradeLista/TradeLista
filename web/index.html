@@ -694,8 +694,8 @@
   /* ---------- Final CTA ---------- */
   .final-cta{
     text-align:center; background:rgba(255,255,255,0.03); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-    border:1px solid var(--border-soft); border-radius:26px;
-    padding:64px 32px; position:relative; overflow:hidden;
+    border:1px solid var(--border-soft); border-radius:22px;
+    padding:42px 32px; position:relative; overflow:hidden;
     box-shadow:inset 0 1px 0 rgba(255,255,255,0.05), 0 20px 50px -24px rgba(0,0,0,0.6);
   }
   .final-cta::before{
@@ -730,18 +730,18 @@
   }
   .final-cta:hover .final-cta-glow{opacity:1;}
   .final-cta-tag{position:relative; z-index:1;}
-  .final-cta h2{font-size:clamp(26px,3.6vw,40px); font-weight:800; letter-spacing:-0.02em; position:relative; z-index:1; margin-top:18px;}
+  .final-cta h2{font-size:clamp(22px,3vw,32px); font-weight:800; letter-spacing:-0.02em; position:relative; z-index:1; margin-top:12px;}
   .final-cta h2 .shine{
     background:linear-gradient(90deg, #e7edf5 0%, var(--accent) 35%, var(--accent2) 50%, #e7edf5 65%, #e7edf5 100%);
     background-size:220% auto; -webkit-background-clip:text; background-clip:text; color:transparent;
     animation:ctaShine 5s linear infinite;
   }
   @keyframes ctaShine{to{background-position:-220% center;}}
-  .final-cta p{color:var(--text-dim); margin-top:14px; font-size:15px; position:relative; z-index:1;}
+  .final-cta p{color:var(--text-dim); margin-top:10px; font-size:13.5px; position:relative; z-index:1;}
   .final-cta .hero-ctas{position:relative; z-index:1;}
   .final-cta-trust{
-    position:relative; z-index:1; margin-top:26px; display:flex; align-items:center; justify-content:center;
-    gap:20px; flex-wrap:wrap; font-size:12.5px; color:var(--text-faint);
+    position:relative; z-index:1; margin-top:18px; display:flex; align-items:center; justify-content:center;
+    gap:18px; flex-wrap:wrap; font-size:12px; color:var(--text-faint);
   }
   .final-cta-trust span{display:inline-flex; align-items:center; gap:6px;}
   .final-cta-trust .chk{
@@ -1267,7 +1267,7 @@
     <span class="section-tag final-cta-tag">Ready?</span>
     <h2>Stop losing your trade history in a <span class="shine">PDF graveyard.</span></h2>
     <p>Start today — takes less time than exporting one broker statement.</p>
-    <div class="hero-ctas" style="margin-top:26px;">
+    <div class="hero-ctas" style="margin-top:18px;">
       <a class="btn btn-primary btn-lg js-start-free" href="auth.html?mode=signup&amp;redirect=app.html">Start journaling free →</a>
     </div>
     <div class="final-cta-trust">
