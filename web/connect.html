@@ -207,6 +207,19 @@
     background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none; cursor:default;
     padding:9px 16px; border-radius:99px; font-size:12.5px; font-weight:700; font-family:inherit;
   }
+  .ui-mock-btn-ghost{
+    background:var(--bg-card); border:1px solid var(--border); color:var(--text); cursor:default;
+    padding:9px 16px; border-radius:99px; font-size:12.5px; font-weight:700; font-family:inherit;
+  }
+  .ui-mock-navcorner{display:flex; align-items:center; justify-content:flex-end; gap:10px;}
+  .ui-mock-navlinks{
+    display:flex; align-items:center; justify-content:center; gap:2px; flex-wrap:wrap;
+    background:rgba(21,27,38,0.6); border:1px solid var(--border-soft); border-radius:99px; padding:4px;
+  }
+  .ui-mock-navlinks span{
+    padding:7px 13px; border-radius:99px; font-size:12px; color:var(--text-dim); white-space:nowrap;
+  }
+  .ui-mock-navlink-active{background:var(--bg-card); color:var(--text) !important;}
 
   .ui-mock-form-row{margin-bottom:10px;}
   .ui-mock-form-row label{display:block; font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px;}
@@ -475,12 +488,31 @@
         <h3>Log in (or create a free account)</h3>
         <p>Manual entry works on both the <strong>Free</strong> and <strong>Pro</strong> plans — no EA, no download, no setup outside TradeLista itself.</p>
         <p>Go to <a href="auth.html?mode=login" style="color:var(--accent); text-decoration:underline;">tradelista.com</a> and log in, or <a href="auth.html?mode=signup" style="color:var(--accent); text-decoration:underline;">create a free account</a> if you don't have one yet.</p>
+        <div class="ui-mock ui-mock-navcorner">
+          <button type="button" class="ui-mock-btn-ghost" tabindex="-1">Log in</button>
+          <div class="ui-mock-ring-wrap">
+            <button type="button" class="ui-mock-btn-primary" tabindex="-1">Start free</button>
+            <span class="click-ring"></span>
+          </div>
+        </div>
+        <div class="ui-mock-caption">↑ top-right corner of every TradeLista page</div>
       </div>
 
       <div class="gstep">
         <div class="gnum">2</div>
         <h3>Open your Calendar</h3>
         <p>Click <strong>"Calendar"</strong> in the top menu, or go straight to <a href="app.html" class="js-calendar-link" style="color:var(--accent); text-decoration:underline;">tradelista.com/app.html</a>.</p>
+        <div class="ui-mock">
+          <div class="ui-mock-navlinks">
+            <span>Features</span>
+            <div class="ui-mock-ring-wrap">
+              <span class="ui-mock-navlink-active">Calendar</span>
+              <span class="click-ring"></span>
+            </div>
+            <span>Connect Account</span>
+            <span>Pricing</span>
+          </div>
+        </div>
       </div>
 
       <div class="gstep">
