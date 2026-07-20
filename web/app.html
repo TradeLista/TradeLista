@@ -2028,7 +2028,7 @@ function renderCalendar(){
     el.innerHTML = `
       <div class="num">Week</div>
       ${weekCount
-        ? `<div><div class="pnl ${weekTotal>=0?'pos':'neg'}">${weekTotal>=0?'+':''}${weekTotal.toFixed(0)}</div><div class="count">${weekCount} trade${weekCount>1?'s':''}</div></div>`
+        ? `<div><div class="pnl ${weekTotal>=0?'pos':'neg'}">${weekTotal>=0?'+':''}${weekTotal.toFixed(2)}</div><div class="count">${weekCount} trade${weekCount>1?'s':''}</div></div>`
         : `<div class="count">—</div>`}
     `;
     grid.appendChild(el);
@@ -2065,7 +2065,7 @@ function renderCalendar(){
       <div class="num">${day}</div>
       ${hasJournal ? '<span class="journal-ic" title="Journaled — this day has notes, images or tags">📝</span>' : ''}
       ${trades.length
-        ? `<div><div class="pnl">${dayTotal>=0?'+':''}${dayTotal.toFixed(0)}</div><div class="count">${trades.length} trade${trades.length>1?'s':''}</div></div>`
+        ? `<div><div class="pnl">${dayTotal>=0?'+':''}${dayTotal.toFixed(2)}</div><div class="count">${trades.length} trade${trades.length>1?'s':''}</div></div>`
         : `<div class="add-hint${future?' future':''}">${future?'−':'+'}</div>`}
     `;
     if(trades.length){
