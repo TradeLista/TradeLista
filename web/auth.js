@@ -98,9 +98,7 @@
   // real object sizes — computed live from Storage rather than a maintained
   // counter, since counters drift the moment something deletes a file
   // without going through the one code path that decrements them.
-  async function getStorageUsage(){
-    const { data: { session } } = await sb.auth.getSession();
-    if(!session) return { used: 0, limit: STORAGE_LIMIT_BYTES };
+  async function getImagesUsageBytes(userId){
     async function sumFolder(path){
       const { data, error } = await sb.storage.from('trade-images').list(path, { limit: 1000 });
       if(error || !data) return 0;
@@ -111,8 +109,34 @@
       }
       return total;
     }
-    const used = await sumFolder(session.user.id);
-    return { used, limit: STORAGE_LIMIT_BYTES };
+    return sumFolder(userId);
+  }
+
+  // The quota is "everything TradeLista stores for you", not just images —
+  // notes, tags and reflection answers live as text in the trades table
+  // rather than in Storage, but they still take up real space and a user
+  // could in principle write enough of them to matter. Each is measured in
+  // UTF-8 bytes (not JS string .length, which undercounts multi-byte
+  // characters like emoji) so the number means the same thing as file size.
+  async function getTextUsageBytes(){
+    const trades = await getUserTrades();
+    const enc = new TextEncoder();
+    return trades.reduce((total, row) => {
+      const note = row.note || '';
+      const tags = JSON.stringify(row.tags || []);
+      const answers = JSON.stringify(row.answers || {});
+      return total + enc.encode(note).length + enc.encode(tags).length + enc.encode(answers).length;
+    }, 0);
+  }
+
+  async function getStorageUsage(){
+    const { data: { session } } = await sb.auth.getSession();
+    if(!session) return { used: 0, limit: STORAGE_LIMIT_BYTES, imagesUsed: 0, textUsed: 0 };
+    const [imagesUsed, textUsed] = await Promise.all([
+      getImagesUsageBytes(session.user.id),
+      getTextUsageBytes(),
+    ]);
+    return { used: imagesUsed + textUsed, limit: STORAGE_LIMIT_BYTES, imagesUsed, textUsed };
   }
 
   // Removes the storage object a public URL points to — trade edits just
@@ -137,7 +161,7 @@
     if(used + file.size > limit){
       const usedMb = Math.round(used / (1024*1024));
       const limitMb = Math.round(limit / (1024*1024));
-      return { ok:false, error: `You've used ${usedMb} MB of your ${limitMb} MB image storage. Delete a few old screenshots to make room, or try a smaller image.` };
+      return { ok:false, error: `You've used ${usedMb} MB of your ${limitMb} MB storage. Delete a few old screenshots to make room, or try a smaller image.` };
     }
     const ext = (file.name.split('.').pop() || 'png').toLowerCase();
     const path = `${session.user.id}/${tradeId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
@@ -467,6 +491,7 @@
       .tl-am-storage-track{height:6px; border-radius:99px; background:var(--border-soft); overflow:hidden;}
       .tl-am-storage-fill{height:100%; border-radius:99px; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width .3s;}
       .tl-am-storage-fill.is-full{background:var(--red);}
+      .tl-am-storage-caption{font-size:11px; color:var(--text-faint); margin-top:8px;}
       .tl-am-status{font-size:12.5px; color:var(--green); min-height:16px; margin-top:14px; text-align:center;}
       .tl-am-modal .btn-danger{background:var(--red-dim); border-color:var(--red-border); color:var(--red); border:1px solid var(--red-border);}
       .tl-am-modal .btn-danger:hover{background:var(--red); color:#fff;}
@@ -622,7 +647,7 @@
         </div>
 
         <div id="tlAmStorageSection" style="display:none;">
-          <div class="tl-am-section-label">Image storage</div>
+          <div class="tl-am-section-label">Storage</div>
           <div id="tlAmStorageStatus"></div>
         </div>
 
@@ -798,6 +823,7 @@
       <div class="tl-am-storage-box">
         <div class="tl-am-storage-row"><span>${usedMb} MB used</span><span>${limitMb} MB total</span></div>
         <div class="tl-am-storage-track"><div class="tl-am-storage-fill${pct >= 95 ? ' is-full' : ''}" style="width:${pct}%"></div></div>
+        <div class="tl-am-storage-caption">Screenshots, notes, tags and reflection answers all count toward this.</div>
       </div>
     `;
   }
