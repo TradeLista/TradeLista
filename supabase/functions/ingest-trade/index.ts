@@ -59,8 +59,13 @@ Deno.serve(async (req) => {
     });
   }
 
-  const id = `${body.date}-ea${Date.now()}`;
-  const { error } = await supabaseAdmin.from('trades').insert({
+  // Keyed off the MT5 deal ticket (stable and unique per account) rather
+  // than a timestamp, so the exact same closed trade always maps to the
+  // exact same row — if it's ever sent twice (MT5 firing the event twice,
+  // or the EA attached to more than one chart on the same account), the
+  // second POST just updates that row instead of creating a duplicate.
+  const id = body.deal_ticket ? `ea-${account.id}-${body.deal_ticket}` : `${body.date}-ea${Date.now()}`;
+  const { error } = await supabaseAdmin.from('trades').upsert({
     id,
     user_id: account.user_id,
     account_id: account.id,

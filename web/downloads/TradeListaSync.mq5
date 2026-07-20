@@ -24,6 +24,19 @@ int OnInit()
    return(INIT_SUCCEEDED);
 }
 
+// Deal tickets already sent this session — MT5 can fire OnTradeTransaction
+// more than once for the same deal, and this stops us re-sending it. The
+// server independently de-duplicates by deal ticket too (in case the EA is
+// ever restarted or attached to more than one chart on the same account).
+ulong sentDeals[];
+
+bool alreadySent(ulong ticket)
+{
+   for(int i = 0; i < ArraySize(sentDeals); i++)
+      if(sentDeals[i] == ticket) return true;
+   return false;
+}
+
 // Fires on every deal MT5 records. We only care about DEAL_ENTRY_OUT deals —
 // those are the ones that close a position and produce a final profit, which
 // is the only trade shape TradeLista's calendar understands.
@@ -35,8 +48,13 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
    if(StringLen(ApiKey) == 0) return;
 
    ulong dealTicket = trans.deal;
+   if(alreadySent(dealTicket)) return;
    if(!HistoryDealSelect(dealTicket)) return;
    if((ENUM_DEAL_ENTRY)HistoryDealGetInteger(dealTicket, DEAL_ENTRY) != DEAL_ENTRY_OUT) return;
+
+   int idx = ArraySize(sentDeals);
+   ArrayResize(sentDeals, idx + 1);
+   sentDeals[idx] = dealTicket;
 
    string symbol = HistoryDealGetString(dealTicket, DEAL_SYMBOL);
    double volume = HistoryDealGetDouble(dealTicket, DEAL_VOLUME);
@@ -63,10 +81,11 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
 
    string dateStr = TimeToString(closeTime, TIME_DATE); // "2026.07.19"
    StringReplace(dateStr, ".", "-");                    // -> "2026-07-19"
+   string dealTicketStr = IntegerToString(dealTicket);
 
    string json = StringFormat(
-      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\"}",
-      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr
+      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\",\"deal_ticket\":\"%s\"}",
+      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr, dealTicketStr
    );
 
    // StringToCharArray's exact return count (with or without a trailing \0)
