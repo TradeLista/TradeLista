@@ -330,13 +330,19 @@
     background:rgba(255,255,255,0.03); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
     border:1px solid var(--border-soft); border-radius:22px; padding:clamp(26px,3.4vw,44px);
     box-shadow:inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 30px -18px rgba(0,0,0,0.5);
-    transition:border-color .2s, transform .2s, box-shadow .2s;
+    transition:border-color .2s, box-shadow .2s;
     text-align:left;
   }
+  /* No transform on hover here on purpose — this element has backdrop-filter
+     AND a child (.feat-visual) with its own always-running transform
+     animation; adding a transform transition on top of that combo made
+     Chrome's compositor visibly judder/shake, worst right over the taller
+     mockups where the cursor sits closest to the floating child. */
   .feat-row:hover{
-    border-color:var(--border); transform:translateY(-3px);
+    border-color:var(--border);
     box-shadow:inset 0 1px 0 rgba(255,255,255,0.07), 0 22px 44px -20px rgba(0,0,0,0.65), 0 0 34px -6px rgba(79,140,255,0.18);
   }
+  .feat-row:hover .feat-visual{animation-play-state:paused;}
   .feat-row::before{
     content:''; position:absolute; z-index:0; top:-120px; right:-80px; width:340px; height:280px; pointer-events:none;
     background:radial-gradient(ellipse at center, rgba(79,140,255,0.14), transparent 70%); filter:blur(30px);
@@ -1313,12 +1319,24 @@
     countUp(document.getElementById('chipWinVal'), 70, 0, '', '%', 1100);
   }, 1000);
 
-  // Mouse-follow spotlight on pain/pricing/step/feature cards (feeds --mx/--my to CSS)
+  // Mouse-follow spotlight on pain/pricing/step/feature cards (feeds --mx/--my to CSS).
+  // Coalesced to one style write per animation frame instead of one per raw
+  // mousemove event — otherwise this was firing far more often than the
+  // screen actually repaints, which is wasted work at best and visibly
+  // janky at worst on the bigger, backdrop-filtered .feat-row cards.
+  let spotlightFrame = null, spotlightCard = null, spotlightX = 0, spotlightY = 0;
   document.querySelectorAll('.pain-card, .price-card, .step, .feat-row').forEach(card=>{
     card.addEventListener('mousemove', (e)=>{
       const r = card.getBoundingClientRect();
-      card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-      card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      spotlightCard = card;
+      spotlightX = e.clientX - r.left;
+      spotlightY = e.clientY - r.top;
+      if(spotlightFrame) return;
+      spotlightFrame = requestAnimationFrame(()=>{
+        spotlightCard.style.setProperty('--mx', spotlightX + 'px');
+        spotlightCard.style.setProperty('--my', spotlightY + 'px');
+        spotlightFrame = null;
+      });
     });
   });
 
