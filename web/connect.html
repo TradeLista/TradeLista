@@ -122,13 +122,16 @@
   }
   .platform-btn:hover{border-color:var(--accent);}
   .platform-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2)); border-color:transparent; color:#fff;}
-  /* The guide (and everything below it) stays fully hidden until a platform
-     is actively chosen — then only the matching mt4-only/mt5-only bits show;
-     everything without either class is shared between both platforms. */
-  body:not([data-platform]) .guide,
-  body:not([data-platform]) .guide ~ *{display:none;}
+  /* Everything below the picker stays fully hidden until a platform is
+     actively chosen. Once one is: the EA guide shows for mt4/mt5 (with
+     only the matching mt4-only/mt5-only bits visible within it), or the
+     manual guide shows for "manual" — never both. */
+  body:not([data-platform]) .ea-only-content,
+  body:not([data-platform]) .ea-only-content ~ *{display:none;}
   body[data-platform="mt5"] .mt4-only{display:none;}
   body[data-platform="mt4"] .mt5-only{display:none;}
+  body:not([data-platform="manual"]) .manual-only-content{display:none;}
+  body[data-platform="manual"] .ea-only-content{display:none;}
 
   /* Guide steps */
   .guide{position:relative;}
@@ -252,19 +255,21 @@
 
 <div class="page">
   <div class="page-head">
-    <div class="eyebrow"><span class="dotpulse"></span> MT4 &amp; MT5 setup guide</div>
-    <h1>Connect your MT4 or MT5 account</h1>
-    <p>Attach the TradeLista Expert Advisor once, and every closed trade lands on your calendar automatically.</p>
+    <div class="eyebrow"><span class="dotpulse"></span> Setup guide</div>
+    <h1>Get your trades into TradeLista</h1>
+    <p>Auto-sync every closed trade with the MT4/MT5 Expert Advisor, or add trades yourself in a few clicks — both land on the same calendar.</p>
   </div>
 
   <div class="platform-picker">
-    <span class="platform-picker-label">Which platform do you want to connect?</span>
+    <span class="platform-picker-label">How do you want to add trades?</span>
     <div class="platform-picker-btns">
       <button type="button" class="platform-btn" data-platform="mt5">MetaTrader 5</button>
       <button type="button" class="platform-btn" data-platform="mt4">MetaTrader 4</button>
+      <button type="button" class="platform-btn" data-platform="manual">Manual entry</button>
     </div>
   </div>
 
+  <div class="ea-only-content">
   <div class="guide">
     <div class="gstep">
       <div class="gnum">1</div>
@@ -405,10 +410,62 @@
     <span class="ic">⭐</span>
     <div><strong>Pro plan required for EA auto-sync.</strong> Free accounts get 1 manually-managed account; Pro unlocks EA auto-sync and up to 5 connected accounts.</div>
   </div>
+  </div>
+
+  <div class="manual-only-content">
+    <div class="guide">
+      <div class="gstep">
+        <div class="gnum">1</div>
+        <h3>Log in (or create a free account)</h3>
+        <p>Manual entry works on both the <strong>Free</strong> and <strong>Pro</strong> plans — no EA, no download, no setup outside TradeLista itself.</p>
+        <p>Go to <a href="auth.html?mode=login" style="color:var(--accent); text-decoration:underline;">tradelista.com</a> and log in, or <a href="auth.html?mode=signup" style="color:var(--accent); text-decoration:underline;">create a free account</a> if you don't have one yet.</p>
+      </div>
+
+      <div class="gstep">
+        <div class="gnum">2</div>
+        <h3>Open your Calendar</h3>
+        <p>Click <strong>"Calendar"</strong> in the top menu, or go straight to <a href="app.html" class="js-calendar-link" style="color:var(--accent); text-decoration:underline;">tradelista.com/app.html</a>.</p>
+      </div>
+
+      <div class="gstep">
+        <div class="gnum">3</div>
+        <h3>Click "+ Add trade"</h3>
+        <p>You'll find this button near the top-right of the Calendar. (You can also click a day first, then click <strong>"Add trade for this day"</strong> inside it — either way opens the same form.)</p>
+        <figure class="gstep-shot"><img src="images/guide/tl-manual-03-addtrade.png" alt="The + Add trade button on the Calendar page" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the "+ Add trade" button</div></figure>
+      </div>
+
+      <div class="gstep">
+        <div class="gnum">4</div>
+        <h3>Fill in the trade</h3>
+        <p>Required: <strong>Date</strong>, <strong>Symbol / pair</strong> (e.g. EURUSD), <strong>Lot size</strong>, and <strong>Profit / loss</strong>.</p>
+        <p>Optional: <strong>Entry price</strong> and <strong>Exit price</strong> — add them if you have them, but they're not required to save the trade.</p>
+        <figure class="gstep-shot"><img src="images/guide/tl-manual-04-form.png" alt="The Add Trade form with its fields" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the Add Trade form</div></figure>
+      </div>
+
+      <div class="gstep">
+        <div class="gnum">5</div>
+        <h3>Click "Add" — you're done</h3>
+        <p>The trade appears on the calendar immediately, colored green or red depending on the result.</p>
+        <p>Want to add more detail? Click the trade afterward to open it — you can write a note and add tags on any plan; screenshots, reflection questions and Golden Trading Rules are part of <strong>Pro</strong>.</p>
+        <figure class="gstep-shot"><img src="images/guide/tl-manual-05-calendar.png" alt="The newly added trade showing up on the calendar" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the trade showing on the calendar</div></figure>
+      </div>
+    </div>
+
+    <span class="section-label">Troubleshooting</span>
+
+    <details class="faq-item">
+      <summary>Can I edit or delete a trade after adding it?</summary>
+      <div class="faq-body">Yes. Open the trade from the calendar — you can edit any field directly there, or delete it entirely from the same view.</div>
+    </details>
+    <details class="faq-item">
+      <summary>Can I switch to EA auto-sync later?</summary>
+      <div class="faq-body">Yes, any time. Manually-entered trades stay exactly where they are — switching just means new trades from that point on can also arrive automatically. Pick MT4 or MT5 above whenever you're ready.</div>
+    </details>
+  </div>
 
   <div class="final-cta" id="finalCta">
-    <h2>Ready to connect your account?</h2>
-    <p>Grab your API key from your profile and you'll be synced in a couple of minutes.</p>
+    <h2>Ready to get started?</h2>
+    <p>Open your Calendar and add your first trade — it takes less than a minute.</p>
     <div class="ctas">
       <a class="btn btn-primary btn-lg js-calendar-link" href="app.html">Go to Calendar →</a>
       <a class="btn btn-ghost btn-lg" href="index.html#pricing">See pricing</a>
@@ -483,7 +540,7 @@
     }
     buttons.forEach(btn => btn.addEventListener('click', () => setPlatform(btn.dataset.platform)));
     const saved = localStorage.getItem('tradelista_connect_platform');
-    if(saved === 'mt4' || saved === 'mt5') setPlatform(saved);
+    if(saved === 'mt4' || saved === 'mt5' || saved === 'manual') setPlatform(saved);
   })();
 
   // ---- Auth-aware navigation ----
