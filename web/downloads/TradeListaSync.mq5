@@ -81,11 +81,12 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
 
    string dateStr = TimeToString(closeTime, TIME_DATE); // "2026.07.19"
    StringReplace(dateStr, ".", "-");                    // -> "2026-07-19"
+   string timeStr = TimeToString(closeTime, TIME_MINUTES); // "14:32"
    string dealTicketStr = IntegerToString(dealTicket);
 
    string json = StringFormat(
-      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\",\"deal_ticket\":\"%s\"}",
-      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr, dealTicketStr
+      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\",\"time\":\"%s\",\"deal_ticket\":\"%s\"}",
+      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr, timeStr, dealTicketStr
    );
 
    // StringToCharArray's exact return count (with or without a trailing \0)

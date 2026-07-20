@@ -64,6 +64,7 @@
       is_manual: !!trade.is_manual,
       is_deleted: !!trade.is_deleted,
       date: trade.date || null,
+      time: trade.time || null,
       symbol: trade.symbol || null,
       lot: trade.lot ?? null,
       entry: trade.entry ?? null,

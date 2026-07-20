@@ -486,6 +486,7 @@
   .trade-row:hover{border-color:var(--accent);}
   .trade-row-main{flex:1; min-width:0; display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer;}
   .trade-row .sym{font-weight:700; font-size:13.5px;}
+  .trade-row-time{font-family:var(--font-mono); font-weight:600; font-size:11.5px; color:var(--text-dim); margin-right:2px;}
   .trade-row .meta{font-size:11.5px; color:var(--text-faint); margin-top:2px;}
   .trade-row .profit{font-family:var(--font-mono); font-weight:700; font-size:14px; white-space:nowrap;}
   .trade-row .profit.pos{color:var(--green);}
@@ -921,10 +922,16 @@
       <button type="button" onclick="closeModal('addTradeOverlay')">✕</button>
     </div>
     <form id="addTradeForm">
-      <div class="form-row">
-        <label>Date</label>
-        <input type="date" id="fDate" required>
-        <div class="field-warning" id="fDateWarning">You can't log a trade in the future — pick today or an earlier date.</div>
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>Date</label>
+          <input type="date" id="fDate" required>
+          <div class="field-warning" id="fDateWarning">You can't log a trade in the future — pick today or an earlier date.</div>
+        </div>
+        <div class="form-row">
+          <label>Time <span class="opt">(optional)</span></label>
+          <input type="time" id="fTime">
+        </div>
       </div>
       <div class="form-row">
         <label>Symbol / pair</label>
@@ -1281,9 +1288,13 @@ function genMonthTrades(year, month){
       const profit = win ? +(base).toFixed(2) : -(base*0.85).toFixed(2);
       const entry = (1 + seeded(s2+4)*2).toFixed(4);
       const exit = win ? (parseFloat(entry)+0.0037).toFixed(4) : (parseFloat(entry)-0.0029).toFixed(4);
+      const hour = 8 + Math.floor(seeded(s2+5)*12); // 08:00-19:59, roughly market hours
+      const minute = Math.floor(seeded(s2+6)*60);
+      const time = String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0');
       trades.push({
         id: key+'-'+i,
         date: key,
+        time,
         symbol, lot: parseFloat(lot),
         entry: parseFloat(entry), exit: parseFloat(exit),
         profit: parseFloat(profit)
@@ -1401,12 +1412,12 @@ async function hydrateFromSupabase(){
   const isDefaultAccount = !!(activeAccount && activeAccount.is_default);
   rows.forEach(row=>{
     if(row.is_deleted){ deleted.push(row.id); return; }
-    const base = { id: row.id, date: row.date, symbol: row.symbol, lot: row.lot, entry: row.entry, exit: row.exit_price, profit: row.profit };
+    const base = { id: row.id, date: row.date, time: row.time, symbol: row.symbol, lot: row.lot, entry: row.entry, exit: row.exit_price, profit: row.profit };
     if(row.is_manual || !isDefaultAccount){
       if(!manual[row.date]) manual[row.date] = [];
       manual[row.date].push(base);
     } else {
-      overrides[row.id] = { symbol: row.symbol, lot: row.lot, entry: row.entry, exit: row.exit_price, profit: row.profit };
+      overrides[row.id] = { symbol: row.symbol, lot: row.lot, entry: row.entry, exit: row.exit_price, profit: row.profit, time: row.time };
     }
     const hasMeta = row.note || (row.images && row.images.length) || (row.answers && Object.keys(row.answers).length) || (row.tags && row.tags.length);
     if(hasMeta) meta[row.id] = { note: row.note || '', images: row.images || [], answers: row.answers || {}, tags: row.tags || [] };
@@ -1433,6 +1444,7 @@ async function persistTrade(id, opts){
     is_manual: isManual,
     is_deleted: !!opts.deleted,
     date: t ? t.date : key,
+    time: t ? t.time : null,
     symbol: t ? t.symbol : null,
     lot: t ? t.lot : null,
     entry: t ? t.entry : null,
@@ -2224,7 +2236,14 @@ let currentDayKey = null;
 
 function openDay(key){
   currentDayKey = key;
-  const trades = tradesByDate[key] || [];
+  // Trades with no recorded time sort after timed ones, so a mix of old
+  // (timeless) and new trades doesn't jumble timed entries out of order.
+  const trades = (tradesByDate[key] || []).slice().sort((a,b)=>{
+    if(!a.time && !b.time) return 0;
+    if(!a.time) return 1;
+    if(!b.time) return -1;
+    return a.time.localeCompare(b.time);
+  });
   document.getElementById('dayModalTitle').textContent = new Date(key).toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'});
   const list = document.getElementById('dayTradesList');
   const future = isFutureDate(key);
@@ -2239,7 +2258,7 @@ function openDay(key){
       <div class="trade-row">
         <div class="trade-row-main" onclick="openTrade('${t.id}')">
           <div>
-            <div class="sym">${t.symbol}</div>
+            <div class="sym">${t.time ? `<span class="trade-row-time">${t.time}</span> ` : ''}${t.symbol}</div>
             <div class="meta">${t.lot} lot · entry ${t.entry ?? '—'} → exit ${t.exit ?? '—'}</div>
           </div>
           <div class="profit ${t.profit>=0?'pos':'neg'}">${t.profit>=0?'+':''}${t.profit.toFixed(2)}</div>
@@ -2312,6 +2331,7 @@ async function openTrade(id){
   document.getElementById('tradeModalDate').textContent = new Date(t.date + 'T00:00:00').toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric', year:'numeric'});
   document.getElementById('tradeDetailGrid').innerHTML = `
     <div class="trade-stat"><div class="l">🏷️ Symbol / pair</div><input class="cell-input" id="editSymbol" type="text" value="${t.symbol}"></div>
+    <div class="trade-stat"><div class="l">🕐 Time</div><input class="cell-input" id="editTime" type="time" value="${t.time || ''}"></div>
     <div class="trade-stat"><div class="l">↗️ Entry</div><input class="cell-input" id="editEntry" type="number" step="0.00001" value="${t.entry ?? ''}"></div>
     <div class="trade-stat"><div class="l">↘️ Exit</div><input class="cell-input" id="editExit" type="number" step="0.00001" value="${t.exit ?? ''}"></div>
     <div class="trade-stat"><div class="l">📦 Lot size</div><input class="cell-input" id="editLot" type="number" step="0.01" min="0" value="${t.lot}"></div>
@@ -2972,6 +2992,7 @@ document.getElementById('addTradeForm').addEventListener('submit', e=>{
   e.preventDefault();
   const errEl = document.getElementById('fError');
   const dateVal = document.getElementById('fDate').value;
+  const timeVal = document.getElementById('fTime').value;
   const symbol = document.getElementById('fSymbol').value.trim().toUpperCase();
   const lot = parseFloat(document.getElementById('fLot').value);
   const profit = parseFloat(document.getElementById('fProfit').value);
@@ -2992,6 +3013,7 @@ document.getElementById('addTradeForm').addEventListener('submit', e=>{
   const trade = {
     id: key + '-m' + Date.now(),
     date: key,
+    time: timeVal || null,
     symbol,
     lot,
     entry: entryVal !== '' ? parseFloat(entryVal) : null,
@@ -3019,6 +3041,7 @@ document.getElementById('saveTradeBtn').onclick = ()=>{
   const profit = parseFloat(document.getElementById('editProfit').value);
   const entryVal = document.getElementById('editEntry').value;
   const exitVal = document.getElementById('editExit').value;
+  const timeVal = document.getElementById('editTime').value;
 
   if(!symbol || isNaN(lot) || isNaN(profit)){
     flashSaved('Please fill in symbol, lot size and profit.', true);
@@ -3028,6 +3051,7 @@ document.getElementById('saveTradeBtn').onclick = ()=>{
   const updates = {
     symbol,
     lot,
+    time: timeVal || null,
     entry: entryVal !== '' ? parseFloat(entryVal) : null,
     exit: exitVal !== '' ? parseFloat(exitVal) : null,
     profit

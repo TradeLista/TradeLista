@@ -84,11 +84,12 @@ void sendClosedOrder(int ticket)
 
    string dateStr = TimeToString(OrderCloseTime(), TIME_DATE); // "2026.07.19"
    StringReplace(dateStr, ".", "-");                            // -> "2026-07-19"
+   string timeStr = TimeToString(OrderCloseTime(), TIME_MINUTES); // "14:32"
    string ticketStr = IntegerToString(ticket);
 
    string json = StringFormat(
-      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\",\"deal_ticket\":\"%s\"}",
-      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr, ticketStr
+      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\",\"time\":\"%s\",\"deal_ticket\":\"%s\"}",
+      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr, timeStr, ticketStr
    );
 
    // Deliberately not passing a codepage here (MQL4's StringToCharArray

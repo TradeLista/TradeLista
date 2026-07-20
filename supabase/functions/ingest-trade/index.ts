@@ -96,6 +96,7 @@ Deno.serve(async (req) => {
     is_manual: false,
     source: 'ea',
     date: body.date,
+    time: body.time ?? null,
     symbol: body.symbol,
     lot: body.lot ?? null,
     entry: body.entry ?? null,
