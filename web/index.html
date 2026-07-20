@@ -358,10 +358,41 @@
   .feat-row:hover::after{opacity:1;}
   .feat-row:nth-child(even) .feat-text{order:2;}
   .feat-row:nth-child(even) .feat-visual{order:1;}
+  /* Entrance choreography, driven by the same .in class the reveal observer
+     sets: each column glides in from its own side of the zig-zag while the
+     mockup un-blurs, then the checkmark points cascade in one by one and the
+     watermark number fades up last. Deliberately applied to .fv-frame (not
+     .feat-visual, whose transform is owned by the featFloat animation). */
+  .feat-row .feat-text{
+    opacity:0; transform:translateX(-28px);
+    transition:opacity .6s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1);
+  }
+  .feat-row:nth-child(even) .feat-text{transform:translateX(28px);}
+  .feat-row .fv-frame{
+    opacity:0; transform:translateX(28px) scale(.96); filter:blur(7px);
+    transition:opacity .6s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1), filter .6s ease, box-shadow .25s ease;
+  }
+  .feat-row:nth-child(even) .fv-frame{transform:translateX(-28px) scale(.96);}
+  .feat-row.in .feat-text, .feat-row.in .fv-frame{opacity:1; transform:none; filter:none;}
+  .feat-row .feat-point{opacity:0; transform:translateX(-12px); transition:opacity .45s ease, transform .45s ease;}
+  .feat-row.in .feat-point{opacity:1; transform:none;}
+  .feat-row.in .feat-point:nth-child(1){transition-delay:.28s;}
+  .feat-row.in .feat-point:nth-child(2){transition-delay:.38s;}
+  .feat-row.in .feat-point:nth-child(3){transition-delay:.48s;}
+  /* gentle lift of the window itself on hover — a child with no
+     backdrop-filter, so this doesn't reintroduce the compositor judder that
+     lifting the whole card did */
+  .feat-row.in:hover .fv-frame{
+    transform:translateY(-4px) scale(1.012);
+    box-shadow:0 34px 64px -26px rgba(0,0,0,0.8), 0 0 30px -8px rgba(79,140,255,0.22);
+    transition-delay:0s;
+  }
   .feat-num{
     position:absolute; z-index:0; bottom:-26px; font-family:var(--font-mono); font-weight:700; font-size:130px; line-height:1;
     color:transparent; -webkit-text-stroke:1px rgba(79,140,255,0.16); pointer-events:none; user-select:none;
+    opacity:0; transform:translateY(14px); transition:opacity .5s ease .55s, transform .5s ease .55s;
   }
+  .feat-row.in .feat-num{opacity:1; transform:none;}
   .feat-row:nth-child(odd) .feat-num{right:18px;}
   .feat-row:nth-child(even) .feat-num{left:18px;}
   .feat-text{position:relative; z-index:1; display:flex; flex-direction:column; align-items:flex-start;}
