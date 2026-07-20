@@ -261,6 +261,13 @@
     color:var(--text-faint); font-size:13px;
   }
   .chart-filters{display:flex; align-items:center; gap:12px; margin-bottom:14px; flex-wrap:wrap;}
+  .chart-range-pills{display:flex; gap:6px;}
+  .chart-range-pills button{
+    font-size:11.5px; font-weight:700; padding:6px 12px; border-radius:99px; border:1px solid var(--border);
+    background:var(--bg-elevated); color:var(--text-dim); transition:color .15s, background .15s, border-color .15s;
+  }
+  .chart-range-pills button:hover{color:var(--text); background:var(--bg-hover);}
+  .chart-range-pills button.active{background:var(--accent-dim); border-color:rgba(79,140,255,0.4); color:var(--accent);}
   .range-custom{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-faint);}
   .range-custom input{
     background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm);
@@ -848,6 +855,12 @@
       <div class="chart-end-value" id="chartEndValue">—</div>
     </div>
     <div class="chart-filters">
+      <div class="chart-range-pills" id="chartRangePills">
+        <button type="button" data-days="7">7D</button>
+        <button type="button" data-days="30">30D</button>
+        <button type="button" data-days="90">90D</button>
+        <button type="button" data-days="all">All</button>
+      </div>
       <div class="range-custom">
         <input type="date" id="chartFrom">
         <span>–</span>
@@ -1252,6 +1265,7 @@ async function renderTopNav(){
     const def = defaultChartRange();
     document.getElementById('chartFrom').value = fmtDateKey(def.from);
     document.getElementById('chartTo').value = fmtDateKey(def.to);
+    updateChartRangePillsActive();
     renderAll();
     renderRules();
 
@@ -2078,8 +2092,41 @@ function renderEquityChart(){
   });
 }
 
-document.getElementById('chartFrom').addEventListener('change', ()=>{ renderEquityChart(); renderInsights(); });
-document.getElementById('chartTo').addEventListener('change', ()=>{ renderEquityChart(); renderInsights(); });
+document.getElementById('chartFrom').addEventListener('change', ()=>{ renderEquityChart(); renderInsights(); updateChartRangePillsActive(); });
+document.getElementById('chartTo').addEventListener('change', ()=>{ renderEquityChart(); renderInsights(); updateChartRangePillsActive(); });
+
+/* ---------- Equity chart range presets ----------
+   "All" starts from the active account's created_at rather than some
+   arbitrary far-back date, so the chart doesn't open with a long empty
+   stretch before the account even existed. */
+function chartPresetFromDate(days){
+  if(days === 'all'){
+    return activeAccount && activeAccount.created_at
+      ? new Date(activeAccount.created_at)
+      : new Date(today.getFullYear()-2, today.getMonth(), today.getDate());
+  }
+  const d = new Date(today);
+  d.setDate(d.getDate() - Number(days) + 1);
+  return d;
+}
+function setChartRangePreset(days){
+  document.getElementById('chartFrom').value = fmtDateKey(chartPresetFromDate(days));
+  document.getElementById('chartTo').value = fmtDateKey(today);
+  renderEquityChart();
+  renderInsights();
+  updateChartRangePillsActive();
+}
+function updateChartRangePillsActive(){
+  const { from, to } = getChartRange();
+  const isToToday = fmtDateKey(to) === fmtDateKey(today);
+  const fromKey = fmtDateKey(from);
+  document.querySelectorAll('#chartRangePills button').forEach(btn=>{
+    btn.classList.toggle('active', isToToday && fromKey === fmtDateKey(chartPresetFromDate(btn.dataset.days)));
+  });
+}
+document.querySelectorAll('#chartRangePills button').forEach(btn=>{
+  btn.addEventListener('click', ()=>setChartRangePreset(btn.dataset.days));
+});
 
 /* ---------- CSV export ----------
    Exports the trades in the equity chart's date range (respecting the
