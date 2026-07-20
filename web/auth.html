@@ -186,7 +186,12 @@
 <script src="auth.js"></script>
 <script>
   const params = new URLSearchParams(location.search);
-  const redirect = params.get('redirect') || 'app.html';
+  // Whitelisted rather than used as-is — an unvalidated redirect target
+  // would let a crafted link (auth.html?redirect=https://evil.example)
+  // send someone who just typed their real password into a real login form
+  // straight on to an attacker's page right after a genuine, successful login.
+  const ALLOWED_REDIRECTS = ['app.html', 'connect.html', 'index.html', 'faq.html', 'contact.html'];
+  const redirect = ALLOWED_REDIRECTS.includes(params.get('redirect')) ? params.get('redirect') : 'app.html';
 
   const tabLogin = document.getElementById('tabLogin');
   const tabSignup = document.getElementById('tabSignup');

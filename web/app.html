@@ -1201,9 +1201,9 @@ function populateAccountSelect(){
   }
 
   menu.innerHTML = accountsList.map(a => `
-    <button type="button" class="account-pill-item ${activeAccount && a.id === activeAccount.id ? 'is-active' : ''}" data-id="${a.id}">
+    <button type="button" class="account-pill-item ${activeAccount && a.id === activeAccount.id ? 'is-active' : ''}" data-id="${escapeHtml(a.id)}">
       <span class="account-pill-item-dot ${a.account_type === 'live' ? 'is-live' : 'is-demo'}"></span>
-      <span class="account-pill-item-label">${a.account_type === 'live' ? 'Live' : 'Demo'} — ${a.label} (${a.currency})</span>
+      <span class="account-pill-item-label">${a.account_type === 'live' ? 'Live' : 'Demo'} — ${escapeHtml(a.label)} (${escapeHtml(a.currency)})</span>
       ${activeAccount && a.id === activeAccount.id ? '<span class="account-pill-item-check">✓</span>' : ''}
     </button>
   `).join('');
@@ -2298,7 +2298,7 @@ function openDay(key){
       <div class="trade-row">
         <div class="trade-row-main" onclick="openTrade('${t.id}')">
           <div>
-            <div class="sym">${t.time ? `<span class="trade-row-time">${localTimeHHMM(t)}</span> ` : ''}${t.symbol}</div>
+            <div class="sym">${t.time ? `<span class="trade-row-time">${localTimeHHMM(t)}</span> ` : ''}${escapeHtml(t.symbol)}</div>
             <div class="meta">${t.lot} lot · entry ${t.entry ?? '—'} → exit ${t.exit ?? '—'}</div>
           </div>
           <div class="profit ${t.profit>=0?'pos':'neg'}">${t.profit>=0?'+':''}${t.profit.toFixed(2)}</div>
@@ -2370,7 +2370,7 @@ async function openTrade(id){
   document.getElementById('tradeModalTitle').textContent = t.symbol;
   document.getElementById('tradeModalDate').textContent = new Date(t.date + 'T00:00:00').toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric', year:'numeric'});
   document.getElementById('tradeDetailGrid').innerHTML = `
-    <div class="trade-stat"><div class="l">🏷️ Symbol / pair</div><input class="cell-input" id="editSymbol" type="text" value="${t.symbol}"></div>
+    <div class="trade-stat"><div class="l">🏷️ Symbol / pair</div><input class="cell-input" id="editSymbol" type="text" value="${escapeHtml(t.symbol)}"></div>
     <div class="trade-stat"><div class="l">🕐 Time</div><input class="cell-input" id="editTime" type="time" value="${localTimeHHMM(t)}"></div>
     <div class="trade-stat"><div class="l">↗️ Entry</div><input class="cell-input" id="editEntry" type="number" step="0.00001" value="${t.entry ?? ''}"></div>
     <div class="trade-stat"><div class="l">↘️ Exit</div><input class="cell-input" id="editExit" type="number" step="0.00001" value="${t.exit ?? ''}"></div>

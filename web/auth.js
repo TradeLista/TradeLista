@@ -13,6 +13,12 @@
   const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  // Account labels are free text the user (or, in principle, a compromised
+  // account) chooses — never interpolate them into innerHTML unescaped.
+  function escapeHtml(str){
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
   async function callFunction(name){
     const { data: { session } } = await sb.auth.getSession();
     if(!session) return { ok:false, error:'Not logged in.' };
@@ -653,13 +659,13 @@
         <div class="tl-am-acct-main">
           <span class="tl-am-acct-dot ${a.account_type === 'live' ? 'is-live' : 'is-demo'}"></span>
           <div>
-            <div class="tl-am-acct-label">${a.label} <span class="tl-am-acct-badge">${a.platform}</span></div>
-            <div class="tl-am-acct-sub">${a.account_type === 'live' ? 'Live' : 'Demo'} · ${a.currency} · Not connected — no EA linked yet</div>
+            <div class="tl-am-acct-label">${escapeHtml(a.label)} <span class="tl-am-acct-badge">${escapeHtml(a.platform)}</span></div>
+            <div class="tl-am-acct-sub">${a.account_type === 'live' ? 'Live' : 'Demo'} · ${escapeHtml(a.currency)} · Not connected — no EA linked yet</div>
           </div>
         </div>
         <div class="tl-am-acct-actions">
-          <button type="button" class="tl-am-acct-key" data-key="${a.api_key}" title="Copy this account's API key">🔑 Copy key</button>
-          ${accounts.length > 1 ? `<button type="button" class="tl-am-acct-delete" data-id="${a.id}" data-label="${a.label}" title="Delete account">🗑</button>` : ''}
+          <button type="button" class="tl-am-acct-key" data-key="${escapeHtml(a.api_key)}" title="Copy this account's API key">🔑 Copy key</button>
+          ${accounts.length > 1 ? `<button type="button" class="tl-am-acct-delete" data-id="${escapeHtml(a.id)}" data-label="${escapeHtml(a.label)}" title="Delete account">🗑</button>` : ''}
         </div>
       </div>
     `).join('');

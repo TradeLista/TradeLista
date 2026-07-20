@@ -77,6 +77,20 @@ Deno.serve(async (req) => {
     });
   }
 
+  // Anyone holding a valid api_key (a long-lived value pasted into an EA's
+  // config, more prone to leaking than a password) can otherwise write
+  // arbitrary text into `symbol` for that account's owner — and it's
+  // rendered back into the owner's own page later. Real symbols are short
+  // and plain (EURUSD, US30, XAUUSD, DE40.cash), so a tight allow-list here
+  // costs nothing and closes that off at the source, on top of the client
+  // already escaping it before render.
+  if (!/^[A-Za-z0-9._#-]{1,20}$/.test(body.symbol)) {
+    return new Response(JSON.stringify({ error: 'Invalid symbol.' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   // Keyed off the MT5 deal ticket (stable and unique per account) rather
   // than a timestamp, so the exact same closed trade always maps to the
   // exact same row — if it's ever sent twice (MT5 firing the event twice,
@@ -106,7 +120,8 @@ Deno.serve(async (req) => {
   });
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('ingest-trade upsert failed:', error.message);
+    return new Response(JSON.stringify({ error: 'Could not save trade.' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
