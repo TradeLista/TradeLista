@@ -591,14 +591,20 @@
   .step p{font-size:13.5px; color:var(--text-dim); line-height:1.6; max-width:260px; margin:0 auto; position:relative;}
 
   /* ---------- Pricing ---------- */
-  .price-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:18px; margin-top:52px; max-width:760px; margin-left:auto; margin-right:auto;}
+  .price-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:22px; margin-top:52px; max-width:800px; margin-left:auto; margin-right:auto; align-items:stretch;}
   .price-card{
-    background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px 26px;
+    background:rgba(255,255,255,0.03); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--border-soft); border-radius:20px; padding:30px 28px;
     display:flex; flex-direction:column; position:relative;
-    transition:transform .2s, border-color .2s;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 30px -18px rgba(0,0,0,0.5);
+    transition:transform .2s, border-color .2s, box-shadow .2s;
   }
-  .price-card:hover{transform:translateY(-3px);}
-  .price-card.pro{border-color:var(--accent); background:linear-gradient(180deg, rgba(79,140,255,0.06), var(--bg-card) 40%); box-shadow:0 0 44px -14px rgba(79,140,255,0.5);}
+  .price-card:hover{
+    transform:translateY(-3px); border-color:var(--border);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.07), 0 22px 44px -20px rgba(0,0,0,0.65);
+  }
+  .price-card.pro{border-color:var(--accent); background:linear-gradient(180deg, rgba(79,140,255,0.07), rgba(255,255,255,0.03) 42%); box-shadow:0 0 44px -14px rgba(79,140,255,0.5);}
+  .price-card.pro:hover{box-shadow:0 0 54px -12px rgba(79,140,255,0.6), 0 22px 44px -20px rgba(0,0,0,0.65);}
   /* slowly sweeping conic highlight around the Pro card's border */
   @property --pc-angle{syntax:'<angle>'; initial-value:0deg; inherits:false;}
   .price-card.pro::before{
@@ -612,15 +618,33 @@
   .price-badge{
     position:absolute; top:-12px; right:24px; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff;
     font-size:11px; font-weight:700; padding:5px 12px; border-radius:99px;
+    box-shadow:0 8px 20px -8px rgba(79,140,255,0.7);
   }
-  .price-card .plan-name{font-size:13px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; font-weight:700;}
-  .price-card .plan-price{font-family:var(--font-mono); font-size:36px; font-weight:700; margin:10px 0 4px;}
-  .price-card .plan-price span{font-size:14px; color:var(--text-faint); font-weight:500;}
-  .price-card .plan-desc{font-size:13px; color:var(--text-dim); margin-bottom:20px;}
-  .price-list{list-style:none; display:flex; flex-direction:column; gap:11px; margin-bottom:24px; flex:1;}
-  .price-list li{display:flex; align-items:flex-start; gap:9px; font-size:13.5px; color:var(--text-dim);}
-  .price-list li .chk{color:var(--green); font-weight:700; flex-shrink:0;}
-  .price-list li .chk.no{color:var(--text-faint);}
+  .plan-head{display:flex; align-items:center; gap:11px; margin-bottom:16px;}
+  .plan-ic{
+    width:38px; height:38px; border-radius:11px; flex-shrink:0; font-size:17px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--bg-elevated); border:1px solid var(--border-soft);
+  }
+  .price-card.pro .plan-ic{background:var(--accent-dim); border-color:rgba(79,140,255,0.35);}
+  .price-card .plan-name{font-size:13px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; font-weight:800;}
+  .price-card .plan-price{font-family:var(--font-mono); font-size:40px; font-weight:700; letter-spacing:-0.02em; margin:0 0 4px;}
+  .price-card .plan-price span{font-size:14px; color:var(--text-faint); font-weight:500; letter-spacing:0;}
+  .price-card .plan-desc{font-size:13px; color:var(--text-dim); margin-bottom:18px;}
+  .price-divider{height:1px; background:linear-gradient(90deg, var(--border), transparent); margin-bottom:16px;}
+  .price-list-label{font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.07em; color:var(--text-faint); margin-bottom:11px;}
+  .price-card.pro .price-list-label{color:var(--accent);}
+  .price-list{list-style:none; display:flex; flex-direction:column; gap:10px; margin-bottom:24px; flex:1;}
+  .price-list li{display:flex; align-items:flex-start; gap:9px; font-size:13.5px; color:var(--text-dim); line-height:1.5;}
+  .price-list li .chk{
+    flex-shrink:0; width:17px; height:17px; margin-top:1px; border-radius:50%;
+    background:var(--green-dim); border:1px solid var(--green-border); color:var(--green);
+    display:flex; align-items:center; justify-content:center; font-size:9.5px; font-weight:800;
+  }
+  .price-list li .chk.no{background:var(--bg-elevated); border-color:var(--border); color:var(--text-faint);}
+  .price-list li.muted{color:var(--text-faint);}
+  .price-foot{margin-top:11px; text-align:center; font-size:11.5px; color:var(--text-faint);}
+  .price-note{max-width:640px; margin:22px auto 0; text-align:center; font-size:12px; color:var(--text-faint); line-height:1.6;}
 
   /* ---------- Final CTA ---------- */
   .final-cta{
@@ -1108,37 +1132,51 @@
 <section id="pricing" class="reveal">
   <span class="section-tag">Pricing</span>
   <h2 class="section-title">Start free. Upgrade when the EA makes sense.</h2>
+  <p class="section-sub">Two plans, nothing hidden. Manual journaling is free — Pro is for auto-sync and the deeper journaling tools.</p>
   <div class="price-grid">
     <div class="price-card reveal-item" style="--i:0">
-      <div class="plan-name">Free</div>
+      <div class="plan-head">
+        <span class="plan-ic">🌱</span>
+        <div class="plan-name">Free</div>
+      </div>
       <div class="plan-price">$0<span>/month</span></div>
       <div class="plan-desc">Try the calendar with manual entries.</div>
+      <div class="price-divider"></div>
+      <div class="price-list-label">What's included</div>
       <ul class="price-list">
         <li><span class="chk">✓</span> Unlimited manual trades</li>
-        <li><span class="chk">✓</span> Manual entry, calendar &amp; PnL</li>
-        <li><span class="chk">✓</span> Text note per trade</li>
-        <li><span class="chk no">✕</span> No image uploads</li>
-        <li><span class="chk no">✕</span> No reflection questions</li>
-        <li><span class="chk no">✕</span> No MT4/MT5 EA connection</li>
+        <li><span class="chk">✓</span> Calendar, PnL &amp; equity curve</li>
+        <li><span class="chk">✓</span> Text note &amp; tags per trade</li>
+        <li class="muted"><span class="chk no">✕</span> No image uploads</li>
+        <li class="muted"><span class="chk no">✕</span> No reflection questions</li>
+        <li class="muted"><span class="chk no">✕</span> No MT4/MT5 EA connection</li>
       </ul>
       <a class="btn btn-ghost js-start-free" href="auth.html?mode=signup&amp;redirect=app.html">Start free</a>
+      <div class="price-foot">No credit card required</div>
     </div>
     <div class="price-card pro reveal-item" style="--i:1">
       <div class="price-badge">Most popular</div>
-      <div class="plan-name">Pro</div>
+      <div class="plan-head">
+        <span class="plan-ic">⚡</span>
+        <div class="plan-name">Pro</div>
+      </div>
       <div class="plan-price">$10<span>/month</span></div>
       <div class="plan-desc">Everything, for serious journaling.</div>
+      <div class="price-divider"></div>
+      <div class="price-list-label">Everything in Free, plus</div>
       <ul class="price-list">
-        <li><span class="chk">✓</span> Unlimited trades</li>
         <li><span class="chk">✓</span> MT4/MT5 EA auto-sync</li>
         <li><span class="chk">✓</span> Up to 5 connected accounts</li>
         <li><span class="chk">✓</span> Unlimited image uploads per trade</li>
         <li><span class="chk">✓</span> Unlimited custom reflection questions per trade</li>
         <li><span class="chk">✓</span> Golden trading rules</li>
+        <li><span class="chk">✓</span> Trade insights by tag &amp; weekday</li>
       </ul>
       <a class="btn btn-primary" href="app.html" id="goProBtn">Go Pro</a>
+      <div class="price-foot">Cancel anytime — you keep all your data</div>
     </div>
   </div>
+  <p class="price-note">Prices in USD. Cancel anytime from your account settings — your trades, notes and screenshots stay either way.</p>
 </section>
 
 <!-- FINAL CTA -->
