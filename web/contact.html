@@ -102,20 +102,6 @@
   .form-grid-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
   .form-success{color:var(--green); font-size:13px; margin:-6px 0 14px; min-height:14px;}
 
-  /* Auth gate */
-  .auth-gate{
-    display:none; min-height:70vh; align-items:center; justify-content:center; flex-direction:column; text-align:center;
-    padding:80px 24px; max-width:480px; margin:0 auto;
-  }
-  .auth-gate.show{display:flex;}
-  .auth-gate .ic{
-    width:56px; height:56px; border-radius:16px; background:var(--accent-dim); color:var(--accent);
-    display:flex; align-items:center; justify-content:center; font-size:26px; margin-bottom:20px;
-  }
-  .auth-gate h2{font-size:22px; font-weight:800; margin-bottom:10px;}
-  .auth-gate p{font-size:14px; color:var(--text-dim); line-height:1.6; margin-bottom:24px;}
-  .auth-gate .actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
-
   @media (max-width:600px){
     .form-grid-2{grid-template-columns:1fr;}
   }
@@ -245,24 +231,15 @@
   </div>
 </footer>
 
-<div class="auth-gate" id="authGate">
-  <div class="ic">🔒</div>
-  <h2>Create a free account to get in touch</h2>
-  <p>Log in so we can reply to the right account.</p>
-  <div class="actions">
-    <a class="btn btn-primary" href="auth.html?mode=signup&amp;redirect=contact.html">Create free account</a>
-    <a class="btn btn-ghost" href="auth.html?mode=login&amp;redirect=contact.html">I already have one — log in</a>
-  </div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="auth.js"></script>
 <script>
-  (async function initAuthGate(){
-    if(!(await TLAuth.isLoggedIn())){
-      document.getElementById('authGate').classList.add('show');
-    } else {
-      document.querySelector('.page').style.display = '';
+  // The contact form is public — anyone should be able to reach out without
+  // an account, so there's no auth-gate here. If you happen to be logged
+  // in, we just prefill your name/email for convenience.
+  (async function initPage(){
+    document.querySelector('.page').style.display = '';
+    if(await TLAuth.isLoggedIn()){
       const user = await TLAuth.getCurrentUser();
       document.getElementById('cFirstName').value = user.firstName || '';
       document.getElementById('cLastName').value = user.lastName || '';
