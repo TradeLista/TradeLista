@@ -74,6 +74,27 @@
   .navlinks a:hover{color:var(--text); background:var(--bg-hover);}
   .navlinks a.active{color:var(--text); background:var(--bg-elevated);}
   .navright{display:flex; align-items:center; gap:12px;}
+  /* Mobile menu — .navlinks just disappears below 720px with nothing to
+     replace it, so there was no way to reach Connect Account/Contact/FAQ
+     from a phone. This hamburger + dropdown panel reuses the same links. */
+  .nav-hamburger{
+    display:none; width:38px; height:38px; flex-shrink:0; border-radius:10px;
+    background:var(--bg-elevated); border:1px solid var(--border);
+    align-items:center; justify-content:center; flex-direction:column; gap:4px; cursor:pointer;
+  }
+  .nav-hamburger span{display:block; width:16px; height:2px; background:var(--text-dim); border-radius:1px; transition:transform .2s, opacity .2s;}
+  .nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg);}
+  .nav-hamburger.open span:nth-child(2){opacity:0;}
+  .nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+  .mobile-navlinks{
+    display:none; position:absolute; top:100%; left:0; right:0; z-index:60;
+    flex-direction:column; gap:4px;
+    background:var(--bg-card); border-bottom:1px solid var(--border-soft); padding:10px 20px 18px;
+    box-shadow:0 24px 44px -18px rgba(0,0,0,0.65);
+  }
+  .mobile-navlinks.open{display:flex;}
+  .mobile-navlinks a{padding:12px 14px; border-radius:10px; font-size:14.5px; font-weight:600; color:var(--text-dim);}
+  .mobile-navlinks a:hover, .mobile-navlinks a.active{color:var(--text); background:var(--bg-elevated);}
   .navright .btn{padding:8px 15px; font-size:13px;}
   .btn{
     display:inline-flex; align-items:center; justify-content:center; gap:8px;
@@ -672,6 +693,7 @@
   @media (max-width:720px){
     .kpis{grid-template-columns:repeat(2,1fr);}
     .navlinks{display:none;}
+    .nav-hamburger{display:flex;}
   }
   /* Phone-width fix: grid items don't shrink below their content's natural
      size by default, so the 8-column calendar (7 days + week-total) was
@@ -732,9 +754,20 @@
     <a href="contact.html">Contact</a>
     <a href="faq.html">FAQ</a>
   </div>
-  <div class="navright" id="navRight" style="visibility:hidden">
-    <a class="btn btn-ghost" href="auth.html?mode=login">Log in</a>
-    <a class="btn btn-primary" href="auth.html?mode=signup&amp;redirect=app.html">Start free</a>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <button type="button" class="nav-hamburger" id="navHamburger" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navright" id="navRight" style="visibility:hidden">
+      <a class="btn btn-ghost" href="auth.html?mode=login">Log in</a>
+      <a class="btn btn-primary" href="auth.html?mode=signup&amp;redirect=app.html">Start free</a>
+    </div>
+  </div>
+  <div class="mobile-navlinks" id="mobileNavLinks">
+    <a class="active" href="app.html">Calendar</a>
+    <a href="connect.html">Connect Account</a>
+    <a href="contact.html">Contact</a>
+    <a href="faq.html">FAQ</a>
   </div>
 </div>
 
@@ -1708,6 +1741,20 @@ function renderFilterMenu(){
     };
   });
 }
+
+const navHamburger = document.getElementById('navHamburger');
+const mobileNavLinks = document.getElementById('mobileNavLinks');
+navHamburger.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  const open = mobileNavLinks.classList.toggle('open');
+  navHamburger.classList.toggle('open', open);
+  navHamburger.setAttribute('aria-expanded', open);
+});
+document.addEventListener('click', ()=>{
+  mobileNavLinks.classList.remove('open');
+  navHamburger.classList.remove('open');
+  navHamburger.setAttribute('aria-expanded', false);
+});
 
 document.getElementById('calFilterBtn').addEventListener('click', (e)=>{
   e.stopPropagation();
