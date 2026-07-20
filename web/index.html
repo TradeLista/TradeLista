@@ -327,10 +327,10 @@
     mask-image:linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
   }
   .feat-row{
-    position:relative; z-index:1; overflow:hidden;
-    display:grid; grid-template-columns:minmax(0,5fr) minmax(0,6fr); gap:clamp(28px,4vw,56px); align-items:center;
+    position:relative; z-index:1; overflow:hidden; min-height:300px;
+    display:grid; grid-template-columns:minmax(0,5fr) minmax(0,6fr); gap:clamp(24px,3.4vw,48px); align-items:center;
     background:rgba(255,255,255,0.03); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-    border:1px solid var(--border-soft); border-radius:22px; padding:clamp(26px,3.4vw,44px);
+    border:1px solid var(--border-soft); border-radius:22px; padding:clamp(22px,2.8vw,36px);
     box-shadow:inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 30px -18px rgba(0,0,0,0.5);
     transition:border-color .2s, box-shadow .2s;
     text-align:left;
@@ -419,17 +419,22 @@
   @keyframes featFloat{0%,100%{transform:translateY(0);} 50%{transform:translateY(-5px);}}
 
   /* shared window frame around every feature mockup */
+  /* Fixed height + flex column, so every mockup — regardless of how much
+     content it holds — renders as exactly the same size. Shorter content
+     centers vertically inside; the tallest (reflection questions) was
+     trimmed to actually fit rather than relying on overflow to hide it. */
   .fv-frame{
-    width:100%; max-width:440px; background:var(--bg-card); border:1px solid var(--border); border-radius:14px;
+    width:100%; max-width:390px; height:320px; display:flex; flex-direction:column;
+    background:var(--bg-card); border:1px solid var(--border); border-radius:14px;
     overflow:hidden; box-shadow:0 26px 54px -26px rgba(0,0,0,0.7);
   }
-  .fv-frame-bar{display:flex; align-items:center; gap:6px; padding:10px 13px; border-bottom:1px solid var(--border-soft); background:var(--bg-elevated);}
+  .fv-frame-bar{flex-shrink:0; display:flex; align-items:center; gap:6px; padding:9px 12px; border-bottom:1px solid var(--border-soft); background:var(--bg-elevated);}
   .fv-frame-bar i{width:8px; height:8px; border-radius:50%; display:block;}
   .fv-frame-bar i:nth-child(1){background:var(--red);}
   .fv-frame-bar i:nth-child(2){background:#f5c542;}
   .fv-frame-bar i:nth-child(3){background:var(--green);}
   .fv-frame-title{margin-left:6px; font-size:10.5px; color:var(--text-faint); font-weight:600;}
-  .fv-frame-body{padding:16px;}
+  .fv-frame-body{padding:14px; flex:1; min-height:0; overflow:hidden; display:flex; flex-direction:column; justify-content:center;}
 
   /* 1 — calendar mockup */
   .fv-cal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:11px;}
@@ -457,15 +462,15 @@
   .fv-day.loss span:last-child{color:var(--red);}
 
   /* 2 — auto-sync mockup */
-  .fv-sync{display:flex; align-items:center; justify-content:center; gap:14px; padding:6px 0 2px;}
+  .fv-sync{display:flex; align-items:center; justify-content:center; gap:12px; padding:2px 0 0;}
   .fv-node{
-    background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:14px; padding:13px 17px;
-    display:flex; flex-direction:column; align-items:center; gap:6px; min-width:92px;
+    background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:12px; padding:10px 14px;
+    display:flex; flex-direction:column; align-items:center; gap:5px; min-width:86px;
   }
-  .fv-node span{font-size:20px;}
+  .fv-node span{font-size:18px;}
   .fv-node small{font-size:10px; color:var(--text-faint); font-weight:600;}
   .fv-node .fv-node-badge{font-family:var(--font-mono); font-size:10px; font-weight:700; color:var(--accent); background:var(--accent-dim); border-radius:6px; padding:2px 7px;}
-  .fv-link{position:relative; flex:1; max-width:90px; height:2px; border-radius:2px; opacity:.75;
+  .fv-link{position:relative; flex:1; max-width:80px; height:2px; border-radius:2px; opacity:.75;
     background:repeating-linear-gradient(90deg, var(--accent) 0 6px, transparent 6px 12px);}
   .fv-dot{
     position:absolute; top:50%; left:0; width:7px; height:7px; border-radius:50%; background:#fff;
@@ -473,10 +478,10 @@
     animation:fvDotMove 1.8s ease-in-out infinite;
   }
   @keyframes fvDotMove{0%{left:0; opacity:0;} 15%{opacity:1;} 85%{opacity:1;} 100%{left:calc(100% - 7px); opacity:0;}}
-  .fv-sync-feed{margin-top:14px; display:flex; flex-direction:column; gap:8px;}
+  .fv-sync-feed{margin-top:10px; display:flex; flex-direction:column; gap:6px;}
   .fv-sync-trade{
     display:flex; align-items:center; justify-content:space-between; gap:10px;
-    background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:10px; padding:9px 12px; font-size:11.5px;
+    background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:9px; padding:7px 11px; font-size:11.5px;
   }
   .fv-sync-trade .sym{font-weight:700; color:var(--text); display:flex; align-items:center; gap:8px;}
   .fv-sync-trade .tme{font-family:var(--font-mono); font-weight:600; font-size:10.5px; color:var(--text-faint);}
@@ -485,7 +490,7 @@
   .fv-sync-trade .pnl.neg{color:var(--red);}
   .fv-sync-trade.landing{border-color:var(--green-border); background:var(--green-dim); animation:fvLand 5.5s ease-in-out infinite;}
   @keyframes fvLand{0%,6%{opacity:0; transform:translateY(-8px);} 15%,100%{opacity:1; transform:none;}}
-  .fv-sync-status{margin-top:12px; display:flex; align-items:center; justify-content:center; gap:7px; font-size:11.5px; color:var(--text-faint);}
+  .fv-sync-status{margin-top:9px; display:flex; align-items:center; justify-content:center; gap:7px; font-size:11.5px; color:var(--text-faint);}
   .fv-sync-status .dotpulse{width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green);}
 
   /* 3 — reflection questions mockup */
@@ -630,10 +635,10 @@
   .step p{font-size:13.5px; color:var(--text-dim); line-height:1.6; max-width:260px; margin:0 auto; position:relative;}
 
   /* ---------- Pricing ---------- */
-  .price-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:22px; margin-top:52px; max-width:800px; margin-left:auto; margin-right:auto; align-items:stretch;}
+  .price-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:20px; margin-top:48px; max-width:760px; margin-left:auto; margin-right:auto; align-items:stretch;}
   .price-card{
     background:rgba(255,255,255,0.03); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-    border:1px solid var(--border-soft); border-radius:20px; padding:30px 28px;
+    border:1px solid var(--border-soft); border-radius:18px; padding:24px 24px;
     display:flex; flex-direction:column; position:relative;
     box-shadow:inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 30px -18px rgba(0,0,0,0.5);
     transition:transform .2s, border-color .2s, box-shadow .2s;
@@ -659,22 +664,22 @@
     font-size:11px; font-weight:700; padding:5px 12px; border-radius:99px;
     box-shadow:0 8px 20px -8px rgba(79,140,255,0.7);
   }
-  .plan-head{display:flex; align-items:center; gap:11px; margin-bottom:16px;}
+  .plan-head{display:flex; align-items:center; gap:10px; margin-bottom:13px;}
   .plan-ic{
-    width:38px; height:38px; border-radius:11px; flex-shrink:0; font-size:17px;
+    width:34px; height:34px; border-radius:10px; flex-shrink:0; font-size:15px;
     display:flex; align-items:center; justify-content:center;
     background:var(--bg-elevated); border:1px solid var(--border-soft);
   }
   .price-card.pro .plan-ic{background:var(--accent-dim); border-color:rgba(79,140,255,0.35);}
-  .price-card .plan-name{font-size:13px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; font-weight:800;}
-  .price-card .plan-price{font-family:var(--font-mono); font-size:40px; font-weight:700; letter-spacing:-0.02em; margin:0 0 4px;}
-  .price-card .plan-price span{font-size:14px; color:var(--text-faint); font-weight:500; letter-spacing:0;}
-  .price-card .plan-desc{font-size:13px; color:var(--text-dim); margin-bottom:18px;}
-  .price-divider{height:1px; background:linear-gradient(90deg, var(--border), transparent); margin-bottom:16px;}
-  .price-list-label{font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.07em; color:var(--text-faint); margin-bottom:11px;}
+  .price-card .plan-name{font-size:12.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; font-weight:800;}
+  .price-card .plan-price{font-family:var(--font-mono); font-size:33px; font-weight:700; letter-spacing:-0.02em; margin:0 0 3px;}
+  .price-card .plan-price span{font-size:13px; color:var(--text-faint); font-weight:500; letter-spacing:0;}
+  .price-card .plan-desc{font-size:12.5px; color:var(--text-dim); margin-bottom:14px;}
+  .price-divider{height:1px; background:linear-gradient(90deg, var(--border), transparent); margin-bottom:13px;}
+  .price-list-label{font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.07em; color:var(--text-faint); margin-bottom:9px;}
   .price-card.pro .price-list-label{color:var(--accent);}
-  .price-list{list-style:none; display:flex; flex-direction:column; gap:10px; margin-bottom:24px; flex:1;}
-  .price-list li{display:flex; align-items:flex-start; gap:9px; font-size:13.5px; color:var(--text-dim); line-height:1.5;}
+  .price-list{list-style:none; display:flex; flex-direction:column; gap:7px; margin-bottom:15px; flex:1;}
+  .price-list li{display:flex; align-items:flex-start; gap:8px; font-size:13px; color:var(--text-dim); line-height:1.45;}
   .price-list li .chk{
     flex-shrink:0; width:17px; height:17px; margin-top:1px; border-radius:50%;
     background:var(--green-dim); border:1px solid var(--green-border); color:var(--green);
@@ -992,8 +997,7 @@
             <div class="fv-quiz">
               <div class="fv-quiz-row answered"><span class="q">Did you follow your strategy?</span><span class="fv-yn"><span class="on-y">Yes</span><span>No</span></span></div>
               <div class="fv-quiz-row answered"><span class="q">Revenge trade?</span><span class="fv-yn"><span>Yes</span><span class="on-n">No</span></span></div>
-              <div class="fv-quiz-row answered"><span class="q">Respected your stop loss?</span><span class="fv-yn"><span class="on-y">Yes</span><span>No</span></span></div>
-              <div class="fv-quiz-row"><span class="q">How was your entry timing?</span><span class="fv-yn"><span>Yes</span><span>No</span></span></div>
+              <div class="fv-quiz-row"><span class="q">Respected your stop loss?</span><span class="fv-yn"><span>Yes</span><span>No</span></span></div>
               <div class="fv-quiz-note">Entered too early before the retest — wait for the candle close next time<span class="fv-caret"></span></div>
             </div>
           </div>
@@ -1207,7 +1211,7 @@
         <li><span class="chk">✓</span> MT4/MT5 EA auto-sync</li>
         <li><span class="chk">✓</span> Up to 5 connected accounts</li>
         <li><span class="chk">✓</span> Unlimited image uploads per trade</li>
-        <li><span class="chk">✓</span> Unlimited custom reflection questions per trade</li>
+        <li><span class="chk">✓</span> Unlimited custom reflection questions</li>
         <li><span class="chk">✓</span> Golden trading rules</li>
         <li><span class="chk">✓</span> Trade insights by tag &amp; weekday</li>
       </ul>
