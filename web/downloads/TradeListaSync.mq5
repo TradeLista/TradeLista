@@ -69,9 +69,15 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
       ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr
    );
 
+   // StringToCharArray's exact return count (with or without a trailing \0)
+   // varies by build, so only trim a trailing null if one is actually there —
+   // blindly subtracting 1 can instead chop off the JSON's real last byte.
    char postData[];
-   int len = StringToCharArray(json, postData, 0, StringLen(json)) - 1; // drop the trailing null terminator
-   ArrayResize(postData, len);
+   int written = StringToCharArray(json, postData, 0, StringLen(json), CP_UTF8);
+   if(written > 0 && postData[written-1] == 0)
+      ArrayResize(postData, written - 1);
+   else
+      ArrayResize(postData, written);
 
    char responseData[];
    string responseHeaders;

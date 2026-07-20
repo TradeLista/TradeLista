@@ -1391,10 +1391,16 @@ async function hydrateFromSupabase(){
   const deleted = [];
   const overrides = {};
   const meta = {};
+  // Overrides only make sense against the default account's mock-generated
+  // demo trades. Any other account has no baseline data to override, so a
+  // non-manual row there (e.g. an EA-sourced trade) must be injected
+  // directly just like a manual trade — otherwise it has nothing to merge
+  // onto and silently never appears.
+  const isDefaultAccount = !!(activeAccount && activeAccount.is_default);
   rows.forEach(row=>{
     if(row.is_deleted){ deleted.push(row.id); return; }
     const base = { id: row.id, date: row.date, symbol: row.symbol, lot: row.lot, entry: row.entry, exit: row.exit_price, profit: row.profit };
-    if(row.is_manual){
+    if(row.is_manual || !isDefaultAccount){
       if(!manual[row.date]) manual[row.date] = [];
       manual[row.date].push(base);
     } else {
@@ -1990,7 +1996,11 @@ function renderKPIs(){
   document.getElementById('kpiWinrate').textContent = tradeCount ? winrate.toFixed(0)+'%' : '—';
   document.getElementById('kpiTradeCount').textContent = tradeCount + ' trades';
   if(bestDayKey){
-    document.getElementById('kpiBestDay').textContent = '+' + bestDayAmount.toLocaleString('en-US',{style:'currency',currency:CURRENCY});
+    const bestIsPos = bestDayAmount >= 0;
+    document.getElementById('kpiBestDay').textContent = (bestIsPos?'+':'') + bestDayAmount.toLocaleString('en-US',{style:'currency',currency:CURRENCY});
+    document.getElementById('kpiBestDay').className = 'value ' + (bestIsPos?'pos':'neg');
+    document.getElementById('kpiBestDayCard').classList.toggle('is-pos', bestIsPos);
+    document.getElementById('kpiBestDayCard').classList.toggle('is-neg', !bestIsPos);
     document.getElementById('kpiBestDayDate').textContent = new Date(bestDayKey).toLocaleDateString('en-US',{month:'short', day:'numeric'});
   } else {
     document.getElementById('kpiBestDay').textContent = '—';
