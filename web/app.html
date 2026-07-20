@@ -1485,9 +1485,15 @@ function deleteTradeById(id){
   const deleted = loadDeleted();
   if(!deleted.includes(id)){ deleted.push(id); saveDeleted(deleted); }
 
-  // drop any saved note/images/reflection for this trade
+  // drop any saved note/images/reflection for this trade — and delete the
+  // actual screenshot files from Storage too, otherwise they'd stay
+  // orphaned there forever and keep counting against the storage quota
   const meta = loadMeta();
-  if(meta[id]){ delete meta[id]; saveMeta(meta); }
+  if(meta[id]){
+    (meta[id].images || []).forEach(url => TLAuth.data.deleteTradeImage(url));
+    delete meta[id];
+    saveMeta(meta);
+  }
 
   // drop any saved edits for this trade too
   const overrides = loadOverrides();
