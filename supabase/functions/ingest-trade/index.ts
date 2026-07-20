@@ -52,6 +52,24 @@ Deno.serve(async (req) => {
     });
   }
 
+  // EA auto-sync is a Pro feature (see connect.html / the pricing page) —
+  // enforced here, not just implied by the setup guide's wording, so a Free
+  // account can't get free EA sync just by attaching the EA to its one
+  // manual-entry account.
+  const { data: profile } = await supabaseAdmin
+    .from('profiles')
+    .select('plan, cancel_at_period_end, period_end')
+    .eq('id', account.user_id)
+    .single();
+
+  const isExpiredPro = profile?.cancel_at_period_end && profile.period_end && new Date(profile.period_end) <= new Date();
+  if (!profile || profile.plan !== 'pro' || isExpiredPro) {
+    return new Response(JSON.stringify({ error: 'Pro plan required for EA auto-sync.' }), {
+      status: 402,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   if (!body.symbol || !body.date || typeof body.profit !== 'number') {
     return new Response(JSON.stringify({ error: 'Missing symbol, date or profit.' }), {
       status: 400,
