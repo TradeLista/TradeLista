@@ -1457,7 +1457,7 @@ function applyDeletions(){
   });
 }
 
-function deleteTradeById(id){
+async function deleteTradeById(id){
   // Don't trust id.split('-') for the date here — it silently produces
   // garbage for any id that isn't date-prefixed (e.g. an EA trade ingested
   // before the date-prefixed id fix shipped). Sending that garbage as the
@@ -1487,10 +1487,12 @@ function deleteTradeById(id){
 
   // drop any saved note/images/reflection for this trade — and delete the
   // actual screenshot files from Storage too, otherwise they'd stay
-  // orphaned there forever and keep counting against the storage quota
+  // orphaned there forever and keep counting against the storage quota.
+  // Awaited (not fire-and-forget): a caller that navigates away right after
+  // calling this would otherwise cancel the in-flight delete request.
   const meta = loadMeta();
   if(meta[id]){
-    (meta[id].images || []).forEach(url => TLAuth.data.deleteTradeImage(url));
+    await Promise.all((meta[id].images || []).map(url => TLAuth.data.deleteTradeImage(url)));
     delete meta[id];
     saveMeta(meta);
   }
@@ -2857,7 +2859,11 @@ async function openTrade(id){
         meta[id].images[idx] = res.url;
         saveMeta(meta);
         await persistTrade(id);
-        TLAuth.data.deleteTradeImage(src); // the pre-drawing version this one replaces
+        // Awaited — openTrade() below re-renders right away, and a
+        // fire-and-forget delete here can get cancelled by that (or by the
+        // user navigating on) before the request finishes, orphaning the
+        // pre-drawing version this one replaces.
+        await TLAuth.data.deleteTradeImage(src);
         openTrade(id);
       });
     };
@@ -2869,10 +2875,8 @@ async function openTrade(id){
       meta[id].images.splice(idx, 1);
       saveMeta(meta);
       await persistTrade(id);
-      // Not awaited — the row is already updated locally, and there's
-      // nothing useful to do in the UI if the storage delete itself fails
-      // beyond leaving an orphaned file (rare, and not worth blocking on).
-      TLAuth.data.deleteTradeImage(src);
+      // Awaited — see the img-slot-draw handler above for why.
+      await TLAuth.data.deleteTradeImage(src);
       openTrade(id);
     };
     imgSlots.appendChild(slot);
