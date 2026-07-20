@@ -100,6 +100,7 @@
       entry: trade.entry ?? null,
       exit_price: trade.exit ?? null,
       profit: trade.profit ?? null,
+      side: trade.side || null,
       note: trade.note || '',
       images: trade.images || [],
       answers: trade.answers || {},

@@ -60,6 +60,14 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
    double volume = HistoryDealGetDouble(dealTicket, DEAL_VOLUME);
    double closePrice = HistoryDealGetDouble(dealTicket, DEAL_PRICE);
    datetime closeTime = (datetime)HistoryDealGetInteger(dealTicket, DEAL_TIME);
+
+   // DEAL_TYPE on the closing deal is the OPPOSITE of the position's own
+   // direction (closing a long is a sell deal, and vice versa) — flip it
+   // back so "side" reflects what the trader actually opened.
+   ENUM_DEAL_TYPE closingDealType = (ENUM_DEAL_TYPE)HistoryDealGetInteger(dealTicket, DEAL_TYPE);
+   string side = "";
+   if(closingDealType == DEAL_TYPE_SELL) side = "buy";
+   else if(closingDealType == DEAL_TYPE_BUY) side = "sell";
    double profit = HistoryDealGetDouble(dealTicket, DEAL_PROFIT)
                  + HistoryDealGetDouble(dealTicket, DEAL_SWAP)
                  + HistoryDealGetDouble(dealTicket, DEAL_COMMISSION);
@@ -96,8 +104,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
    int tzOffsetMinutes = (int)((TimeLocal() - TimeGMT()) / 60);
 
    string json = StringFormat(
-      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\",\"time\":\"%s\",\"tz_offset_minutes\":%d,\"deal_ticket\":\"%s\"}",
-      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr, timeStr, tzOffsetMinutes, dealTicketStr
+      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\",\"time\":\"%s\",\"tz_offset_minutes\":%d,\"deal_ticket\":\"%s\",\"side\":\"%s\"}",
+      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr, timeStr, tzOffsetMinutes, dealTicketStr, side
    );
 
    // StringToCharArray's exact return count (with or without a trailing \0)

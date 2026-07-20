@@ -516,6 +516,9 @@
   .trade-row-main{flex:1; min-width:0; display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer;}
   .trade-row .sym{font-weight:700; font-size:13.5px;}
   .trade-row-time{font-family:var(--font-mono); font-weight:600; font-size:11.5px; color:var(--text-dim); margin-right:2px;}
+  .side-tag{display:inline-block; padding:1px 6px; border-radius:4px; font-size:10px; font-weight:700; text-transform:uppercase; vertical-align:middle; letter-spacing:.02em;}
+  .side-tag.buy{background:var(--green-dim); color:var(--green); border:1px solid var(--green-border);}
+  .side-tag.sell{background:var(--red-dim); color:var(--red); border:1px solid var(--red-border);}
   .trade-row .meta{font-size:11.5px; color:var(--text-faint); margin-top:2px;}
   .trade-row .profit{font-family:var(--font-mono); font-weight:700; font-size:14px; white-space:nowrap;}
   .trade-row .profit.pos{color:var(--green);}
@@ -1030,13 +1033,21 @@
       </div>
       <div class="form-grid-2">
         <div class="form-row">
+          <label>Side <span class="opt">(optional)</span></label>
+          <select id="fSide">
+            <option value="">—</option>
+            <option value="buy">Buy</option>
+            <option value="sell">Sell</option>
+          </select>
+        </div>
+        <div class="form-row">
           <label>Lot size</label>
           <input type="number" step="0.01" min="0" id="fLot" placeholder="1.0" required>
         </div>
-        <div class="form-row">
-          <label>Profit / loss</label>
-          <input type="number" step="0.01" id="fProfit" placeholder="e.g. 45.20 or -30" required>
-        </div>
+      </div>
+      <div class="form-row">
+        <label>Profit / loss</label>
+        <input type="number" step="0.01" id="fProfit" placeholder="e.g. 45.20 or -30" required>
       </div>
       <div class="form-grid-2">
         <div class="form-row">
@@ -1561,12 +1572,12 @@ async function hydrateFromSupabase(){
   const isDefaultAccount = !!(activeAccount && activeAccount.is_default);
   rows.forEach(row=>{
     if(row.is_deleted){ deleted.push(row.id); return; }
-    const base = { id: row.id, date: row.date, time: row.time, tz_offset_minutes: row.tz_offset_minutes, symbol: row.symbol, lot: row.lot, entry: row.entry, exit: row.exit_price, profit: row.profit };
+    const base = { id: row.id, date: row.date, time: row.time, tz_offset_minutes: row.tz_offset_minutes, symbol: row.symbol, lot: row.lot, entry: row.entry, exit: row.exit_price, profit: row.profit, side: row.side };
     if(row.is_manual || !isDefaultAccount){
       if(!manual[row.date]) manual[row.date] = [];
       manual[row.date].push(base);
     } else {
-      overrides[row.id] = { symbol: row.symbol, lot: row.lot, entry: row.entry, exit: row.exit_price, profit: row.profit, time: row.time, tz_offset_minutes: row.tz_offset_minutes };
+      overrides[row.id] = { symbol: row.symbol, lot: row.lot, entry: row.entry, exit: row.exit_price, profit: row.profit, time: row.time, tz_offset_minutes: row.tz_offset_minutes, side: row.side };
     }
     const hasMeta = row.note || (row.images && row.images.length) || (row.answers && Object.keys(row.answers).length) || (row.tags && row.tags.length);
     if(hasMeta) meta[row.id] = { note: row.note || '', images: row.images || [], answers: row.answers || {}, tags: row.tags || [] };
@@ -1600,6 +1611,7 @@ async function persistTrade(id, opts){
     entry: t ? t.entry : null,
     exit: t ? t.exit : null,
     profit: t ? t.profit : null,
+    side: t ? t.side : null,
     note: m.note,
     images: m.images,
     answers: m.answers,
@@ -2148,10 +2160,10 @@ document.getElementById('csvExportBtn').addEventListener('click', ()=>{
     v = v === null || v === undefined ? '' : String(v);
     return /[",\n;]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
   };
-  const rows = [['date','symbol','lot','entry','exit','profit','currency','tags']];
+  const rows = [['date','symbol','side','lot','entry','exit','profit','currency','tags']];
   trades.forEach(t=>{
     const tags = ((meta[t.id] && meta[t.id].tags) || []).join(' | ');
-    rows.push([t.date, t.symbol, t.lot, t.entry ?? '', t.exit ?? '', t.profit, CURRENCY, tags]);
+    rows.push([t.date, t.symbol, t.side ?? '', t.lot, t.entry ?? '', t.exit ?? '', t.profit, CURRENCY, tags]);
   });
   const csv = rows.map(r=>r.map(esc).join(',')).join('\r\n');
   const blob = new Blob(['﻿' + csv], { type:'text/csv;charset=utf-8' }); // BOM so Excel opens it as UTF-8
@@ -2228,6 +2240,17 @@ function importParseDateTime(v){
   return { date: `${m[1]}-${m[2]}-${m[3]}`, time: m[4] ? `${m[4]}:${m[5]}` : null };
 }
 
+// MT4/MT5 report "Type" columns say things like "buy"/"sell", the German
+// "kauf"/"verkauf", or (some MT4 builds) the raw order-type words
+// "buy limit"/"sell stop" etc. for pending orders — match on the leading
+// buy/sell word rather than requiring an exact value.
+function importNormalizeSide(v){
+  const s = (v || '').trim().toLowerCase();
+  if(/^(buy|kauf)/.test(s)) return 'buy';
+  if(/^(sell|verkauf)/.test(s)) return 'sell';
+  return null;
+}
+
 // Rows that aren't real trades (balance deposits, section headers, totals)
 // don't have a symbol AND a numeric profit at once — that combination is
 // used throughout as the "is this actually a trade row" check.
@@ -2252,6 +2275,7 @@ function importRowsFromTable(headerCells, dataRows){
       entry: map.openPrice !== undefined ? importParseNumber(cells[map.openPrice]) : null,
       exit: map.closePrice !== undefined ? importParseNumber(cells[map.closePrice]) : null,
       profit,
+      side: map.type !== undefined ? importNormalizeSide(cells[map.type]) : null,
     });
   });
   return out;
@@ -2303,7 +2327,7 @@ function renderImportPreview(){
     <div class="import-row">
       <input type="checkbox" data-i="${i}" checked>
       <span class="date">${t.date}${t.time ? ' '+t.time : ''}</span>
-      <span class="sym">${escapeHtml(t.symbol)}</span>
+      <span class="sym">${escapeHtml(t.symbol)}${t.side ? ` <span class="side-tag ${t.side}">${t.side}</span>` : ''}</span>
       <span class="meta">${t.lot ?? '—'} lot · entry ${t.entry ?? '—'} → exit ${t.exit ?? '—'}</span>
       <span class="pnl ${t.profit>=0?'pos':'neg'}">${t.profit>=0?'+':''}${t.profit.toFixed(2)}</span>
     </div>
@@ -2389,6 +2413,7 @@ document.getElementById('importCsvConfirm').onclick = async ()=>{
       entry: t.entry,
       exit: t.exit,
       profit: t.profit,
+      side: t.side,
     };
     if(!manual[t.date]) manual[t.date] = [];
     manual[t.date].push(trade);
@@ -2716,7 +2741,7 @@ function openDay(key){
       <div class="trade-row">
         <div class="trade-row-main" onclick="openTrade('${t.id}')">
           <div>
-            <div class="sym">${t.time ? `<span class="trade-row-time">${localTimeHHMM(t)}</span> ` : ''}${escapeHtml(t.symbol)}</div>
+            <div class="sym">${t.time ? `<span class="trade-row-time">${localTimeHHMM(t)}</span> ` : ''}${escapeHtml(t.symbol)}${t.side ? ` <span class="side-tag ${t.side}">${t.side}</span>` : ''}</div>
             <div class="meta">${t.lot} lot · entry ${t.entry ?? '—'} → exit ${t.exit ?? '—'}</div>
           </div>
           <div class="profit ${t.profit>=0?'pos':'neg'}">${t.profit>=0?'+':''}${t.profit.toFixed(2)}</div>
@@ -2790,6 +2815,11 @@ async function openTrade(id){
   document.getElementById('tradeDetailGrid').innerHTML = `
     <div class="trade-stat"><div class="l">🏷️ Symbol / pair</div><input class="cell-input" id="editSymbol" type="text" value="${escapeHtml(t.symbol)}"></div>
     <div class="trade-stat"><div class="l">🕐 Time</div><input class="cell-input" id="editTime" type="time" value="${localTimeHHMM(t)}"></div>
+    <div class="trade-stat"><div class="l">↔️ Side</div><select class="cell-input" id="editSide">
+      <option value="" ${!t.side ? 'selected' : ''}>—</option>
+      <option value="buy" ${t.side==='buy' ? 'selected' : ''}>Buy</option>
+      <option value="sell" ${t.side==='sell' ? 'selected' : ''}>Sell</option>
+    </select></div>
     <div class="trade-stat"><div class="l">↗️ Entry</div><input class="cell-input" id="editEntry" type="number" step="0.00001" value="${t.entry ?? ''}"></div>
     <div class="trade-stat"><div class="l">↘️ Exit</div><input class="cell-input" id="editExit" type="number" step="0.00001" value="${t.exit ?? ''}"></div>
     <div class="trade-stat"><div class="l">📦 Lot size</div><input class="cell-input" id="editLot" type="number" step="0.01" min="0" value="${t.lot}"></div>
@@ -3463,6 +3493,7 @@ document.getElementById('addTradeForm').addEventListener('submit', e=>{
   const profit = parseFloat(document.getElementById('fProfit').value);
   const entryVal = document.getElementById('fEntry').value;
   const exitVal = document.getElementById('fExit').value;
+  const sideVal = document.getElementById('fSide').value;
 
   if(checkTradeDateField()){
     return;
@@ -3486,7 +3517,8 @@ document.getElementById('addTradeForm').addEventListener('submit', e=>{
     lot,
     entry: entryVal !== '' ? parseFloat(entryVal) : null,
     exit: exitVal !== '' ? parseFloat(exitVal) : null,
-    profit
+    profit,
+    side: sideVal || null
   };
 
   const manual = loadManualTrades();
@@ -3510,6 +3542,7 @@ document.getElementById('saveTradeBtn').onclick = ()=>{
   const entryVal = document.getElementById('editEntry').value;
   const exitVal = document.getElementById('editExit').value;
   const timeVal = document.getElementById('editTime').value;
+  const sideVal = document.getElementById('editSide').value;
 
   if(!symbol || isNaN(lot) || isNaN(profit)){
     flashSaved('Please fill in symbol, lot size and profit.', true);
@@ -3525,7 +3558,8 @@ document.getElementById('saveTradeBtn').onclick = ()=>{
     tz_offset_minutes: timeVal ? -new Date().getTimezoneOffset() : null,
     entry: entryVal !== '' ? parseFloat(entryVal) : null,
     exit: exitVal !== '' ? parseFloat(exitVal) : null,
-    profit
+    profit,
+    side: sideVal || null
   };
 
   // persist as an override so the edit survives reload, whatever the trade's origin

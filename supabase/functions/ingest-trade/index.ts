@@ -10,8 +10,10 @@
 // somewhere real to receive data the day an EA is actually built.
 //
 // Expected JSON body:
-//   { api_key, symbol, lot, entry, exit, profit, date }
-// date is 'YYYY-MM-DD'; entry/exit are optional.
+//   { api_key, symbol, lot, entry, exit, profit, date, side }
+// date is 'YYYY-MM-DD'; entry/exit/side are optional. side is 'buy'/'sell' —
+// anything else (older EA builds that don't send it yet, or garbage) is
+// silently stored as null rather than rejecting the whole trade over it.
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
@@ -103,6 +105,9 @@ Deno.serve(async (req) => {
   const id = body.deal_ticket
     ? `${body.date}-ea-${account.id}-${body.deal_ticket}`
     : `${body.date}-ea${Date.now()}`;
+  const side = typeof body.side === 'string' && ['buy', 'sell'].includes(body.side.toLowerCase())
+    ? body.side.toLowerCase()
+    : null;
   const { error } = await supabaseAdmin.from('trades').upsert({
     id,
     user_id: account.user_id,
@@ -117,6 +122,7 @@ Deno.serve(async (req) => {
     entry: body.entry ?? null,
     exit_price: body.exit ?? null,
     profit: body.profit,
+    side,
   });
 
   if (error) {
