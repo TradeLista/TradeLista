@@ -179,6 +179,62 @@
   .gstep-shot.missing .gstep-shot-fallback{display:flex;}
   .gstep small.substep{display:block; color:var(--text-faint); font-size:12px; margin:2px 0 8px;}
 
+  /* Hand-built UI mockups for the manual-entry guide (real screenshots
+     aren't available for these) — reuses the site's own colors/radii so
+     they read as "this app", not stock art, at a size that fits the step
+     column rather than a full loose screenshot. */
+  .ui-mock{
+    margin-top:14px; max-width:520px; background:var(--bg-elevated); border:1px solid var(--border-soft);
+    border-radius:var(--radius-sm); padding:16px;
+  }
+  .click-ring{
+    position:absolute; inset:-9px; border:2.5px solid #ff5a5a; border-radius:50%;
+    box-shadow:0 0 0 4px rgba(255,90,90,0.16), 0 0 16px -2px rgba(255,90,90,0.6);
+    pointer-events:none; animation:clickPulse 1.8s ease-in-out infinite;
+  }
+  .click-ring-square{border-radius:14px;}
+  @keyframes clickPulse{0%,100%{transform:scale(1); opacity:1;} 50%{transform:scale(1.06); opacity:.7;}}
+
+  .ui-mock-head{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+  .ui-mock-pill{
+    display:inline-flex; align-items:center; gap:7px; background:var(--bg-card); border:1px solid var(--border);
+    padding:7px 13px; border-radius:99px; font-size:12px; color:var(--text-dim); white-space:nowrap;
+  }
+  .ui-mock-dot{width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); flex-shrink:0;}
+  .ui-mock-caret{color:var(--text-faint); font-size:9px;}
+  .ui-mock-ring-wrap{position:relative; display:inline-flex; flex-shrink:0;}
+  .ui-mock-btn-primary{
+    background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none; cursor:default;
+    padding:9px 16px; border-radius:99px; font-size:12.5px; font-weight:700; font-family:inherit;
+  }
+
+  .ui-mock-form-row{margin-bottom:10px;}
+  .ui-mock-form-row label{display:block; font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px;}
+  .ui-mock-opt{text-transform:none; letter-spacing:0;}
+  .ui-mock-input{
+    background:var(--bg-card); border:1px solid var(--border); border-radius:7px;
+    padding:8px 11px; font-size:13px; color:var(--text); font-family:var(--font-mono);
+  }
+  .ui-mock-input.is-pos{color:var(--green); font-weight:700;}
+  .ui-mock-input.is-faint{color:var(--text-faint);}
+  .ui-mock-form-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .ui-mock-form-btn-wrap{display:block; width:100%; margin-top:4px;}
+
+  .ui-mock-weekdays{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:6px;}
+  .ui-mock-weekdays span{text-align:center; font-size:9px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.04em;}
+  .ui-mock-cal-row{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+  .ui-mock-day{
+    position:relative; aspect-ratio:1/0.85; border-radius:8px; border:1px solid var(--border-soft); background:var(--bg-card);
+    padding:6px; display:flex; flex-direction:column; justify-content:space-between;
+  }
+  .ui-mock-day.is-empty{background:transparent; border-style:dashed;}
+  .ui-mock-day.win{background:var(--green-dim); border-color:var(--green-border);}
+  .ui-mock-day-n{font-size:10px; color:var(--text-faint); font-weight:600;}
+  .ui-mock-day.win .ui-mock-day-n{color:var(--text-dim);}
+  .ui-mock-day-p{font-family:var(--font-mono); font-weight:700; font-size:10.5px; color:var(--green);}
+  .ui-mock-day-ring-wrap{position:relative;}
+  .ui-mock-caption{margin-top:12px; font-size:12px; color:var(--text-faint); text-align:center;}
+
   .section-label{font-size:12px; color:var(--accent); text-transform:uppercase; letter-spacing:.07em; font-weight:700; margin:56px 0 18px; display:block;}
 
   /* FAQ */
@@ -431,7 +487,15 @@
         <div class="gnum">3</div>
         <h3>Click "+ Add trade"</h3>
         <p>You'll find this button near the top-right of the Calendar. (You can also click a day first, then click <strong>"Add trade for this day"</strong> inside it — either way opens the same form.)</p>
-        <figure class="gstep-shot"><img src="images/guide/tl-manual-03-addtrade.png" alt="The + Add trade button on the Calendar page" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the "+ Add trade" button</div></figure>
+        <div class="ui-mock">
+          <div class="ui-mock-head">
+            <div class="ui-mock-pill"><span class="ui-mock-dot"></span>Live — FTMO 100k (USD) <span class="ui-mock-caret">▾</span></div>
+            <div class="ui-mock-ring-wrap">
+              <button type="button" class="ui-mock-btn-primary" tabindex="-1">+ Add trade</button>
+              <span class="click-ring"></span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="gstep">
@@ -439,7 +503,40 @@
         <h3>Fill in the trade</h3>
         <p>Required: <strong>Date</strong>, <strong>Symbol / pair</strong> (e.g. EURUSD), <strong>Lot size</strong>, and <strong>Profit / loss</strong>.</p>
         <p>Optional: <strong>Entry price</strong> and <strong>Exit price</strong> — add them if you have them, but they're not required to save the trade.</p>
-        <figure class="gstep-shot"><img src="images/guide/tl-manual-04-form.png" alt="The Add Trade form with its fields" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the Add Trade form</div></figure>
+        <div class="ui-mock ui-mock-form">
+          <div class="ui-mock-form-row">
+            <label>Date</label>
+            <div class="ui-mock-input">2026-07-20</div>
+          </div>
+          <div class="ui-mock-form-row">
+            <label>Symbol / pair</label>
+            <div class="ui-mock-input">EURUSD</div>
+          </div>
+          <div class="ui-mock-form-grid">
+            <div class="ui-mock-form-row">
+              <label>Lot size</label>
+              <div class="ui-mock-input">1.0</div>
+            </div>
+            <div class="ui-mock-form-row">
+              <label>Profit / loss</label>
+              <div class="ui-mock-input is-pos">+45.20</div>
+            </div>
+          </div>
+          <div class="ui-mock-form-grid">
+            <div class="ui-mock-form-row">
+              <label>Entry price <span class="ui-mock-opt">(optional)</span></label>
+              <div class="ui-mock-input is-faint">1.0850</div>
+            </div>
+            <div class="ui-mock-form-row">
+              <label>Exit price <span class="ui-mock-opt">(optional)</span></label>
+              <div class="ui-mock-input is-faint">1.0890</div>
+            </div>
+          </div>
+          <div class="ui-mock-ring-wrap ui-mock-form-btn-wrap">
+            <button type="button" class="ui-mock-btn-primary" tabindex="-1" style="width:100%;">Add trade</button>
+            <span class="click-ring"></span>
+          </div>
+        </div>
       </div>
 
       <div class="gstep">
@@ -447,7 +544,22 @@
         <h3>Click "Add" — you're done</h3>
         <p>The trade appears on the calendar immediately, colored green or red depending on the result.</p>
         <p>Want to add more detail? Click the trade afterward to open it — you can write a note and add tags on any plan; screenshots, reflection questions and Golden Trading Rules are part of <strong>Pro</strong>.</p>
-        <figure class="gstep-shot"><img src="images/guide/tl-manual-05-calendar.png" alt="The newly added trade showing up on the calendar" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the trade showing on the calendar</div></figure>
+        <div class="ui-mock">
+          <div class="ui-mock-weekdays"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+          <div class="ui-mock-cal-row">
+            <div class="ui-mock-day"><span class="ui-mock-day-n">17</span></div>
+            <div class="ui-mock-day"><span class="ui-mock-day-n">18</span></div>
+            <div class="ui-mock-day"><span class="ui-mock-day-n">19</span></div>
+            <div class="ui-mock-day-ring-wrap">
+              <div class="ui-mock-day win"><span class="ui-mock-day-n">20</span><span class="ui-mock-day-p">+45.20</span></div>
+              <span class="click-ring click-ring-square"></span>
+            </div>
+            <div class="ui-mock-day"><span class="ui-mock-day-n">21</span></div>
+            <div class="ui-mock-day is-empty"></div>
+            <div class="ui-mock-day is-empty"></div>
+          </div>
+          <div class="ui-mock-caption">↑ your new trade, added just now</div>
+        </div>
       </div>
     </div>
 
