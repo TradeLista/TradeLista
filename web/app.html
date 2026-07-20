@@ -1579,7 +1579,7 @@ async function persistTrade(id, opts){
   const key = id.split('-').slice(0,3).join('-');
   const manual = loadManualTrades();
   const isManual = !!(manual[key] && manual[key].some(mt=>mt.id===id));
-  await TLAuth.data.upsertTrade({
+  const res = await TLAuth.data.upsertTrade({
     id,
     account_id: activeAccount ? activeAccount.id : null,
     is_manual: isManual,
@@ -1597,6 +1597,7 @@ async function persistTrade(id, opts){
     answers: m.answers,
     tags: m.tags
   });
+  if(!res.ok) flashSaved(res.error, true);
 }
 
 // Debounces high-frequency saves (typing in the note or a reflection answer)

@@ -69,6 +69,23 @@
   async function upsertTrade(trade){
     const { data: { session } } = await sb.auth.getSession();
     if(!session) return { ok:false, error:'Not logged in.' };
+
+    // Once storage is full, block anything that keeps growing it — but
+    // deletes and clearing existing content (empty note/tags/answers) are
+    // always let through, so being full doesn't permanently lock someone
+    // out of the one thing that would free up space again.
+    const hasContent = !!(
+      (trade.note && trade.note.length) ||
+      (trade.tags && trade.tags.length) ||
+      (trade.answers && Object.keys(trade.answers).length)
+    );
+    if(!trade.is_deleted && hasContent){
+      const { used, limit } = await getStorageUsage();
+      if(used >= limit){
+        return { ok:false, error: `You've used all ${Math.round(limit/(1024*1024))} MB of your storage — delete a screenshot or some notes to free up space before saving more.` };
+      }
+    }
+
     const row = {
       id: trade.id,
       user_id: session.user.id,
