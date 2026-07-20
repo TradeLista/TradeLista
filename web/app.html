@@ -712,8 +712,8 @@
   .yn button{
     font-size:12px; padding:5px 12px; border-radius:99px; border:1px solid var(--border); background:transparent; color:var(--text-dim); font-weight:600;
   }
-  .yn button.active.yes{background:var(--green-dim); border-color:var(--green-border); color:var(--green);}
-  .yn button.active.no{background:var(--red-dim); border-color:var(--red-border); color:var(--red);}
+  .yn button.active.yes, .yn button.active.buy{background:var(--green-dim); border-color:var(--green-border); color:var(--green);}
+  .yn button.active.no, .yn button.active.sell{background:var(--red-dim); border-color:var(--red-border); color:var(--red);}
   .qexplain{display:none; padding:10px 13px; background:var(--bg-card);}
   .qexplain.open{display:block;}
   .qexplain textarea{min-height:44px; font-size:12.5px;}
@@ -1034,11 +1034,10 @@
       <div class="form-grid-2">
         <div class="form-row">
           <label>Side <span class="opt">(optional)</span></label>
-          <select id="fSide">
-            <option value="">—</option>
-            <option value="buy">Buy</option>
-            <option value="sell">Sell</option>
-          </select>
+          <div class="yn" id="fSideToggle">
+            <button type="button" data-v="buy">Buy</button>
+            <button type="button" data-v="sell">Sell</button>
+          </div>
         </div>
         <div class="form-row">
           <label>Lot size</label>
@@ -2815,16 +2814,28 @@ async function openTrade(id){
   document.getElementById('tradeDetailGrid').innerHTML = `
     <div class="trade-stat"><div class="l">🏷️ Symbol / pair</div><input class="cell-input" id="editSymbol" type="text" value="${escapeHtml(t.symbol)}"></div>
     <div class="trade-stat"><div class="l">🕐 Time</div><input class="cell-input" id="editTime" type="time" value="${localTimeHHMM(t)}"></div>
-    <div class="trade-stat"><div class="l">↔️ Side</div><select class="cell-input" id="editSide">
-      <option value="" ${!t.side ? 'selected' : ''}>—</option>
-      <option value="buy" ${t.side==='buy' ? 'selected' : ''}>Buy</option>
-      <option value="sell" ${t.side==='sell' ? 'selected' : ''}>Sell</option>
-    </select></div>
+    <div class="trade-stat"><div class="l">↔️ Side</div><div class="yn" id="editSideToggle">
+      <button type="button" data-v="buy" class="${t.side==='buy'?'active buy':''}">Buy</button>
+      <button type="button" data-v="sell" class="${t.side==='sell'?'active sell':''}">Sell</button>
+    </div></div>
     <div class="trade-stat"><div class="l">↗️ Entry</div><input class="cell-input" id="editEntry" type="number" step="0.00001" value="${t.entry ?? ''}"></div>
     <div class="trade-stat"><div class="l">↘️ Exit</div><input class="cell-input" id="editExit" type="number" step="0.00001" value="${t.exit ?? ''}"></div>
     <div class="trade-stat"><div class="l">📦 Lot size</div><input class="cell-input" id="editLot" type="number" step="0.01" min="0" value="${t.lot}"></div>
     <div class="trade-stat" id="profitStat"><div class="l">💰 Profit (${CURRENCY})</div><input class="cell-input" id="editProfit" type="number" step="0.01" value="${t.profit}"></div>
   `;
+  const sideToggle = document.getElementById('editSideToggle');
+  sideToggle.dataset.value = t.side || '';
+  sideToggle.querySelectorAll('button').forEach(btn=>{
+    btn.onclick = ()=>{
+      const v = btn.dataset.v;
+      sideToggle.dataset.value = sideToggle.dataset.value === v ? '' : v; // click again to clear
+      sideToggle.querySelectorAll('button').forEach(b=>{
+        const active = sideToggle.dataset.value === b.dataset.v;
+        b.classList.toggle('active', active);
+        b.classList.toggle(b.dataset.v, active);
+      });
+    };
+  });
   const profitInput = document.getElementById('editProfit');
   const profitStat = document.getElementById('profitStat');
   const updateProfitColor = ()=>{
@@ -3443,6 +3454,20 @@ rulesToggleEl.classList.add('open');
 rulesBodyEl.classList.add('open');
 
 /* ---------- Add trade manually ---------- */
+const fSideToggle = document.getElementById('fSideToggle');
+fSideToggle.dataset.value = '';
+fSideToggle.querySelectorAll('button').forEach(btn=>{
+  btn.onclick = ()=>{
+    const v = btn.dataset.v;
+    fSideToggle.dataset.value = fSideToggle.dataset.value === v ? '' : v; // click again to clear
+    fSideToggle.querySelectorAll('button').forEach(b=>{
+      const active = fSideToggle.dataset.value === b.dataset.v;
+      b.classList.toggle('active', active);
+      b.classList.toggle(b.dataset.v, active);
+    });
+  };
+});
+
 function isFutureDate(dateVal){
   if(!dateVal) return false;
   return new Date(dateVal+'T00:00:00') > today;
@@ -3465,6 +3490,8 @@ function openAddTrade(prefillKey){
   const errEl = document.getElementById('fError');
   errEl.textContent = '';
   document.getElementById('addTradeForm').reset();
+  fSideToggle.dataset.value = '';
+  fSideToggle.querySelectorAll('button').forEach(b=>b.classList.remove('active','buy','sell'));
   const dateInput = document.getElementById('fDate');
   const todayKey = fmtDateKey(today);
   dateInput.max = todayKey;
@@ -3493,7 +3520,7 @@ document.getElementById('addTradeForm').addEventListener('submit', e=>{
   const profit = parseFloat(document.getElementById('fProfit').value);
   const entryVal = document.getElementById('fEntry').value;
   const exitVal = document.getElementById('fExit').value;
-  const sideVal = document.getElementById('fSide').value;
+  const sideVal = fSideToggle.dataset.value;
 
   if(checkTradeDateField()){
     return;
@@ -3542,7 +3569,7 @@ document.getElementById('saveTradeBtn').onclick = ()=>{
   const entryVal = document.getElementById('editEntry').value;
   const exitVal = document.getElementById('editExit').value;
   const timeVal = document.getElementById('editTime').value;
-  const sideVal = document.getElementById('editSide').value;
+  const sideVal = document.getElementById('editSideToggle').dataset.value;
 
   if(!symbol || isNaN(lot) || isNaN(profit)){
     flashSaved('Please fill in symbol, lot size and profit.', true);
