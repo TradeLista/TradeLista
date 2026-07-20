@@ -108,6 +108,11 @@
   }
   .callout .ic{flex-shrink:0; font-size:16px;}
   .callout strong{color:var(--text);}
+  .pro-badge{
+    display:inline-flex; align-items:center; font-size:10px; font-weight:800; letter-spacing:.05em;
+    color:var(--accent); background:var(--accent-dim); border:1px solid rgba(79,140,255,0.35);
+    padding:2px 8px; border-radius:99px; vertical-align:middle; margin-left:4px;
+  }
 
   /* Platform picker */
   .platform-picker{
@@ -436,6 +441,13 @@
       <p>Every trade you close from now on will land there automatically — no more manual exporting.</p>
       <figure class="gstep-shot"><img src="images/guide/tl-10-calendar.png" alt="The test trade appearing on today's date in the TradeLista calendar" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the test trade showing up on the calendar</div></figure>
     </div>
+
+    <div class="gstep">
+      <div class="gnum">11</div>
+      <h3>Already been trading? Import your history <span class="pro-badge">PRO</span></h3>
+      <p>The EA only sends trades that close <em>after</em> it's attached — everything you traded before today would otherwise start out blank. To bring that in too: in MetaTrader, go to the <strong>History</strong> tab, right-click anywhere in it, and choose <strong>"Save as Report"</strong> (saves an .html file).</p>
+      <p>Then on your <a href="app.html" class="js-calendar-link" style="color:var(--accent); text-decoration:underline;">Calendar</a>, click <strong>"⬆ Import"</strong> next to "+ Add trade", upload that file, review the trades it found, and import them. One-time thing — not a live sync, just a way to backfill what already happened.</p>
+    </div>
   </div>
 
   <span class="section-label">Troubleshooting</span>
@@ -473,6 +485,10 @@
   <details class="faq-item">
     <summary>I don't use an EA — can I still use TradeLista?</summary>
     <div class="faq-body">Yes. Manual entry works on both Free and Pro plans — just add each trade's symbol, lot size, entry, exit and profit/loss straight from the Calendar page.</div>
+  </details>
+  <details class="faq-item">
+    <summary>Can I import trades I made before connecting the EA?</summary>
+    <div class="faq-body">Yes, on Pro — see step 11 above. Export your account's History as a report from MetaTrader, then use the "⬆ Import" button on your Calendar to bring it in. It's a one-time import, not a live sync — repeat it any time you want to backfill more.</div>
   </details>
 
   <div class="callout" id="proRequiredCallout" style="margin-top:40px; margin-bottom:0;">

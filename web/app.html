@@ -606,6 +606,29 @@
   .form-row input:focus{border-color:var(--accent);}
   .form-grid-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
   .form-error{color:var(--red); font-size:12.5px; margin:-4px 0 10px; min-height:14px;}
+
+  .import-drop{
+    display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; cursor:pointer;
+    border:1px dashed var(--border); border-radius:var(--radius-sm); padding:32px 20px;
+    color:var(--text-dim); transition:border-color .15s, background .15s;
+  }
+  .import-drop:hover, .import-drop.dragover{border-color:var(--accent); background:var(--accent-dim);}
+  .import-drop-ic{font-size:22px;}
+  .import-drop-sub{font-size:11.5px; color:var(--text-faint);}
+  .import-preview{max-height:340px; overflow-y:auto; border:1px solid var(--border-soft); border-radius:var(--radius-sm);}
+  .import-row{
+    display:flex; align-items:center; gap:10px; padding:9px 12px; font-size:12.5px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .import-row:last-child{border-bottom:none;}
+  .import-row input[type="checkbox"]{flex-shrink:0; width:15px; height:15px; accent-color:var(--accent);}
+  .import-row .sym{font-weight:700; min-width:64px;}
+  .import-row .date{color:var(--text-faint); font-family:var(--font-mono); font-size:11.5px; min-width:76px;}
+  .import-row .meta{color:var(--text-faint); font-size:11px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .import-row .pnl{font-family:var(--font-mono); font-weight:700; white-space:nowrap;}
+  .import-row .pnl.pos{color:var(--green);}
+  .import-row .pnl.neg{color:var(--red);}
+  .import-preview-actions{display:flex; justify-content:space-between; gap:10px; margin-top:14px; flex-wrap:wrap;}
   .field-warning{
     display:none; align-items:center; gap:7px; background:var(--red-dim); border:1px solid var(--red-border);
     color:var(--red); font-size:12.5px; font-weight:600; border-radius:var(--radius-sm); padding:8px 11px; margin-top:8px;
@@ -787,6 +810,7 @@
         </button>
         <div class="account-pill-menu" id="accountPillMenu"></div>
       </div>
+      <button class="btn btn-ghost" id="importCsvBtn" style="padding:9px 16px; font-size:13.5px;" title="Import your existing trade history from a MetaTrader report">⬆ Import</button>
       <button class="btn btn-primary" id="addTradeBtn" style="padding:9px 16px; font-size:13.5px;">+ Add trade</button>
     </div>
   </div>
@@ -1014,6 +1038,39 @@
       <div class="form-error" id="fError"></div>
       <button type="submit" class="btn btn-primary" style="width:100%;">Add trade</button>
     </form>
+  </div>
+</div>
+
+<!-- Import trade history overlay -->
+<div class="overlay" id="importCsvOverlay">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-head">
+      <h3>Import trade history</h3>
+      <button type="button" onclick="closeModal('importCsvOverlay')">✕</button>
+    </div>
+    <div id="importCsvStep1">
+      <p style="font-size:13px; color:var(--text-dim); margin-bottom:14px; line-height:1.6;">
+        Upload the report your MetaTrader terminal exports from <strong>History → right-click → Save as Report</strong> (an .html file), or a .csv/.txt export with the same columns. Trades import into the account currently selected above<span id="importCsvAccountName"></span>.
+      </p>
+      <label class="import-drop" id="importDropZone" for="importCsvFile">
+        <span class="import-drop-ic">⬆</span>
+        <span><strong>Click to choose a file</strong> or drop it here</span>
+        <span class="import-drop-sub">.html, .htm, .csv or .txt</span>
+      </label>
+      <input type="file" id="importCsvFile" accept=".html,.htm,.csv,.txt" style="display:none;">
+      <div class="form-error" id="importCsvError"></div>
+    </div>
+    <div id="importCsvStep2" style="display:none;">
+      <p style="font-size:13px; color:var(--text-dim); margin-bottom:10px;">
+        Found <strong id="importCsvCount">0</strong> trades. Uncheck any you don't want, then import.
+      </p>
+      <div class="import-preview" id="importCsvPreview"></div>
+      <div class="import-preview-actions">
+        <button type="button" class="btn btn-ghost" id="importCsvBack" style="padding:8px 14px; font-size:12.5px;">← Choose a different file</button>
+        <button type="button" class="btn btn-primary" id="importCsvConfirm" style="padding:8px 16px; font-size:12.5px;">Import <span id="importCsvConfirmCount">0</span> trades</button>
+      </div>
+      <div class="save-note" id="importCsvProgress"></div>
+    </div>
   </div>
 </div>
 
@@ -2049,6 +2106,243 @@ document.getElementById('csvExportBtn').addEventListener('click', ()=>{
   a.click();
   URL.revokeObjectURL(a.href);
 });
+
+/* ---------- Import trade history (MetaTrader report) ----------
+   MT4/MT5's built-in "History → right-click → Save as Report" produces an
+   HTML file; some terminal builds/brokers also offer a plain CSV/TSV export
+   with the same columns. Both are one row per CLOSED trade (MT4's Account
+   History, or MT5's Positions section) rather than raw unpaired deals, which
+   is what makes this parseable without re-implementing deal-matching.
+   Column names are matched case-insensitively against English AND German
+   labels (MetaTrader terminals are very commonly run in German), since the
+   exact wording isn't something we can pin down without a real exported
+   file to test against — this is a best-effort parser, not a guarantee for
+   every broker/build combination. */
+const IMPORT_COLUMN_ALIASES = {
+  symbol: ['symbol','item','instrument'],
+  volume: ['volume','lots','size','volumen'],
+  openTime: ['open time','time','zeit','öffnungszeit','eröffnungszeit','date/time'],
+  closeTime: ['close time','schließungszeit','schliesszeit','schlusszeit'],
+  openPrice: ['price','open price','preis','eröffnungspreis','einstiegspreis'],
+  closePrice: ['close price','schlusspreis','schließungspreis','ausstiegspreis'],
+  profit: ['profit','gewinn','p/l','pnl'],
+  type: ['type','typ','direction'],
+};
+
+function importMatchColumn(header, key){
+  const h = header.trim().toLowerCase();
+  return IMPORT_COLUMN_ALIASES[key].some(alias => h === alias || h.includes(alias));
+}
+
+// Builds a { key: columnIndex } map from a header row, handling MT4's report
+// quirk of using the exact same header text ("Price") for both the open and
+// close price columns — the first match is treated as open, the second (if
+// a distinct closeTime alias wasn't already found) as close.
+function importMapHeaders(headerCells){
+  const map = {};
+  headerCells.forEach((raw, i)=>{
+    for(const key of Object.keys(IMPORT_COLUMN_ALIASES)){
+      if(key === 'closePrice') continue; // handled via the openPrice fallback below
+      if(map[key] === undefined && importMatchColumn(raw, key)) map[key] = i;
+    }
+  });
+  headerCells.forEach((raw, i)=>{
+    if(i !== map.openPrice && importMatchColumn(raw, 'openPrice') && map.closePrice === undefined){
+      map.closePrice = i;
+    }
+  });
+  return map;
+}
+
+function importParseNumber(v){
+  if(v == null) return null;
+  // MetaTrader reports use plain "1234.56" — no thousands separators at
+  // typical retail lot/profit sizes — so a straight parseFloat is enough.
+  // Just strip whitespace and any trailing "USD"/currency label some
+  // brokers append to the Profit column.
+  const n = parseFloat(String(v).replace(/\s/g,'').replace(/[a-zA-Z]+$/,''));
+  return isNaN(n) ? null : n;
+}
+
+// MT4/MT5 report dates look like "2026.07.20 14:32:05" or "2026-07-20 14:32".
+function importParseDateTime(v){
+  if(!v) return null;
+  const m = String(v).trim().match(/(\d{4})[.\-/](\d{2})[.\-/](\d{2})(?:\s+(\d{2}):(\d{2}))?/);
+  if(!m) return null;
+  return { date: `${m[1]}-${m[2]}-${m[3]}`, time: m[4] ? `${m[4]}:${m[5]}` : null };
+}
+
+// Rows that aren't real trades (balance deposits, section headers, totals)
+// don't have a symbol AND a numeric profit at once — that combination is
+// used throughout as the "is this actually a trade row" check.
+function importRowsFromTable(headerCells, dataRows){
+  const map = importMapHeaders(headerCells);
+  if(map.symbol === undefined || map.profit === undefined) return null;
+  const out = [];
+  dataRows.forEach(cells=>{
+    const symbol = (cells[map.symbol] || '').trim();
+    const profit = importParseNumber(cells[map.profit]);
+    if(!symbol || profit === null) return;
+    if(map.type !== undefined && /^(balance|credit|deposit|withdrawal)$/i.test((cells[map.type]||'').trim())) return;
+    const openDT = importParseDateTime(map.openTime !== undefined ? cells[map.openTime] : null);
+    const closeDT = importParseDateTime(map.closeTime !== undefined ? cells[map.closeTime] : null);
+    const dt = closeDT || openDT;
+    if(!dt) return;
+    out.push({
+      date: dt.date,
+      time: dt.time,
+      symbol: symbol.toUpperCase(),
+      lot: map.volume !== undefined ? importParseNumber(cells[map.volume]) : null,
+      entry: map.openPrice !== undefined ? importParseNumber(cells[map.openPrice]) : null,
+      exit: map.closePrice !== undefined ? importParseNumber(cells[map.closePrice]) : null,
+      profit,
+    });
+  });
+  return out;
+}
+
+function importParseHtml(text){
+  const doc = new DOMParser().parseFromString(text, 'text/html');
+  const tables = [...doc.querySelectorAll('table')];
+  let best = null;
+  tables.forEach(table=>{
+    const rows = [...table.querySelectorAll('tr')].map(tr => [...tr.querySelectorAll('td,th')].map(c => c.textContent));
+    if(rows.length < 2) return;
+    // The header is whichever row has the most cells that look like column
+    // labels rather than data — in practice, MetaTrader reports repeat the
+    // same header text, so just try every row as a candidate header and
+    // keep whichever produces the most valid trade rows.
+    for(let h = 0; h < Math.min(rows.length, 3); h++){
+      const parsed = importRowsFromTable(rows[h], rows.slice(h+1));
+      if(parsed && (!best || parsed.length > best.length)) best = parsed;
+    }
+  });
+  return best || [];
+}
+
+function importParseDelimited(text){
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length);
+  if(!lines.length) return [];
+  const delimiter = [',',';','\t'].sort((a,b) =>
+    lines[0].split(b).length - lines[0].split(a).length
+  )[0];
+  const rows = lines.map(l => l.split(delimiter).map(c => c.trim().replace(/^"|"$/g,'')));
+  for(let h = 0; h < Math.min(rows.length, 3); h++){
+    const parsed = importRowsFromTable(rows[h], rows.slice(h+1));
+    if(parsed && parsed.length) return parsed;
+  }
+  return [];
+}
+
+function parseMetaTraderReport(text){
+  const looksLikeHtml = /<html[\s>]|<table[\s>]/i.test(text);
+  return looksLikeHtml ? importParseHtml(text) : importParseDelimited(text);
+}
+
+let importParsedRows = [];
+
+function renderImportPreview(){
+  const list = document.getElementById('importCsvPreview');
+  list.innerHTML = importParsedRows.map((t,i)=>`
+    <div class="import-row">
+      <input type="checkbox" data-i="${i}" checked>
+      <span class="date">${t.date}${t.time ? ' '+t.time : ''}</span>
+      <span class="sym">${escapeHtml(t.symbol)}</span>
+      <span class="meta">${t.lot ?? '—'} lot · entry ${t.entry ?? '—'} → exit ${t.exit ?? '—'}</span>
+      <span class="pnl ${t.profit>=0?'pos':'neg'}">${t.profit>=0?'+':''}${t.profit.toFixed(2)}</span>
+    </div>
+  `).join('');
+  updateImportConfirmCount();
+  list.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+    cb.addEventListener('change', updateImportConfirmCount);
+  });
+}
+
+function updateImportConfirmCount(){
+  const checked = document.querySelectorAll('#importCsvPreview input:checked').length;
+  document.getElementById('importCsvConfirmCount').textContent = checked;
+  document.getElementById('importCsvConfirm').disabled = checked === 0;
+}
+
+function resetImportModal(){
+  importParsedRows = [];
+  document.getElementById('importCsvStep1').style.display = '';
+  document.getElementById('importCsvStep2').style.display = 'none';
+  document.getElementById('importCsvError').textContent = '';
+  document.getElementById('importCsvProgress').textContent = '';
+  document.getElementById('importCsvFile').value = '';
+  document.getElementById('importCsvAccountName').textContent = activeAccount ? ` (${activeAccount.label})` : '';
+}
+
+document.getElementById('importCsvBtn').onclick = async ()=>{
+  if(!(await TLAuth.isPro())){ TLAuth.ui.requirePro('CSV import'); return; }
+  resetImportModal();
+  openModal('importCsvOverlay');
+};
+
+document.getElementById('importCsvBack').onclick = resetImportModal;
+
+const importDropZone = document.getElementById('importDropZone');
+const importCsvFileInput = document.getElementById('importCsvFile');
+function handleImportFile(file){
+  const errEl = document.getElementById('importCsvError');
+  errEl.textContent = '';
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const rows = parseMetaTraderReport(String(reader.result));
+    if(!rows.length){
+      errEl.textContent = "Couldn't find any trades in that file — make sure it's the History report exported from MetaTrader.";
+      return;
+    }
+    importParsedRows = rows;
+    document.getElementById('importCsvCount').textContent = rows.length;
+    document.getElementById('importCsvStep1').style.display = 'none';
+    document.getElementById('importCsvStep2').style.display = '';
+    renderImportPreview();
+  };
+  reader.onerror = ()=>{ errEl.textContent = 'Could not read that file — please try again.'; };
+  reader.readAsText(file);
+}
+importCsvFileInput.addEventListener('change', e=>handleImportFile(e.target.files[0]));
+['dragover','dragleave','drop'].forEach(evt=>{
+  importDropZone.addEventListener(evt, e=>{
+    e.preventDefault();
+    importDropZone.classList.toggle('dragover', evt === 'dragover');
+  });
+});
+importDropZone.addEventListener('drop', e=>handleImportFile(e.dataTransfer.files[0]));
+
+document.getElementById('importCsvConfirm').onclick = async ()=>{
+  const checkedIdx = [...document.querySelectorAll('#importCsvPreview input:checked')].map(cb => Number(cb.dataset.i));
+  const btn = document.getElementById('importCsvConfirm');
+  const progress = document.getElementById('importCsvProgress');
+  btn.disabled = true;
+  const manual = loadManualTrades();
+  const stamp = Date.now();
+  for(let n = 0; n < checkedIdx.length; n++){
+    const t = importParsedRows[checkedIdx[n]];
+    progress.textContent = `Importing ${n+1}/${checkedIdx.length}…`;
+    const trade = {
+      id: `${t.date}-m${stamp}-${checkedIdx[n]}`,
+      date: t.date,
+      time: t.time || null,
+      tz_offset_minutes: t.time ? -new Date().getTimezoneOffset() : null,
+      symbol: t.symbol,
+      lot: t.lot ?? 0,
+      entry: t.entry,
+      exit: t.exit,
+      profit: t.profit,
+    };
+    if(!manual[t.date]) manual[t.date] = [];
+    manual[t.date].push(trade);
+    await TLAuth.data.upsertTrade({ id: trade.id, account_id: activeAccount ? activeAccount.id : null, is_manual: true, ...trade, note:'', images:[], answers:{}, tags:[] });
+  }
+  saveManualTrades(manual);
+  progress.textContent = `Imported ${checkedIdx.length} trades.`;
+  btn.disabled = false;
+  setTimeout(()=>{ closeModal('importCsvOverlay'); renderAll(); }, 700);
+};
 
 function renderKPIs(){
   const year = viewDate.getFullYear(), month = viewDate.getMonth();
