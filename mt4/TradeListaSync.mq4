@@ -82,9 +82,14 @@ void sendClosedOrder(int ticket)
    double closePrice = OrderClosePrice();
    double profit = OrderProfit() + OrderSwap() + OrderCommission();
 
-   string dateStr = TimeToString(OrderCloseTime(), TIME_DATE); // "2026.07.19"
-   StringReplace(dateStr, ".", "-");                            // -> "2026-07-19"
-   string timeStr = TimeToString(OrderCloseTime(), TIME_MINUTES); // "14:32"
+   // OrderCloseTime() is in the broker's server time, which is usually not
+   // the trader's own timezone (often off by 1-3 hours) — convert to the
+   // computer's local time before splitting into date/time strings, so what
+   // gets shown in TradeLista matches the trader's own wall clock.
+   datetime localCloseTime = OrderCloseTime() + (TimeLocal() - TimeCurrent());
+   string dateStr = TimeToString(localCloseTime, TIME_DATE); // "2026.07.19"
+   StringReplace(dateStr, ".", "-");                          // -> "2026-07-19"
+   string timeStr = TimeToString(localCloseTime, TIME_MINUTES); // "14:32"
    string ticketStr = IntegerToString(ticket);
 
    string json = StringFormat(
