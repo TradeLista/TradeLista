@@ -1333,14 +1333,28 @@ function applyDeletions(){
 }
 
 function deleteTradeById(id){
-  const key = id.split('-').slice(0,3).join('-');
+  // Don't trust id.split('-') for the date here — it silently produces
+  // garbage for any id that isn't date-prefixed (e.g. an EA trade ingested
+  // before the date-prefixed id fix shipped). Sending that garbage as the
+  // `date` column to Supabase fails the upsert (invalid date), which used to
+  // fail silently: the trade would look deleted locally (it's in the local
+  // `deleted` list) but reappear on the next hydrateFromSupabase() because
+  // the server-side row was never actually marked is_deleted. Scanning
+  // tradesByDate for the trade's real .date always gets the right value,
+  // regardless of what its id looks like.
+  let realDate = id.split('-').slice(0,3).join('-');
+  for(const k in tradesByDate){
+    const match = tradesByDate[k].find(t=>t.id===id);
+    if(match){ realDate = match.date || k; break; }
+  }
+  const key = realDate;
 
   // remove from manual trades store if it lives there
   const manual = loadManualTrades();
-  if(manual[key]){
-    manual[key] = manual[key].filter(t=>t.id!==id);
-    saveManualTrades(manual);
-  }
+  Object.keys(manual).forEach(k=>{
+    manual[k] = manual[k].filter(t=>t.id!==id);
+  });
+  saveManualTrades(manual);
 
   // remember it as deleted so mock-generated trades don't reappear either
   const deleted = loadDeleted();
@@ -1354,7 +1368,9 @@ function deleteTradeById(id){
   const overrides = loadOverrides();
   if(overrides[id]){ delete overrides[id]; saveOverrides(overrides); }
 
-  TLAuth.data.upsertTrade({ id, account_id: activeAccount ? activeAccount.id : null, is_deleted: true, date: key });
+  TLAuth.data.upsertTrade({ id, account_id: activeAccount ? activeAccount.id : null, is_deleted: true, date: key }).then(res=>{
+    if(!res.ok) console.error('TradeLista: failed to delete trade server-side —', res.error);
+  });
 }
 
 /* ---------- localStorage-backed trade edits ---------- */
