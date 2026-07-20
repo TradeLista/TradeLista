@@ -311,10 +311,10 @@
   .pain-card h3{font-size:15.5px; font-weight:700; margin-bottom:7px;}
   .pain-card p{font-size:13px; color:var(--text-dim); line-height:1.6; max-width:260px;}
 
-  /* ---------- Features (alternating rows) ---------- */
+  /* ---------- Features (alternating showcase cards) ---------- */
   #pain{padding-bottom:60px;}
   #features{padding-top:60px;}
-  .feat-rows{position:relative; display:flex; flex-direction:column; gap:70px; margin-top:64px; padding:20px 0;}
+  .feat-rows{position:relative; display:flex; flex-direction:column; gap:28px; margin-top:64px; padding:20px 0;}
   .feat-rows::before{
     content:''; position:absolute; inset:-20px 0; z-index:0; pointer-events:none;
     background-image:
@@ -324,32 +324,82 @@
     -webkit-mask-image:linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
     mask-image:linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
   }
-  .feat-row{position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; text-align:center; gap:28px;}
-  .feat-row:not(:last-child)::after{
-    content:''; position:absolute; bottom:-35px; left:50%; transform:translateX(-50%);
-    width:min(420px, 80%); height:2px; border-radius:1px;
-    background:linear-gradient(90deg, transparent, var(--accent), transparent);
-    opacity:.5;
+  .feat-row{
+    position:relative; z-index:1; overflow:hidden;
+    display:grid; grid-template-columns:minmax(0,5fr) minmax(0,6fr); gap:clamp(28px,4vw,56px); align-items:center;
+    background:rgba(255,255,255,0.03); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--border-soft); border-radius:22px; padding:clamp(26px,3.4vw,44px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 30px -18px rgba(0,0,0,0.5);
+    transition:border-color .2s, transform .2s, box-shadow .2s;
+    text-align:left;
+  }
+  .feat-row:hover{
+    border-color:var(--border); transform:translateY(-3px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.07), 0 22px 44px -20px rgba(0,0,0,0.65), 0 0 34px -6px rgba(79,140,255,0.18);
+  }
+  .feat-row::before{
+    content:''; position:absolute; z-index:0; top:-120px; right:-80px; width:340px; height:280px; pointer-events:none;
+    background:radial-gradient(ellipse at center, rgba(79,140,255,0.14), transparent 70%); filter:blur(30px);
+  }
+  .feat-row:nth-child(even)::before{right:auto; left:-80px; background:radial-gradient(ellipse at center, rgba(139,108,255,0.14), transparent 70%);}
+  /* mouse-follow spotlight — same --mx/--my mechanism as .price-card (see mousemove JS) */
+  .feat-row::after{
+    content:''; position:absolute; inset:0; border-radius:inherit; opacity:0; transition:opacity .25s; pointer-events:none;
+    background:radial-gradient(280px circle at var(--mx,50%) var(--my,50%), rgba(79,140,255,0.1), transparent 65%);
+  }
+  .feat-row:hover::after{opacity:1;}
+  .feat-row:nth-child(even) .feat-text{order:2;}
+  .feat-row:nth-child(even) .feat-visual{order:1;}
+  .feat-num{
+    position:absolute; z-index:0; bottom:-26px; font-family:var(--font-mono); font-weight:700; font-size:130px; line-height:1;
+    color:transparent; -webkit-text-stroke:1px rgba(79,140,255,0.16); pointer-events:none; user-select:none;
+  }
+  .feat-row:nth-child(odd) .feat-num{right:18px;}
+  .feat-row:nth-child(even) .feat-num{left:18px;}
+  .feat-text{position:relative; z-index:1; display:flex; flex-direction:column; align-items:flex-start;}
+  .feat-kicker{
+    display:inline-flex; align-items:center; gap:7px; margin-bottom:14px;
+    font-size:11px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; color:var(--accent);
+    background:var(--accent-dim); border:1px solid rgba(79,140,255,0.3); padding:6px 12px; border-radius:99px;
+  }
+  .feat-kicker .ic{font-size:13px;}
+  .feat-text h3{font-size:clamp(20px,2.2vw,25px); font-weight:800; letter-spacing:-0.015em; margin-bottom:10px; color:var(--text);}
+  .feat-text p{font-size:14.5px; color:var(--text-dim); line-height:1.7; max-width:440px;}
+  .feat-points{margin-top:18px; display:flex; flex-direction:column; gap:9px;}
+  .feat-point{display:flex; align-items:flex-start; gap:9px; font-size:13px; color:var(--text-dim); line-height:1.5;}
+  .feat-point .chk{
+    flex-shrink:0; width:17px; height:17px; margin-top:1px; border-radius:50%;
+    background:var(--green-dim); border:1px solid var(--green-border); color:var(--green);
+    display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800;
   }
   .feat-visual{
-    position:relative; width:100%; max-width:460px; margin:0 auto; min-height:230px; padding:0 6px;
+    position:relative; z-index:1; width:100%; margin:0 auto;
     display:flex; align-items:center; justify-content:center;
-    animation:featFloat 6s ease-in-out infinite; animation-delay:calc(var(--i,0) * 0.4s);
-  }
-  .feat-visual::before{
-    content:''; position:absolute; inset:-34px; z-index:0;
-    background:radial-gradient(ellipse 70% 70% at 50% 50%, rgba(79,140,255,0.16), transparent 72%);
-    filter:blur(26px); pointer-events:none;
+    animation:featFloat 7s ease-in-out infinite; animation-delay:calc(var(--i,0) * 0.5s);
   }
   @keyframes featFloat{0%,100%{transform:translateY(0);} 50%{transform:translateY(-5px);}}
-  .feat-text{padding:0 6px; display:flex; flex-direction:column; align-items:center;}
-  .feat-text h3{font-size:22px; font-weight:800; letter-spacing:-0.01em; margin-bottom:10px; color:var(--accent);}
-  .feat-text p{font-size:14.5px; color:var(--text-dim); line-height:1.7; max-width:420px;}
 
-  /* mini calendar mockup */
-  .fv-cal{position:relative; z-index:1; width:100%;}
-  .fv-cal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:13px; font-weight:700; color:var(--text-dim);}
-  .fv-cal-head .pct{font-family:var(--font-mono); color:var(--green);}
+  /* shared window frame around every feature mockup */
+  .fv-frame{
+    width:100%; max-width:440px; background:var(--bg-card); border:1px solid var(--border); border-radius:14px;
+    overflow:hidden; box-shadow:0 26px 54px -26px rgba(0,0,0,0.7);
+  }
+  .fv-frame-bar{display:flex; align-items:center; gap:6px; padding:10px 13px; border-bottom:1px solid var(--border-soft); background:var(--bg-elevated);}
+  .fv-frame-bar i{width:8px; height:8px; border-radius:50%; display:block;}
+  .fv-frame-bar i:nth-child(1){background:var(--red);}
+  .fv-frame-bar i:nth-child(2){background:#f5c542;}
+  .fv-frame-bar i:nth-child(3){background:var(--green);}
+  .fv-frame-title{margin-left:6px; font-size:10.5px; color:var(--text-faint); font-weight:600;}
+  .fv-frame-body{padding:16px;}
+
+  /* 1 — calendar mockup */
+  .fv-cal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:11px;}
+  .fv-cal-head .fv-month{font-size:13px; font-weight:700; color:var(--text);}
+  .fv-navpills{display:flex; gap:5px;}
+  .fv-navpills span{width:22px; height:22px; border-radius:50%; background:var(--bg-elevated); border:1px solid var(--border-soft); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--text-dim);}
+  .fv-kpis{display:flex; gap:7px; margin-bottom:12px; flex-wrap:wrap;}
+  .fv-kpi{display:flex; align-items:center; gap:6px; background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:99px; padding:5px 11px; font-size:10.5px; color:var(--text-dim); font-weight:600;}
+  .fv-kpi b{font-family:var(--font-mono); font-size:11px; color:var(--green); font-weight:700;}
   .fv-cal-week{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:6px;}
   .fv-cal-week div{text-align:center; font-size:9px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.04em;}
   .fv-cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
@@ -360,79 +410,123 @@
   .fv-day.empty{background:transparent; border:none;}
   .fv-day.win{background:var(--green-dim); border-color:var(--green-border);}
   .fv-day.loss{background:var(--red-dim); border-color:var(--red-border);}
+  .fv-day.today{outline:2px solid var(--accent); outline-offset:1px;}
   .fv-day span:first-child{color:var(--text-faint); font-size:9px; font-weight:600;}
   .fv-day.win span:first-child, .fv-day.loss span:first-child{color:var(--text-dim);}
   .fv-day span:last-child{font-family:var(--font-mono); font-weight:700; font-size:9.5px;}
   .fv-day.win span:last-child{color:var(--green);}
   .fv-day.loss span:last-child{color:var(--red);}
 
-  /* sync connector mockup */
-  .fv-sync-wrap{position:relative; z-index:1; width:100%; display:flex; flex-direction:column; align-items:center;}
-  .fv-sync{display:flex; align-items:center; justify-content:center; gap:18px;}
+  /* 2 — auto-sync mockup */
+  .fv-sync{display:flex; align-items:center; justify-content:center; gap:14px; padding:6px 0 2px;}
   .fv-node{
-    background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:14px; padding:16px 20px;
-    display:flex; flex-direction:column; align-items:center; gap:6px; min-width:96px;
+    background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:14px; padding:13px 17px;
+    display:flex; flex-direction:column; align-items:center; gap:6px; min-width:92px;
   }
-  .fv-node span{font-size:22px;}
+  .fv-node span{font-size:20px;}
   .fv-node small{font-size:10px; color:var(--text-faint); font-weight:600;}
-  .fv-link{position:relative; width:56px; height:2px; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:2px;}
+  .fv-node .fv-node-badge{font-family:var(--font-mono); font-size:10px; font-weight:700; color:var(--accent); background:var(--accent-dim); border-radius:6px; padding:2px 7px;}
+  .fv-link{position:relative; flex:1; max-width:90px; height:2px; border-radius:2px; opacity:.75;
+    background:repeating-linear-gradient(90deg, var(--accent) 0 6px, transparent 6px 12px);}
   .fv-dot{
     position:absolute; top:50%; left:0; width:7px; height:7px; border-radius:50%; background:#fff;
     box-shadow:0 0 8px 2px rgba(79,140,255,0.8); transform:translateY(-50%);
     animation:fvDotMove 1.8s ease-in-out infinite;
   }
-  @keyframes fvDotMove{0%{left:0;} 100%{left:calc(100% - 7px);}}
-  .fv-sync-status{margin-top:18px; display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text-faint);}
+  @keyframes fvDotMove{0%{left:0; opacity:0;} 15%{opacity:1;} 85%{opacity:1;} 100%{left:calc(100% - 7px); opacity:0;}}
+  .fv-sync-feed{margin-top:14px; display:flex; flex-direction:column; gap:8px;}
+  .fv-sync-trade{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:10px; padding:9px 12px; font-size:11.5px;
+  }
+  .fv-sync-trade .sym{font-weight:700; color:var(--text); display:flex; align-items:center; gap:8px;}
+  .fv-sync-trade .tme{font-family:var(--font-mono); font-weight:600; font-size:10.5px; color:var(--text-faint);}
+  .fv-sync-trade .pnl{font-family:var(--font-mono); font-weight:700;}
+  .fv-sync-trade .pnl.pos{color:var(--green);}
+  .fv-sync-trade .pnl.neg{color:var(--red);}
+  .fv-sync-trade.landing{border-color:var(--green-border); background:var(--green-dim); animation:fvLand 5.5s ease-in-out infinite;}
+  @keyframes fvLand{0%,6%{opacity:0; transform:translateY(-8px);} 15%,100%{opacity:1; transform:none;}}
+  .fv-sync-status{margin-top:12px; display:flex; align-items:center; justify-content:center; gap:7px; font-size:11.5px; color:var(--text-faint);}
   .fv-sync-status .dotpulse{width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green);}
 
-  /* reflection questions mockup */
-  .fv-quiz{position:relative; z-index:1; width:100%; display:flex; flex-direction:column; gap:10px;}
+  /* 3 — reflection questions mockup */
+  .fv-quiz{display:flex; flex-direction:column; gap:9px;}
   .fv-quiz-row{
     display:flex; align-items:center; justify-content:space-between; gap:12px; background:var(--bg-elevated);
-    border:1px solid var(--border-soft); border-radius:10px; padding:11px 14px;
+    border:1px solid var(--border-soft); border-radius:10px; padding:10px 13px;
   }
   .fv-quiz-row .q{font-size:12.5px; color:var(--text-dim);}
-  .fv-quiz-row .a{font-family:var(--font-mono); font-size:12px; color:var(--text-faint); flex-shrink:0;}
-  .fv-quiz-row.done{border-color:var(--green-border); background:var(--green-dim);}
-  .fv-quiz-row.done .q{color:var(--text);}
-  .fv-quiz-row.done .a{color:var(--green); font-weight:700;}
+  .fv-quiz-row.answered .q{color:var(--text);}
+  .fv-yn{display:flex; gap:5px; flex-shrink:0;}
+  .fv-yn span{font-size:10px; font-weight:700; padding:3px 9px; border-radius:99px; border:1px solid var(--border-soft); color:var(--text-faint);}
+  .fv-yn .on-y{background:var(--green-dim); border-color:var(--green-border); color:var(--green);}
+  .fv-yn .on-n{background:var(--red-dim); border-color:var(--red-border); color:var(--red);}
+  .fv-quiz-note{font-size:11px; color:var(--text-faint); background:var(--bg-elevated); border:1px dashed var(--border); border-radius:10px; padding:9px 13px;}
+  .fv-caret{display:inline-block; width:1px; height:11px; background:var(--text-dim); margin-left:2px; vertical-align:-2px; animation:fvBlink 1s steps(1) infinite;}
+  @keyframes fvBlink{50%{opacity:0;}}
 
-  /* golden rules mockup */
-  .fv-rules{position:relative; z-index:1; width:100%; display:flex; flex-direction:column; gap:10px;}
+  /* 4 — golden rules mockup */
+  .fv-rules-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:11px;}
+  .fv-rules-head .t{font-size:12.5px; font-weight:700; color:var(--text);}
+  .fv-rules-head .cnt{font-family:var(--font-mono); font-size:10.5px; color:var(--accent); background:var(--accent-dim); padding:3px 8px; border-radius:99px; font-weight:700;}
+  .fv-rules{display:flex; flex-direction:column; gap:8px;}
   .fv-rule{
     display:flex; align-items:center; gap:10px; background:var(--bg-elevated); border:1px solid var(--border-soft);
-    border-radius:10px; padding:12px 14px; font-size:12.5px; color:var(--text-dim);
+    border-radius:10px; padding:10px 13px; font-size:12px; color:var(--text-dim);
   }
-  .fv-rule .pin{font-size:15px; flex-shrink:0;}
+  .fv-rule .idx{
+    flex-shrink:0; width:20px; height:20px; border-radius:50%; background:var(--accent-dim); color:var(--accent);
+    font-family:var(--font-mono); font-size:10.5px; font-weight:700; display:flex; align-items:center; justify-content:center;
+  }
+  .fv-rule-add{display:flex; gap:8px; margin-top:10px;}
+  .fv-rule-add .inp{flex:1; border:1px dashed var(--border); border-radius:8px; padding:8px 11px; font-size:11px; color:var(--text-faint);}
+  .fv-rule-add .btn-mock{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; font-size:11px; font-weight:700; border-radius:8px; padding:8px 14px; display:flex; align-items:center;}
 
-  /* note + screenshot mockup */
-  .fv-note{position:relative; z-index:1; width:100%; background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:12px; overflow:hidden;}
-  .fv-note-head{display:flex; gap:6px; padding:10px 12px; border-bottom:1px solid var(--border-soft);}
-  .fv-note-head span{width:8px; height:8px; border-radius:50%;}
-  .fv-note-head .dot-r{background:var(--red);}
-  .fv-note-head .dot-y{background:#f5c542;}
-  .fv-note-head .dot-g{background:var(--green);}
-  .fv-note-body{padding:16px; display:flex; flex-direction:column; gap:10px;}
+  /* 5 — note + screenshots mockup */
+  .fv-note-toolbar{display:flex; gap:5px; padding-bottom:10px; border-bottom:1px solid var(--border-soft); margin-bottom:12px;}
+  .fv-note-toolbar span{
+    width:24px; height:24px; border-radius:6px; background:var(--bg-elevated); border:1px solid var(--border-soft);
+    display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--text-dim); font-weight:700;
+  }
+  .fv-note-toolbar span.hl{background:var(--accent-dim); border-color:rgba(79,140,255,0.4); color:var(--accent);}
+  .fv-note-lines{display:flex; flex-direction:column; gap:9px;}
   .fv-note-line{height:8px; border-radius:4px; background:var(--border-soft);}
-  .fv-note-thumb{width:56px; height:56px; border-radius:8px; background:var(--accent-dim); display:flex; align-items:center; justify-content:center; font-size:22px;}
+  .fv-note-imgs{display:flex; gap:8px; margin:12px 0;}
+  .fv-note-thumb{width:64px; height:48px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px;}
+  .fv-note-thumb.t1{background:linear-gradient(135deg, rgba(79,140,255,0.35), rgba(139,108,255,0.3));}
+  .fv-note-thumb.t2{background:linear-gradient(135deg, rgba(31,209,138,0.3), rgba(79,140,255,0.28));}
+  .fv-note-thumb.add{background:transparent; border:1px dashed var(--border); color:var(--text-faint); font-size:14px;}
 
-  /* multiple accounts mockup */
-  .fv-accounts{position:relative; z-index:1; width:100%; height:150px;}
-  .fv-acc-card{
-    position:absolute; left:50%; width:100%; background:var(--bg-elevated); border:1px solid var(--border-soft);
-    border-radius:12px; padding:14px 18px; display:flex; align-items:center; justify-content:space-between;
-    font-size:13px; font-weight:700; box-shadow:0 14px 30px -10px rgba(0,0,0,0.5);
+  /* 6 — account switcher mockup */
+  .fv-acc-pill{
+    display:flex; align-items:center; gap:10px; background:var(--bg-elevated); border:1px solid var(--border);
+    border-radius:99px; padding:9px 14px; font-size:12px; font-weight:700; color:var(--text);
   }
-  .fv-acc-card .fv-acc-cur{font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--accent); background:var(--accent-dim); padding:3px 8px; border-radius:99px;}
-  .fv-acc-card.a1{top:64px; transform:translateX(-50%); z-index:3;}
-  .fv-acc-card.a2{top:32px; transform:translateX(-50%) scale(.97); z-index:2; opacity:.8;}
-  .fv-acc-card.a3{top:0; transform:translateX(-50%) scale(.94); z-index:1; opacity:.55;}
+  .fv-acc-pill .dot{width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green);}
+  .fv-acc-pill .caret{margin-left:auto; color:var(--text-faint); font-size:10px;}
+  .fv-acc-menu{margin-top:10px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:12px; overflow:hidden;}
+  .fv-acc-item{display:flex; align-items:center; gap:9px; padding:10px 13px; font-size:12px; color:var(--text-dim); border-bottom:1px solid var(--border-soft);}
+  .fv-acc-item:last-child{border-bottom:none;}
+  .fv-acc-item.on{background:var(--bg-hover); color:var(--text); font-weight:700;}
+  .fv-acc-item .dot{width:7px; height:7px; border-radius:50%; background:var(--green); flex-shrink:0;}
+  .fv-acc-item .dot.demo{background:#f5c542;}
+  .fv-acc-item .cur{margin-left:auto; font-family:var(--font-mono); font-size:10px; font-weight:700; color:var(--accent); background:var(--accent-dim); padding:2px 7px; border-radius:99px;}
+  .fv-acc-item .chk{color:var(--accent); font-weight:700; font-size:11px;}
 
-  /* equity curve mockup */
-  .fv-chart{position:relative; z-index:1; width:100%;}
-  .fv-chart-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:13px; font-weight:700; color:var(--text-dim);}
-  .fv-chart-head .pct{font-family:var(--font-mono); color:var(--green);}
-  .fv-chart-svg{width:100%; height:120px; display:block; overflow:visible;}
+  /* 7 — equity curve mockup */
+  .fv-chart-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .fv-chart-head .t{font-size:12.5px; font-weight:700; color:var(--text);}
+  .fv-chart-head .pct{font-family:var(--font-mono); color:var(--green); font-weight:700; font-size:13px;}
+  .fv-ranges{display:flex; gap:5px; margin-bottom:12px;}
+  .fv-ranges span{font-size:10px; font-weight:700; padding:3px 10px; border-radius:99px; border:1px solid var(--border-soft); color:var(--text-faint);}
+  .fv-ranges .on{background:var(--accent-dim); border-color:rgba(79,140,255,0.4); color:var(--accent);}
+  .fv-chart-wrap{position:relative;}
+  .fv-chart-svg{width:100%; height:130px; display:block; overflow:visible;}
+  .fv-tip{
+    position:absolute; right:0; top:-4px; background:var(--bg-elevated); border:1px solid var(--green-border); color:var(--green);
+    font-family:var(--font-mono); font-size:10.5px; font-weight:700; padding:4px 8px; border-radius:8px;
+    box-shadow:0 8px 20px -8px rgba(0,0,0,0.6);
+  }
 
   /* ---------- How it works ---------- */
   .steps-track{
@@ -601,6 +695,11 @@
     .steps-track{display:none;} /* the horizontal 1-2-3 rail makes no sense once cards stack */
     .float-chip{display:none;}
     section{padding:80px 20px;}
+    .feat-row{grid-template-columns:1fr;}
+    /* stacked, text always reads first — undo the desktop zig-zag order */
+    .feat-row:nth-child(even) .feat-text{order:1;}
+    .feat-row:nth-child(even) .feat-visual{order:2;}
+    .feat-num{display:none;}
   }
 </style>
 </head>
@@ -733,124 +832,236 @@
   <div class="feat-rows">
 
     <div class="feat-row reveal-item" style="--i:0">
+      <span class="feat-num">01</span>
       <div class="feat-text">
+        <span class="feat-kicker"><span class="ic">📅</span> Overview</span>
         <h3>Calendar &amp; PnL</h3>
-        <p>Every day green or red, with the day's result. Percentage PnL shown above the calendar — currency-independent.</p>
+        <p>Every day green or red, with the day's result at a glance. Percentage PnL above the calendar — currency-independent.</p>
+        <div class="feat-points">
+          <div class="feat-point"><span class="chk">✓</span> Daily results plus weekly PnL sums</div>
+          <div class="feat-point"><span class="chk">✓</span> Hover any day for an instant trade preview</div>
+          <div class="feat-point"><span class="chk">✓</span> Filter by symbol, tag or win/loss</div>
+        </div>
       </div>
       <div class="feat-visual">
-        <div class="fv-cal">
-          <div class="fv-cal-head"><span>July</span><span class="pct">+18.5%</span></div>
-          <div class="fv-cal-week"><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div></div>
-          <div class="fv-cal-grid">
-            <div class="fv-day"><span>1</span></div>
-            <div class="fv-day win"><span>2</span><span>+1.2%</span></div>
-            <div class="fv-day loss"><span>3</span><span>-0.4%</span></div>
-            <div class="fv-day win"><span>4</span><span>+2.1%</span></div>
-            <div class="fv-day"><span>5</span></div>
-            <div class="fv-day empty"></div>
-            <div class="fv-day empty"></div>
-            <div class="fv-day"><span>8</span></div>
-            <div class="fv-day win"><span>9</span><span>+0.8%</span></div>
-            <div class="fv-day win"><span>10</span><span>+3.4%</span></div>
-            <div class="fv-day"><span>11</span></div>
-            <div class="fv-day loss"><span>12</span><span>-1.1%</span></div>
-            <div class="fv-day empty"></div>
-            <div class="fv-day empty"></div>
+        <div class="fv-frame">
+          <div class="fv-frame-bar"><i></i><i></i><i></i><span class="fv-frame-title">tradelista.com — Calendar</span></div>
+          <div class="fv-frame-body">
+            <div class="fv-cal-head">
+              <span class="fv-month">July</span>
+              <div class="fv-navpills"><span>‹</span><span>›</span></div>
+            </div>
+            <div class="fv-kpis">
+              <div class="fv-kpi">Month <b>+18.5%</b></div>
+              <div class="fv-kpi">Win rate <b>64%</b></div>
+              <div class="fv-kpi">Profit factor <b>1.8</b></div>
+            </div>
+            <div class="fv-cal-week"><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div></div>
+            <div class="fv-cal-grid">
+              <div class="fv-day"><span>1</span></div>
+              <div class="fv-day win"><span>2</span><span>+1.2%</span></div>
+              <div class="fv-day loss"><span>3</span><span>-0.4%</span></div>
+              <div class="fv-day win"><span>4</span><span>+2.1%</span></div>
+              <div class="fv-day"><span>5</span></div>
+              <div class="fv-day empty"></div>
+              <div class="fv-day empty"></div>
+              <div class="fv-day"><span>8</span></div>
+              <div class="fv-day win"><span>9</span><span>+0.8%</span></div>
+              <div class="fv-day win today"><span>10</span><span>+3.4%</span></div>
+              <div class="fv-day"><span>11</span></div>
+              <div class="fv-day loss"><span>12</span><span>-1.1%</span></div>
+              <div class="fv-day empty"></div>
+              <div class="fv-day empty"></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="feat-row reveal-item" style="--i:1">
+      <span class="feat-num">02</span>
       <div class="feat-text">
+        <span class="feat-kicker"><span class="ic">🔌</span> Automation</span>
         <h3>MT4 / MT5 auto-sync</h3>
-        <p>Connect the TradeLista Expert Advisor once. Every closed trade — balance, equity, currency — lands on your calendar automatically.</p>
+        <p>Connect the TradeLista Expert Advisor once. Every closed trade — symbol, lots, entry, exit, profit — lands on your calendar automatically, seconds after it closes.</p>
+        <div class="feat-points">
+          <div class="feat-point"><span class="chk">✓</span> Works with both MT4 and MT5</div>
+          <div class="feat-point"><span class="chk">✓</span> De-duplicated — no double entries, ever</div>
+          <div class="feat-point"><span class="chk">✓</span> Trade times shown in your own timezone</div>
+        </div>
       </div>
       <div class="feat-visual">
-        <div class="fv-sync-wrap">
-          <div class="fv-sync">
-            <div class="fv-node"><span>🔌</span><small>MT4 / MT5</small></div>
-            <div class="fv-link"><span class="fv-dot"></span></div>
-            <div class="fv-node"><span>📅</span><small>Calendar</small></div>
+        <div class="fv-frame">
+          <div class="fv-frame-bar"><i></i><i></i><i></i><span class="fv-frame-title">TradeListaSync — live</span></div>
+          <div class="fv-frame-body">
+            <div class="fv-sync">
+              <div class="fv-node"><span>🖥️</span><small>MetaTrader</small><span class="fv-node-badge">MT4 · MT5</span></div>
+              <div class="fv-link"><span class="fv-dot"></span></div>
+              <div class="fv-node"><span>📅</span><small>TradeLista</small><span class="fv-node-badge">Calendar</span></div>
+            </div>
+            <div class="fv-sync-feed">
+              <div class="fv-sync-trade landing"><span class="sym">EURUSD <span class="tme">14:32</span></span><span class="pnl pos">+45.20</span></div>
+              <div class="fv-sync-trade"><span class="sym">XAUUSD <span class="tme">11:05</span></span><span class="pnl neg">-12.80</span></div>
+              <div class="fv-sync-trade"><span class="sym">US30 <span class="tme">09:41</span></span><span class="pnl pos">+88.10</span></div>
+            </div>
+            <div class="fv-sync-status"><span class="dotpulse"></span> Auto-synced · every closed trade</div>
           </div>
-          <div class="fv-sync-status"><span class="dotpulse"></span> Auto-synced · every closed trade</div>
         </div>
       </div>
     </div>
 
     <div class="feat-row reveal-item" style="--i:2">
+      <span class="feat-num">03</span>
       <div class="feat-text">
+        <span class="feat-kicker"><span class="ic">🧠</span> Discipline</span>
         <h3>Custom reflection questions</h3>
         <p>Add as many reflection questions as you want and tailor them per trade — Did you follow your strategy? Revenge trade? — for the clearest possible overview of your patterns.</p>
+        <div class="feat-points">
+          <div class="feat-point"><span class="chk">✓</span> Answer Yes/No, plus a short "why" if you want</div>
+          <div class="feat-point"><span class="chk">✓</span> Rewrite every question to fit your strategy</div>
+          <div class="feat-point"><span class="chk">✓</span> Spot recurring mistakes across trades</div>
+        </div>
       </div>
       <div class="feat-visual">
-        <div class="fv-quiz">
-          <div class="fv-quiz-row done"><span class="q">Did you follow your strategy?</span><span class="a">✓</span></div>
-          <div class="fv-quiz-row done"><span class="q">Revenge trade?</span><span class="a">✓</span></div>
-          <div class="fv-quiz-row"><span class="q">How was your entry timing?</span><span class="a">…</span></div>
-          <div class="fv-quiz-row"><span class="q">Respected your stop loss?</span><span class="a">…</span></div>
+        <div class="fv-frame">
+          <div class="fv-frame-bar"><i></i><i></i><i></i><span class="fv-frame-title">EURUSD — Reflection</span></div>
+          <div class="fv-frame-body">
+            <div class="fv-quiz">
+              <div class="fv-quiz-row answered"><span class="q">Did you follow your strategy?</span><span class="fv-yn"><span class="on-y">Yes</span><span>No</span></span></div>
+              <div class="fv-quiz-row answered"><span class="q">Revenge trade?</span><span class="fv-yn"><span>Yes</span><span class="on-n">No</span></span></div>
+              <div class="fv-quiz-row answered"><span class="q">Respected your stop loss?</span><span class="fv-yn"><span class="on-y">Yes</span><span>No</span></span></div>
+              <div class="fv-quiz-row"><span class="q">How was your entry timing?</span><span class="fv-yn"><span>Yes</span><span>No</span></span></div>
+              <div class="fv-quiz-note">Entered too early before the retest — wait for the candle close next time<span class="fv-caret"></span></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="feat-row reveal-item" style="--i:3">
+      <span class="feat-num">04</span>
       <div class="feat-text">
+        <span class="feat-kicker"><span class="ic">🏅</span> Consistency</span>
         <h3>Golden trading rules</h3>
-        <p>Pin up to 10 personal rules — like "never trade during news" — right under your calendar.</p>
+        <p>Pin up to 10 personal rules — like "never trade during news" — right under your calendar, so they're staring at you before every session.</p>
+        <div class="feat-points">
+          <div class="feat-point"><span class="chk">✓</span> Up to 10 personal rules</div>
+          <div class="feat-point"><span class="chk">✓</span> Always visible, right under the calendar</div>
+        </div>
       </div>
       <div class="feat-visual">
-        <div class="fv-rules">
-          <div class="fv-rule"><span class="pin">📌</span> Never trade during high-impact news</div>
-          <div class="fv-rule"><span class="pin">📌</span> Max 2% risk per trade</div>
-          <div class="fv-rule"><span class="pin">📌</span> No revenge trades after a loss</div>
+        <div class="fv-frame">
+          <div class="fv-frame-bar"><i></i><i></i><i></i><span class="fv-frame-title">Golden Trading Rules</span></div>
+          <div class="fv-frame-body">
+            <div class="fv-rules-head"><span class="t">🏅 My rules</span><span class="cnt">3/10</span></div>
+            <div class="fv-rules">
+              <div class="fv-rule"><span class="idx">1</span> Never trade during high-impact news</div>
+              <div class="fv-rule"><span class="idx">2</span> Max 2% risk per trade</div>
+              <div class="fv-rule"><span class="idx">3</span> No revenge trades after a loss</div>
+            </div>
+            <div class="fv-rule-add"><span class="inp">e.g. No trades after 3 losses in a row…</span><span class="btn-mock">Add</span></div>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="feat-row reveal-item" style="--i:4">
+      <span class="feat-num">05</span>
       <div class="feat-text">
+        <span class="feat-kicker"><span class="ic">📝</span> Journaling</span>
         <h3>Notes &amp; screenshots</h3>
         <p>On Pro, attach as many images as you want to every trade — as separate screenshots or dropped straight into the note text — the context a spreadsheet cell can't hold.</p>
+        <div class="feat-points">
+          <div class="feat-point"><span class="chk">✓</span> Rich-text note on every trade</div>
+          <div class="feat-point"><span class="chk">✓</span> Unlimited screenshots on Pro</div>
+          <div class="feat-point"><span class="chk">✓</span> Draw on images to mark your levels</div>
+        </div>
       </div>
       <div class="feat-visual">
-        <div class="fv-note">
-          <div class="fv-note-head"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
-          <div class="fv-note-body">
-            <div class="fv-note-line" style="width:88%"></div>
-            <div class="fv-note-line" style="width:64%"></div>
-            <div class="fv-note-thumb">🖼️</div>
-            <div class="fv-note-line" style="width:72%"></div>
+        <div class="fv-frame">
+          <div class="fv-frame-bar"><i></i><i></i><i></i><span class="fv-frame-title">EURUSD — Note</span></div>
+          <div class="fv-frame-body">
+            <div class="fv-note-toolbar"><span class="hl">B</span><span>I</span><span>H</span><span>“”</span><span class="hl">🖼</span></div>
+            <div class="fv-note-lines">
+              <div class="fv-note-line" style="width:92%"></div>
+              <div class="fv-note-line" style="width:64%"></div>
+            </div>
+            <div class="fv-note-imgs">
+              <div class="fv-note-thumb t1">📈</div>
+              <div class="fv-note-thumb t2">🖼️</div>
+              <div class="fv-note-thumb add">＋</div>
+            </div>
+            <div class="fv-note-lines">
+              <div class="fv-note-line" style="width:78%"></div>
+              <div class="fv-note-line" style="width:41%"></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="feat-row reveal-item" style="--i:5">
+      <span class="feat-num">06</span>
       <div class="feat-text">
+        <span class="feat-kicker"><span class="ic">💼</span> Accounts</span>
         <h3>Multiple accounts</h3>
-        <p>Track up to 5 accounts side by side, each shown in its own currency.</p>
+        <p>Track up to 5 accounts side by side — Live and Demo, each in its own currency, each with its own calendar and stats.</p>
+        <div class="feat-points">
+          <div class="feat-point"><span class="chk">✓</span> Switch accounts with one click</div>
+          <div class="feat-point"><span class="chk">✓</span> Separate PnL, stats and equity curve per account</div>
+        </div>
       </div>
       <div class="feat-visual">
-        <div class="fv-accounts">
-          <div class="fv-acc-card a3"><span class="fv-acc-name">FTMO 100k</span><span class="fv-acc-cur">EUR</span></div>
-          <div class="fv-acc-card a2"><span class="fv-acc-name">IC Markets Live</span><span class="fv-acc-cur">GBP</span></div>
-          <div class="fv-acc-card a1"><span class="fv-acc-name">Personal MT4</span><span class="fv-acc-cur">USD</span></div>
+        <div class="fv-frame">
+          <div class="fv-frame-bar"><i></i><i></i><i></i><span class="fv-frame-title">Account switcher</span></div>
+          <div class="fv-frame-body">
+            <div class="fv-acc-pill"><span class="dot"></span> Live — FTMO 100k (USD) <span class="caret">▾</span></div>
+            <div class="fv-acc-menu">
+              <div class="fv-acc-item on"><span class="dot"></span> FTMO 100k <span class="cur">USD</span><span class="chk">✓</span></div>
+              <div class="fv-acc-item"><span class="dot"></span> IC Markets Live <span class="cur">GBP</span></div>
+              <div class="fv-acc-item"><span class="dot demo"></span> Demo — Strategy B <span class="cur">EUR</span></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="feat-row reveal-item" style="--i:6">
+      <span class="feat-num">07</span>
       <div class="feat-text">
+        <span class="feat-kicker"><span class="ic">📈</span> Performance</span>
         <h3>Equity curve</h3>
         <p>Every closed trade compounds into a live equity curve — a real, at-a-glance read on whether your edge is actually working, not just a table of numbers.</p>
+        <div class="feat-points">
+          <div class="feat-point"><span class="chk">✓</span> Any date range you want</div>
+          <div class="feat-point"><span class="chk">✓</span> Profit factor, streaks &amp; win rate included</div>
+          <div class="feat-point"><span class="chk">✓</span> Export everything as CSV</div>
+        </div>
       </div>
       <div class="feat-visual">
-        <div class="fv-chart">
-          <div class="fv-chart-head"><span>Equity curve</span><span class="pct">+12.48%</span></div>
-          <svg class="fv-chart-svg" viewBox="0 0 300 110" preserveAspectRatio="none">
-            <path d="M10,90 L50,74 L90,82 L130,48 L170,58 L210,26 L250,36 L290,14" fill="none" stroke="#1fd18a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="290" cy="14" r="4" fill="#1fd18a" stroke="#151b26" stroke-width="1.5"/>
-          </svg>
+        <div class="fv-frame">
+          <div class="fv-frame-bar"><i></i><i></i><i></i><span class="fv-frame-title">Equity curve</span></div>
+          <div class="fv-frame-body">
+            <div class="fv-chart-head"><span class="t">Cumulative PnL</span><span class="pct">+12.48%</span></div>
+            <div class="fv-ranges"><span>7D</span><span class="on">30D</span><span>90D</span><span>All</span></div>
+            <div class="fv-chart-wrap">
+              <span class="fv-tip">+1,248.30</span>
+              <svg class="fv-chart-svg" viewBox="0 0 300 110" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="fvArea" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#1fd18a" stop-opacity="0.28"/>
+                    <stop offset="100%" stop-color="#1fd18a" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <line x1="0" y1="28" x2="300" y2="28" stroke="rgba(79,140,255,0.1)" stroke-width="1" stroke-dasharray="3 5"/>
+                <line x1="0" y1="58" x2="300" y2="58" stroke="rgba(79,140,255,0.1)" stroke-width="1" stroke-dasharray="3 5"/>
+                <line x1="0" y1="88" x2="300" y2="88" stroke="rgba(79,140,255,0.1)" stroke-width="1" stroke-dasharray="3 5"/>
+                <path d="M10,90 L50,74 L90,82 L130,48 L170,58 L210,26 L250,36 L290,14 L290,110 L10,110 Z" fill="url(#fvArea)" stroke="none"/>
+                <path d="M10,90 L50,74 L90,82 L130,48 L170,58 L210,26 L250,36 L290,14" fill="none" stroke="#1fd18a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="290" cy="14" r="4" fill="#1fd18a" stroke="#151b26" stroke-width="1.5"/>
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1064,8 +1275,8 @@
     countUp(document.getElementById('chipWinVal'), 70, 0, '', '%', 1100);
   }, 1000);
 
-  // Mouse-follow spotlight on pain/pricing/step cards (feeds --mx/--my to CSS)
-  document.querySelectorAll('.pain-card, .price-card, .step').forEach(card=>{
+  // Mouse-follow spotlight on pain/pricing/step/feature cards (feeds --mx/--my to CSS)
+  document.querySelectorAll('.pain-card, .price-card, .step, .feat-row').forEach(card=>{
     card.addEventListener('mousemove', (e)=>{
       const r = card.getBoundingClientRect();
       card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
