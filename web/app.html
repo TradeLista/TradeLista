@@ -306,12 +306,16 @@
   }
   .cal-filter-menu.open{display:block;}
   .cal-filter-group{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-faint); padding:8px 10px 4px;}
-  .cal-filter-item{
-    display:block; width:100%; text-align:left; background:transparent; border:none; font-family:inherit;
-    color:var(--text); font-size:12.5px; padding:7px 10px; border-radius:8px; cursor:pointer;
+  /* Scoped to .cal-filter-menu (specificity 0,2,0) so it beats the generic
+     ".cal-nav button" 30x30 circular-arrow rule (0,1,1) — these buttons live
+     inside .cal-nav too, and were otherwise being squeezed into that tiny box. */
+  .cal-filter-menu .cal-filter-item{
+    display:block; width:100%; height:auto; text-align:left; background:transparent; border:none; font-family:inherit;
+    color:var(--text); font-size:12.5px; padding:7px 10px; border-radius:8px; cursor:pointer; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;
   }
-  .cal-filter-item:hover{background:var(--bg-hover);}
-  .cal-filter-item.is-active{background:var(--bg-elevated); color:var(--accent); font-weight:600;}
+  .cal-filter-menu .cal-filter-item:hover{background:var(--bg-hover);}
+  .cal-filter-menu .cal-filter-item.is-active{background:var(--bg-elevated); color:var(--accent); font-weight:600;}
   .day.clickable:not(.win):not(.loss):hover .add-hint.future{color:var(--red);}
   .day-empty-msg{color:var(--text-faint); font-size:13px; margin-bottom:14px;}
 
