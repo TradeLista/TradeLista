@@ -35,13 +35,17 @@
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
     background:
-      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(79,140,255,0.08), transparent),
-      radial-gradient(ellipse 700px 400px at 100% 0%, rgba(139,108,255,0.06), transparent),
+      radial-gradient(ellipse 1100px 620px at 12% -12%, rgba(79,140,255,0.16), transparent 70%),
+      radial-gradient(ellipse 950px 540px at 102% -4%, rgba(139,108,255,0.13), transparent 70%),
+      radial-gradient(ellipse 900px 520px at 102% 70%, rgba(79,140,255,0.08), transparent 70%),
+      radial-gradient(ellipse 850px 500px at -6% 100%, rgba(139,108,255,0.08), transparent 70%),
       var(--bg);
+    background-attachment:fixed;
     color:var(--text);
     font-family:var(--font-ui);
     min-height:100vh;
     -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
   }
   a{color:inherit; text-decoration:none;}
   button{font-family:inherit; cursor:pointer;}
