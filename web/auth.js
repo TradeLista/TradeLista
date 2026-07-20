@@ -13,6 +13,12 @@
   const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  // Per-account cap on trade-screenshot storage. Deliberately generous
+  // relative to what a real trader's chart screenshots add up to (a few
+  // hundred KB each) — this exists to bound a runaway/abuse case, not to be
+  // something a normal user ever bumps into.
+  const STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024; // 1 GiB
+
   // Account labels are free text the user (or, in principle, a compromised
   // account) chooses — never interpolate them into innerHTML unescaped.
   function escapeHtml(str){
@@ -88,9 +94,51 @@
     return { ok:true };
   }
 
+  // Walks the user's trade-images folder (one subfolder per trade) and sums
+  // real object sizes — computed live from Storage rather than a maintained
+  // counter, since counters drift the moment something deletes a file
+  // without going through the one code path that decrements them.
+  async function getStorageUsage(){
+    const { data: { session } } = await sb.auth.getSession();
+    if(!session) return { used: 0, limit: STORAGE_LIMIT_BYTES };
+    async function sumFolder(path){
+      const { data, error } = await sb.storage.from('trade-images').list(path, { limit: 1000 });
+      if(error || !data) return 0;
+      let total = 0;
+      for(const entry of data){
+        if(entry.id === null) total += await sumFolder(`${path}/${entry.name}`); // a "folder" (no real object) — recurse
+        else if(entry.metadata && entry.metadata.size) total += entry.metadata.size;
+      }
+      return total;
+    }
+    const used = await sumFolder(session.user.id);
+    return { used, limit: STORAGE_LIMIT_BYTES };
+  }
+
+  // Removes the storage object a public URL points to — trade edits just
+  // drop the URL from the trade row, which by itself leaves the file
+  // orphaned in Storage forever (and permanently counted against quota).
+  async function deleteTradeImage(url){
+    const { data: { session } } = await sb.auth.getSession();
+    if(!session) return { ok:false, error:'Not logged in.' };
+    const marker = '/trade-images/';
+    const idx = url.indexOf(marker);
+    if(idx === -1) return { ok:false, error:'Could not determine which file to delete.' };
+    const path = decodeURIComponent(url.slice(idx + marker.length));
+    const { error } = await sb.storage.from('trade-images').remove([path]);
+    if(error) return { ok:false, error: error.message };
+    return { ok:true };
+  }
+
   async function uploadTradeImage(tradeId, file){
     const { data: { session } } = await sb.auth.getSession();
     if(!session) return { ok:false, error:'Not logged in.' };
+    const { used, limit } = await getStorageUsage();
+    if(used + file.size > limit){
+      const usedMb = Math.round(used / (1024*1024));
+      const limitMb = Math.round(limit / (1024*1024));
+      return { ok:false, error: `You've used ${usedMb} MB of your ${limitMb} MB image storage. Delete a few old screenshots to make room, or try a smaller image.` };
+    }
     const ext = (file.name.split('.').pop() || 'png').toLowerCase();
     const path = `${session.user.id}/${tradeId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const { error } = await sb.storage.from('trade-images').upload(path, file, { contentType: file.type });
@@ -411,6 +459,14 @@
         background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:var(--radius-sm);
         padding:12px 14px; font-size:13px; color:var(--text-dim); margin-bottom:12px;
       }
+      .tl-am-storage-box{
+        background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:var(--radius-sm);
+        padding:12px 14px; margin-bottom:12px;
+      }
+      .tl-am-storage-row{display:flex; justify-content:space-between; font-size:12.5px; color:var(--text-dim); margin-bottom:8px;}
+      .tl-am-storage-track{height:6px; border-radius:99px; background:var(--border-soft); overflow:hidden;}
+      .tl-am-storage-fill{height:100%; border-radius:99px; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width .3s;}
+      .tl-am-storage-fill.is-full{background:var(--red);}
       .tl-am-status{font-size:12.5px; color:var(--green); min-height:16px; margin-top:14px; text-align:center;}
       .tl-am-modal .btn-danger{background:var(--red-dim); border-color:var(--red-border); color:var(--red); border:1px solid var(--red-border);}
       .tl-am-modal .btn-danger:hover{background:var(--red); color:#fff;}
@@ -563,6 +619,11 @@
           <div class="tl-am-section-label">Plan</div>
           <div class="tl-am-plan-box" id="tlAmPlanStatus"></div>
           <div id="tlAmPlanAction"></div>
+        </div>
+
+        <div id="tlAmStorageSection" style="display:none;">
+          <div class="tl-am-section-label">Image storage</div>
+          <div id="tlAmStorageStatus"></div>
         </div>
 
         <div class="tl-am-status" id="tlAmStatus"></div>
@@ -720,6 +781,27 @@
     }
   }
 
+  // Only shown on Pro — Free accounts can't upload images at all, so usage
+  // is always 0 and the section would just be clutter.
+  async function renderAccountModalStorage(overlay){
+    const section = overlay.querySelector('#tlAmStorageSection');
+    const isPro = await TLAuth.isPro();
+    if(!isPro){ section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    const box = overlay.querySelector('#tlAmStorageStatus');
+    box.innerHTML = `<div class="tl-am-storage-box">Checking usage…</div>`;
+    const { used, limit } = await getStorageUsage();
+    const usedMb = (used / (1024*1024)).toFixed(used < 10*1024*1024 ? 1 : 0);
+    const limitMb = Math.round(limit / (1024*1024));
+    const pct = Math.min(100, (used / limit) * 100);
+    box.innerHTML = `
+      <div class="tl-am-storage-box">
+        <div class="tl-am-storage-row"><span>${usedMb} MB used</span><span>${limitMb} MB total</span></div>
+        <div class="tl-am-storage-track"><div class="tl-am-storage-fill${pct >= 95 ? ' is-full' : ''}" style="width:${pct}%"></div></div>
+      </div>
+    `;
+  }
+
   async function openAccountModal(opts){
     opts = opts || {};
     ensureAccountModal();
@@ -747,12 +829,16 @@
     overlay.querySelector('#tlAmTitle').textContent = accountsOnly ? 'Trading accounts' : 'Your account';
     overlay.querySelector('#tlAmProfileSection').style.display = accountsOnly ? 'none' : 'block';
     overlay.querySelector('#tlAmPlanSection').style.display = accountsOnly ? 'none' : 'block';
+    overlay.querySelector('#tlAmStorageSection').style.display = 'none'; // renderAccountModalStorage decides for itself once we know the plan
     overlay.querySelector('#tlAmStatus').style.display = accountsOnly ? 'none' : 'block';
     overlay.querySelector('#tlAmLogout').style.display = accountsOnly ? 'none' : 'block';
     overlay.querySelector('#tlAmAccountsLabel').style.display = accountsOnly ? 'none' : 'block';
 
     await renderAccountModalAccounts(overlay);
-    if(!accountsOnly) await renderAccountModalPlan(overlay);
+    if(!accountsOnly){
+      await renderAccountModalPlan(overlay);
+      await renderAccountModalStorage(overlay);
+    }
     overlay.classList.add('open');
   }
 
@@ -877,6 +963,8 @@
     getUserTrades,
     upsertTrade,
     uploadTradeImage,
+    deleteTradeImage,
+    getStorageUsage,
     getAccounts,
     createAccount,
     updateAccount,

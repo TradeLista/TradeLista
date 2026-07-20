@@ -2850,6 +2850,7 @@ async function openTrade(id){
         meta[id].images[idx] = res.url;
         saveMeta(meta);
         await persistTrade(id);
+        TLAuth.data.deleteTradeImage(src); // the pre-drawing version this one replaces
         openTrade(id);
       });
     };
@@ -2861,6 +2862,10 @@ async function openTrade(id){
       meta[id].images.splice(idx, 1);
       saveMeta(meta);
       await persistTrade(id);
+      // Not awaited — the row is already updated locally, and there's
+      // nothing useful to do in the UI if the storage delete itself fails
+      // beyond leaving an orphaned file (rare, and not worth blocking on).
+      TLAuth.data.deleteTradeImage(src);
       openTrade(id);
     };
     imgSlots.appendChild(slot);
