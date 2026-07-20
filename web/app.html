@@ -514,9 +514,9 @@
   }
   .trade-row:hover{border-color:var(--accent);}
   .trade-row-main{flex:1; min-width:0; display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer;}
-  .trade-row .sym{font-weight:700; font-size:13.5px;}
-  .trade-row-time{font-family:var(--font-mono); font-weight:600; font-size:11.5px; color:var(--text-dim); margin-right:2px;}
-  .side-tag{display:inline-block; padding:1px 6px; border-radius:4px; font-size:10px; font-weight:700; text-transform:uppercase; vertical-align:middle; letter-spacing:.02em;}
+  .trade-row .sym{font-weight:700; font-size:13.5px; display:flex; align-items:center; gap:6px;}
+  .trade-row-time{font-family:var(--font-mono); font-weight:600; font-size:11.5px; color:var(--text-dim);}
+  .side-tag{display:inline-block; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; text-transform:uppercase; line-height:1.2; letter-spacing:.02em;}
   .side-tag.buy{background:var(--green-dim); color:var(--green); border:1px solid var(--green-border);}
   .side-tag.sell{background:var(--red-dim); color:var(--red); border:1px solid var(--red-border);}
   .trade-row .meta{font-size:11.5px; color:var(--text-faint); margin-top:2px;}
@@ -632,7 +632,7 @@
   }
   .import-row:last-child{border-bottom:none;}
   .import-row input[type="checkbox"]{flex-shrink:0; width:15px; height:15px; accent-color:var(--accent);}
-  .import-row .sym{font-weight:700; min-width:64px;}
+  .import-row .sym{font-weight:700; min-width:64px; display:flex; align-items:center; gap:6px;}
   .import-row .date{color:var(--text-faint); font-family:var(--font-mono); font-size:11.5px; min-width:76px;}
   .import-row .meta{color:var(--text-faint); font-size:11px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .import-row .pnl{font-family:var(--font-mono); font-weight:700; white-space:nowrap;}
@@ -2326,7 +2326,7 @@ function renderImportPreview(){
     <div class="import-row">
       <input type="checkbox" data-i="${i}" checked>
       <span class="date">${t.date}${t.time ? ' '+t.time : ''}</span>
-      <span class="sym">${escapeHtml(t.symbol)}${t.side ? ` <span class="side-tag ${t.side}">${t.side}</span>` : ''}</span>
+      <span class="sym"><span>${escapeHtml(t.symbol)}</span>${t.side ? `<span class="side-tag ${t.side}">${t.side}</span>` : ''}</span>
       <span class="meta">${t.lot ?? '—'} lot · entry ${t.entry ?? '—'} → exit ${t.exit ?? '—'}</span>
       <span class="pnl ${t.profit>=0?'pos':'neg'}">${t.profit>=0?'+':''}${t.profit.toFixed(2)}</span>
     </div>
@@ -2740,7 +2740,7 @@ function openDay(key){
       <div class="trade-row">
         <div class="trade-row-main" onclick="openTrade('${t.id}')">
           <div>
-            <div class="sym">${t.time ? `<span class="trade-row-time">${localTimeHHMM(t)}</span> ` : ''}${escapeHtml(t.symbol)}${t.side ? ` <span class="side-tag ${t.side}">${t.side}</span>` : ''}</div>
+            <div class="sym">${t.time ? `<span class="trade-row-time">${localTimeHHMM(t)}</span>` : ''}<span>${escapeHtml(t.symbol)}</span>${t.side ? `<span class="side-tag ${t.side}">${t.side}</span>` : ''}</div>
             <div class="meta">${t.lot} lot · entry ${t.entry ?? '—'} → exit ${t.exit ?? '—'}</div>
           </div>
           <div class="profit ${t.profit>=0?'pos':'neg'}">${t.profit>=0?'+':''}${t.profit.toFixed(2)}</div>
