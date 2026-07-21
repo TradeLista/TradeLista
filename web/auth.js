@@ -410,6 +410,8 @@
       .tl-modal p{font-size:13.5px; color:var(--text-dim); line-height:1.6; margin-bottom:20px;}
       .tl-modal .tl-actions{display:flex; flex-direction:column; gap:10px;}
       .tl-modal .btn{width:100%;}
+      .tl-modal .btn-danger{background:var(--red-dim); border-color:var(--red-border); color:var(--red);}
+      .tl-modal .btn-danger:hover{background:var(--red); color:#fff; border-color:var(--red);}
       .tl-modal .tl-cancel{
         background:transparent; border:none; color:var(--text-faint); font-size:13px; padding:4px; margin-top:2px;
       }
@@ -568,7 +570,7 @@
     document.head.appendChild(style);
   }
 
-  function showModal({ icon, title, message, primaryLabel, primaryHref, primaryAction, secondaryLabel, secondaryHref }){
+  function showModal({ icon, title, message, primaryLabel, primaryHref, primaryAction, primaryDanger, secondaryLabel, secondaryHref, cancelLabel }){
     ensureStyles();
     const existing = document.querySelector('.tl-overlay');
     if(existing) existing.remove();
@@ -581,9 +583,9 @@
         <h3>${title}</h3>
         <p>${message}</p>
         <div class="tl-actions">
-          <a class="btn btn-primary" id="tlPrimaryBtn" href="${primaryHref || '#'}">${primaryLabel}</a>
+          <a class="btn ${primaryDanger ? 'btn-danger' : 'btn-primary'}" id="tlPrimaryBtn" href="${primaryHref || '#'}">${primaryLabel}</a>
           ${secondaryLabel ? `<a class="btn btn-ghost" href="${secondaryHref || '#'}">${secondaryLabel}</a>` : ''}
-          <button type="button" class="tl-cancel" id="tlCancelBtn">Not now</button>
+          <button type="button" class="tl-cancel" id="tlCancelBtn">${cancelLabel || 'Not now'}</button>
         </div>
       </div>
     `;
@@ -803,17 +805,26 @@
       });
     });
     list.querySelectorAll('.tl-am-acct-delete').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if(btn.dataset.confirming !== '1'){
-          btn.dataset.confirming = '1';
-          btn.textContent = 'Confirm?';
-          setTimeout(() => { btn.dataset.confirming = ''; btn.textContent = '🗑'; }, 4000);
-          return;
-        }
-        await deleteAccount(btn.dataset.id);
-        if(getActiveAccountId() === btn.dataset.id) setActiveAccountId('');
-        await renderAccountModalAccounts(overlay);
-        document.dispatchEvent(new CustomEvent('tl-accounts-changed'));
+      btn.addEventListener('click', () => {
+        // Trading accounts cascade-delete every trade under them (see
+        // trading_accounts_schema.sql) — notes, tags and screenshots
+        // included — so this needs an explicit, specific warning rather
+        // than a quick double-click that's easy to trigger by accident.
+        showModal({
+          icon: '⚠️',
+          title: `Delete "${btn.dataset.label}"?`,
+          message: `This permanently deletes every trade, note, tag and screenshot recorded under this account. There's no way to undo it.`,
+          primaryLabel: 'Delete account',
+          primaryDanger: true,
+          cancelLabel: 'Cancel',
+          primaryAction: async () => {
+            document.querySelector('.tl-overlay')?.remove();
+            await deleteAccount(btn.dataset.id);
+            if(getActiveAccountId() === btn.dataset.id) setActiveAccountId('');
+            await renderAccountModalAccounts(overlay);
+            document.dispatchEvent(new CustomEvent('tl-accounts-changed'));
+          }
+        });
       });
     });
   }
