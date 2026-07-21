@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TradeLista — FAQ</title>
+<title>TradeLista — Privacy</title>
 <link rel="stylesheet" href="fonts/fonts.css">
 <style>
   :root{
@@ -16,12 +16,19 @@
     --text:#e7edf5;
     --text-dim:#8b96a8;
     --text-faint:#5c6678;
+    --green:#1fd18a;
+    --green-dim:rgba(31,209,138,0.14);
+    --green-border:rgba(31,209,138,0.35);
+    --red:#f0475a;
+    --red-dim:rgba(240,71,90,0.14);
+    --red-border:rgba(240,71,90,0.35);
     --accent:#4f8cff;
     --accent-dim:rgba(79,140,255,0.14);
     --accent2:#8b6cff;
     --radius:14px;
     --radius-sm:9px;
     --font-ui:'Inter',system-ui,-apple-system,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
@@ -78,37 +85,25 @@
   .btn-ghost{background:var(--bg-card); border-color:var(--border); color:var(--text);}
   .btn-ghost:hover{border-color:var(--accent); color:var(--accent);}
 
-  .page{max-width:720px; margin:0 auto; padding:48px 24px 80px;}
+  .page{max-width:680px; margin:0 auto; padding:48px 24px 80px;}
   .page-eyebrow{
     display:inline-flex; align-items:center; gap:8px; font-size:11.5px; font-weight:700; color:var(--accent);
-    text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px;
+    text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px; width:100%; justify-content:center;
   }
-  .page-eyebrow{width:100%; justify-content:center;}
   .page h1{font-size:26px; font-weight:800; letter-spacing:-0.01em; margin-bottom:8px; text-align:center;}
-  .page > p.lead{color:var(--text-dim); font-size:14.5px; margin:0 auto 28px; line-height:1.6; text-align:center; max-width:520px;}
+  .page > p.lead{color:var(--text-dim); font-size:14.5px; margin:0 auto 32px; line-height:1.6; text-align:center; max-width:520px;}
 
-  .faq-item{
-    background:var(--bg-card); border:1px solid var(--border-soft); border-radius:var(--radius);
-    margin-bottom:12px; overflow:hidden; backdrop-filter:blur(6px);
-    transition:border-color .15s, box-shadow .15s, transform .15s;
+  .notice{
+    background:var(--accent-dim); border:1px solid rgba(79,140,255,0.3); border-radius:var(--radius-sm);
+    padding:14px 16px; font-size:13px; color:var(--text-dim); line-height:1.6; margin-bottom:32px;
   }
-  .faq-item:hover{border-color:var(--border); transform:translateY(-1px);}
-  .faq-item.open{border-color:var(--accent); box-shadow:0 8px 28px -12px rgba(79,140,255,0.35);}
-  .faq-q{
-    width:100%; display:flex; align-items:center; justify-content:space-between; gap:14px;
-    background:transparent; border:none; color:var(--text); font-family:inherit; font-size:15px; font-weight:600;
-    padding:18px 20px; text-align:left; transition:color .15s;
-  }
-  .faq-item.open .faq-q{color:var(--accent);}
-  .faq-q .chevron{
-    transition:transform .2s, color .15s; color:var(--text-faint); flex-shrink:0;
-    width:22px; height:22px; display:flex; align-items:center; justify-content:center;
-    border-radius:50%; background:var(--bg-elevated); font-size:12px;
-  }
-  .faq-item.open .faq-q .chevron{transform:rotate(180deg); color:var(--accent); background:var(--accent-dim);}
-  .faq-a{max-height:0; overflow:hidden; transition:max-height .25s ease;}
-  .faq-a p{padding:0 20px 18px; color:var(--text-dim); font-size:13.5px; line-height:1.65;}
-  .faq-item.open .faq-a{max-height:260px;}
+  .card{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin-bottom:20px;}
+  .card h2{font-size:16px; font-weight:700; margin-bottom:12px;}
+  .card p{color:var(--text-dim); font-size:14px; line-height:1.7; margin-bottom:10px;}
+  .card p:last-child{margin-bottom:0;}
+  .card ul{color:var(--text-dim); font-size:14px; line-height:1.7; margin:0 0 10px 20px;}
+  .card ul:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
 
   footer{border-top:1px solid var(--border-soft); padding:48px 24px 32px;}
   .footer-inner{max-width:1180px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:32px;}
@@ -151,57 +146,55 @@
     <a href="connect.html">Connect Account</a>
     <a href="index.html#pricing">Pricing</a>
     <a href="contact.html">Contact</a>
-    <a class="active" href="faq.html">FAQ</a>
+    <a href="faq.html">FAQ</a>
   </div>
   <div class="navright" id="navRight" style="visibility:hidden"></div>
 </div>
 
 <div class="page" style="display:none">
-  <div class="page-eyebrow">FAQ</div>
-  <h1>Frequently asked questions</h1>
-  <p class="lead">Answers to the most common questions. Don't see yours? <a href="contact.html" style="color:var(--accent);">Contact us</a>.</p>
+  <div class="page-eyebrow">Privacy</div>
+  <h1>Privacy Policy</h1>
+  <p class="lead">What data TradeLista collects, why, and what your rights are.</p>
 
-  <div id="faqList">
-    <div class="faq-item">
-      <button type="button" class="faq-q"><span>Is TradeLista free?</span><span class="chevron">▾</span></button>
-      <div class="faq-a"><p>Yes — the Free plan lets you log unlimited manual trades on the calendar, track your PnL, and add a note to each trade, at no cost. Pro ($10/month) adds MT4/MT5 auto-sync, image uploads, reflection questions and Golden Trading Rules on top of everything in Free.</p></div>
-    </div>
-    <div class="faq-item">
-      <button type="button" class="faq-q"><span>What's included in the Pro plan?</span><span class="chevron">▾</span></button>
-      <div class="faq-a"><p>Pro unlocks automatic trade syncing from MT4/MT5 via our Expert Advisor, up to 5 connected trading accounts (Live and Demo), unlimited screenshot uploads per trade, custom reflection questions, and the Golden Trading Rules checklist — all for $10/month.</p></div>
-    </div>
-    <div class="faq-item">
-      <button type="button" class="faq-q"><span>Can I cancel anytime?</span><span class="chevron">▾</span></button>
-      <div class="faq-a"><p>Yes. Cancel from Account settings → Manage subscription whenever you like — you'll keep Pro access until the end of your current billing period, then automatically drop back to Free. No cancellation fees, no questions asked.</p></div>
-    </div>
-    <div class="faq-item">
-      <button type="button" class="faq-q"><span>Do I need MT4 or MT5 to use TradeLista?</span><span class="chevron">▾</span></button>
-      <div class="faq-a"><p>No — manual entry works on both Free and Pro, no EA or download required. Just log in, open the Calendar, and click "+ Add trade" (or click a day and "Add trade for this day"). MT4/MT5 auto-sync is an optional Pro feature for anyone who'd rather have trades logged automatically.</p></div>
-    </div>
-    <div class="faq-item">
-      <button type="button" class="faq-q"><span>How does the MT4/MT5 auto-sync work?</span><span class="chevron">▾</span></button>
-      <div class="faq-a"><p>On Pro, you attach a small Expert Advisor (EA) to your MT4 or MT5 chart, paste in your account's API key, and every trade you close gets sent to TradeLista automatically — no manual entry needed. Full step-by-step setup is on the <a href="connect.html" style="color:var(--accent);">Connect Account</a> page.</p></div>
-    </div>
-    <div class="faq-item">
-      <button type="button" class="faq-q"><span>Can I connect more than one trading account?</span><span class="chevron">▾</span></button>
-      <div class="faq-a"><p>Free includes 1 trading account. Pro lets you connect up to 5 — handy for tracking Live and Demo accounts, or multiple brokers, separately on the same calendar.</p></div>
-    </div>
-    <div class="faq-item">
-      <button type="button" class="faq-q"><span>Is my trading data private?</span><span class="chevron">▾</span></button>
-      <div class="faq-a"><p>Yes — your trades, notes and screenshots are private to your account by default and aren't shared with other users. If you have questions about how your data is stored, reach out via the <a href="contact.html" style="color:var(--accent);">Contact</a> page.</p></div>
-    </div>
-    <div class="faq-item">
-      <button type="button" class="faq-q"><span>What happens to my data if I cancel Pro?</span><span class="chevron">▾</span></button>
-      <div class="faq-a"><p>Nothing gets deleted. You keep every trade, note and screenshot you've already logged — you'll just lose access to Pro-only features until you upgrade again.</p></div>
-    </div>
-    <div class="faq-item">
-      <button type="button" class="faq-q"><span>Can I import trades I already made before joining TradeLista?</span><span class="chevron">▾</span></button>
-      <div class="faq-a"><p>Yes, on Pro. Export your account's History as a report from MetaTrader (right-click the History tab → "Save as Report"), then use the "⬆ Import" button on your Calendar to bring in everything at once. It's a one-time import, not a live sync — you can repeat it any time to backfill more.</p></div>
-    </div>
-    <div class="faq-item">
-      <button type="button" class="faq-q"><span>Is there a storage limit, and how do I check how much I've used?</span><span class="chevron">▾</span></button>
-      <div class="faq-a"><p>Pro accounts get 1 GB total — screenshots, notes, tags and reflection answers all count toward it. Screenshots are by far the biggest part of that (a chart image is a few hundred KB; text is practically nothing), so 1 GB is plenty for most traders. To see how much you've used, click your avatar (top right) → <strong>"Account settings"</strong> → scroll to <strong>"Storage"</strong>, where a bar shows your current usage out of 1 GB.</p></div>
-    </div>
+  <div class="notice">
+    This page explains our actual data practices in plain language. It is not yet a complete, lawyer-reviewed Datenschutzerklärung/GDPR notice (that also needs our full legal entity details, which will follow separately) — treat it as an accurate starting point, not a final legal document.
+  </div>
+
+  <div class="card">
+    <h2>What we collect</h2>
+    <p>Only what's needed to run the service:</p>
+    <ul>
+      <li><strong>Account info</strong> — your email and name, when you create an account.</li>
+      <li><strong>Trading data you enter</strong> — trades, notes, tags, reflection answers and screenshots you add to your journal.</li>
+      <li><strong>Billing reference</strong> — if you subscribe to Pro, a reference ID linking your account to your Stripe customer record. We never see or store your card details — Stripe handles those directly.</li>
+      <li><strong>Contact messages</strong> — your name, email, subject and message, only if you write to us via the Contact page.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Why we collect it</h2>
+    <p>To provide your trading journal (store and show you your own trades and notes), to process your Pro subscription, and to reply when you contact us. We don't use your data for advertising, and we don't sell it.</p>
+  </div>
+
+  <div class="card">
+    <h2>Who else sees it</h2>
+    <p>A few service providers process data on our behalf, strictly to run TradeLista:</p>
+    <ul>
+      <li><strong>Supabase</strong> — hosts our database, authentication and file storage.</li>
+      <li><strong>Stripe</strong> — processes Pro subscription payments.</li>
+      <li><strong>IONOS</strong> — delivers the emails sent through our Contact form.</li>
+    </ul>
+    <p>None of them are permitted to use your data for their own purposes.</p>
+  </div>
+
+  <div class="card">
+    <h2>Cookies &amp; tracking</h2>
+    <p>We don't use cookies, analytics, or advertising trackers of any kind. The only things stored in your browser are functional (your login session and app preferences) — nothing that tracks you across sites. Fonts are served from our own server rather than a third party's, so no font request ever leaves a trace with anyone else either.</p>
+  </div>
+
+  <div class="card">
+    <h2>Your rights</h2>
+    <p>You can access, correct, export or delete your trades and notes at any time from within the app. If you'd like your entire account and all associated data erased, or have any other request about your data, reach out via the <a href="contact.html" style="color:var(--accent); text-decoration:underline;">Contact page</a> — we'll act on it promptly.</p>
   </div>
 </div>
 
@@ -256,21 +249,15 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="auth.js"></script>
 <script>
-  // The FAQ is public content — unlike app.html, it should never require an
-  // account to view, so there's no auth-gate here at all. The full
-  // marketing nav (Features/How it works/Pricing) is only for logged-out
-  // visitors though — once you're logged in and already using the app, every
-  // page should keep the same compact Calendar/Connect Account/Contact/FAQ
-  // nav app.html uses, instead of bouncing you into the wider marketing nav
-  // that feels like leaving the app.
   (async function initPage(){
     document.querySelector('.page').style.display = '';
-    if(await TLAuth.isLoggedIn()){
+    const loggedIn = await TLAuth.isLoggedIn();
+    if(loggedIn){
       document.getElementById('navLinks').innerHTML = `
         <a href="app.html">Calendar</a>
         <a href="connect.html">Connect Account</a>
         <a href="contact.html">Contact</a>
-        <a class="active" href="faq.html">FAQ</a>
+        <a href="faq.html">FAQ</a>
       `;
     }
     await TLAuth.ui.renderAccountNav(document.getElementById('navRight'));
@@ -278,10 +265,6 @@
     document.getElementById('navRight').style.visibility = 'visible';
   })();
 
-  // Calendar requires an account — clicking it here shows the same
-  // create-account prompt as everywhere else instead of silently landing on
-  // app.html's own gate, so a logged-out visitor never reaches the app
-  // without going through account creation first.
   document.querySelectorAll('.js-calendar-link').forEach(el=>{
     el.addEventListener('click', (e)=>{
       e.preventDefault();
@@ -290,12 +273,6 @@
         if(loggedIn) location.href = href;
         else TLAuth.ui.requireAuth('app.html');
       });
-    });
-  });
-
-  document.querySelectorAll('.faq-q').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      btn.parentElement.classList.toggle('open');
     });
   });
 </script>
