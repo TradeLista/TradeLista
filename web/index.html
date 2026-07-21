@@ -275,30 +275,49 @@
   .section-title{font-size:clamp(24px,3.4vw,38px); font-weight:800; letter-spacing:-0.02em; text-align:center; max-width:760px; margin:0 auto;}
   .section-sub{font-size:15.5px; color:var(--text-dim); text-align:center; max-width:560px; margin:14px auto 0; line-height:1.6;}
 
-  /* ---------- Pain points — a loose pinboard of everything that's broken.
-     Cards hang slightly crooked and staggered like notes pinned to a wall
-     (the mess IS the message), each held by a glowing red pushpin. Grabbing
-     one (hover) straightens it out. Deliberately not the tidy grid the
-     features section uses below. ---------- */
+  /* ---------- Pain points — notes pinned to a real board.
+     A bright mounted pinboard sits behind the cards; the cards hang on it
+     slightly crooked and staggered (the mess IS the message), each held by
+     a glowing red pushpin. Hovering a note makes it swing around its pin
+     and settle straight, like flicking a piece of paper on a wall. ---------- */
   .pain-grid{
     display:grid; grid-template-columns:repeat(2, minmax(0, 360px)); justify-content:center;
     gap:36px 46px; margin-top:64px; position:relative;
+    padding:56px 52px 52px; border-radius:26px;
+    /* the board: soft off-white surface with a faint pin-hole dot texture */
+    background:
+      radial-gradient(circle at 1px 1px, rgba(21,27,38,0.08) 1.2px, transparent 1.8px),
+      linear-gradient(180deg, #f7f9fc 0%, #e8ecf3 100%);
+    background-size:26px 26px, 100% 100%;
+    /* mounted-frame look: bright inner bevel, soft inner shade at the
+       bottom, deep drop onto the page, thin outer rim */
+    box-shadow:
+      inset 0 2px 5px rgba(255,255,255,0.95),
+      inset 0 -4px 14px rgba(21,27,38,0.14),
+      0 40px 80px -36px rgba(0,0,0,0.8),
+      0 0 0 1px rgba(255,255,255,0.14),
+      0 0 60px -10px rgba(240,71,90,0.18);
   }
-  .pain-grid::before{
-    content:''; position:absolute; inset:-50px -80px; z-index:0; pointer-events:none;
-    background:radial-gradient(ellipse 60% 55% at 50% 45%, rgba(240,71,90,0.07), transparent 70%);
+  /* top-corner mounting screws */
+  .pain-grid::before, .pain-grid::after{
+    content:''; position:absolute; width:11px; height:11px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #cfd6e0, #8b96a8 60%, #4a5468);
+    box-shadow:inset 0 -1px 2px rgba(0,0,0,0.4), 0 1px 2px rgba(255,255,255,0.7);
+    top:18px; left:18px;
   }
+  .pain-grid::after{left:auto; right:18px;}
   .pain-card{
     --tilt:0deg;
     position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; text-align:center;
     width:100%;
+    /* opaque dark note on the light board — like a polaroid pinned up */
     background:
-      radial-gradient(ellipse 90% 70% at 50% 28%, rgba(240,71,90,0.07), transparent 75%),
-      rgba(255,255,255,0.035);
-    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
-    border:1px solid rgba(240,71,90,0.38); border-radius:var(--radius); padding:30px 24px 24px;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,0.06), 0 14px 30px -16px rgba(0,0,0,0.55), 0 0 26px rgba(240,71,90,0.2);
-    transition:border-color .25s, transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s, background .25s;
+      radial-gradient(ellipse 90% 70% at 50% 28%, rgba(240,71,90,0.08), transparent 75%),
+      var(--bg-card);
+    border:1px solid rgba(240,71,90,0.42); border-radius:var(--radius); padding:30px 24px 24px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.07), 0 22px 34px -18px rgba(21,27,38,0.55), 0 6px 14px -8px rgba(21,27,38,0.35);
+    transform-origin:50% 0; /* notes swing around the pin, not their center */
+    transition:border-color .25s, transform .3s cubic-bezier(.22,1,.36,1), box-shadow .25s, background .25s;
   }
   /* the pushpin holding each note up */
   .pain-card::before{
@@ -323,12 +342,20 @@
   .pain-card:hover{
     border-color:rgba(240,71,90,0.65);
     background:
-      radial-gradient(ellipse 90% 70% at 50% 28%, rgba(240,71,90,0.09), transparent 75%),
-      rgba(255,255,255,0.05);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,0.08), 0 20px 38px -16px rgba(240,71,90,0.4), 0 0 36px rgba(240,71,90,0.3);
+      radial-gradient(ellipse 90% 70% at 50% 28%, rgba(240,71,90,0.11), transparent 75%),
+      var(--bg-hover);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.09), 0 28px 42px -18px rgba(21,27,38,0.6), 0 0 30px -4px rgba(240,71,90,0.35);
   }
-  /* grabbing a note straightens it out */
-  .pain-card.reveal-item.in:hover{transform:rotate(0deg) translateY(-5px);}
+  /* flicking a note: it swings around its pin, overshoots, settles straight */
+  .pain-card.reveal-item.in:hover{
+    animation:painSwing .65s cubic-bezier(.3,.9,.4,1) forwards;
+  }
+  @keyframes painSwing{
+    0%  {transform:rotate(var(--tilt)) translateY(0);}
+    38% {transform:rotate(calc(var(--tilt) * -0.75)) translateY(-4px);}
+    70% {transform:rotate(calc(var(--tilt) * 0.28)) translateY(-4px);}
+    100%{transform:rotate(0deg) translateY(-4px);}
+  }
   .pain-card:hover::before{box-shadow:0 0 22px rgba(240,71,90,0.95), 0 3px 6px rgba(0,0,0,0.5), inset 0 -2px 4px rgba(0,0,0,0.35);}
   /* mouse-follow spotlight (mousemove JS sets --mx/--my) */
   .pain-card::after, .price-card::after{
@@ -828,6 +855,7 @@
   }
   @media (max-width:860px){
     .pain-grid, .steps, .price-grid{grid-template-columns:1fr;}
+    .pain-grid{padding:40px 16px 34px;} /* the board hugs a single column much tighter */
     .steps-track{display:none;} /* the horizontal 1-2-3 rail makes no sense once cards stack */
     .float-chip{display:none;}
     section{padding:80px 20px;}
