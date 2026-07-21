@@ -6,6 +6,15 @@
 //   STRIPE_SECRET_KEY  — your Stripe test secret key (sk_test_...)
 //   SITE_URL           — e.g. http://localhost:5173 for local testing
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are provided automatically.
+//
+// Optional secret:
+//   TAX_ENABLED        — set to the literal string "true" to turn on Stripe
+//     Tax (automatic VAT/sales tax calculation at checkout). Left unset
+//     (or anything else) means tax stays off — the default, since Stripe
+//     Tax requires you to have registered tax collection for at least the
+//     jurisdictions you're charging in first (Stripe Dashboard -> Tax ->
+//     Registrations). Flipping this on before that's set up won't produce
+//     correct tax, so don't set it to "true" until that's actually done.
 
 import Stripe from 'npm:stripe@17';
 import { createClient } from 'npm:@supabase/supabase-js@2';
@@ -18,6 +27,7 @@ const supabaseAdmin = createClient(
 
 const PRICE_ID = 'price_1TuWtiK3hVexCjbWUSCD5xnb';
 const SITE_URL = Deno.env.get('SITE_URL') ?? 'http://localhost:5173';
+const TAX_ENABLED = Deno.env.get('TAX_ENABLED') === 'true';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -64,6 +74,13 @@ Deno.serve(async (req) => {
     subscription_data: {
       metadata: { supabase_user_id: user.id },
     },
+    // Stripe requires customer_update.address = 'auto' whenever an existing
+    // Customer is combined with automatic_tax — otherwise it can't fill in
+    // the address it needs to know which jurisdiction's tax applies.
+    ...(TAX_ENABLED ? {
+      automatic_tax: { enabled: true },
+      customer_update: { address: 'auto', name: 'auto' },
+    } : {}),
   });
 
   return new Response(JSON.stringify({ url: session.url }), {
