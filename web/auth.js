@@ -544,6 +544,26 @@
         font-size:12.5px; color:var(--text-faint); text-align:center; padding:10px 4px; margin-bottom:10px;
       }
       .tl-am-acct-limit-note a{color:var(--accent); text-decoration:underline;}
+
+      .tl-cookie-bar{
+        position:fixed; left:16px; right:16px; bottom:16px; z-index:900; max-width:720px; margin:0 auto;
+        background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
+        padding:16px 18px; box-shadow:0 20px 48px -12px rgba(0,0,0,0.65);
+        display:flex; align-items:center; gap:16px; flex-wrap:wrap; animation:tlPop .15s ease;
+      }
+      .tl-cookie-bar p{flex:1; min-width:220px; font-size:12.5px; color:var(--text-dim); line-height:1.6; margin:0;}
+      .tl-cookie-bar p a{color:var(--text); text-decoration:underline;}
+      .tl-cookie-actions{display:flex; gap:8px; flex-wrap:wrap;}
+      .tl-cookie-actions .btn{padding:8px 14px; font-size:12.5px; white-space:nowrap;}
+      .tl-cookie-cat{
+        display:flex; align-items:flex-start; justify-content:space-between; gap:14px; text-align:left;
+        padding:12px 0; border-bottom:1px solid var(--border-soft);
+      }
+      .tl-cookie-cat:last-child{border-bottom:none;}
+      .tl-cookie-cat-name{font-size:13.5px; font-weight:700; margin-bottom:3px;}
+      .tl-cookie-cat-desc{font-size:12px; color:var(--text-faint); line-height:1.5;}
+      .tl-cookie-cat input[type="checkbox"]{width:17px; height:17px; flex-shrink:0; margin-top:2px; accent-color:var(--accent);}
+      .tl-cookie-cat input[type="checkbox"]:disabled{opacity:.4;}
     `;
     document.head.appendChild(style);
   }
@@ -1002,6 +1022,97 @@
     },
     showModal
   };
+
+  // ---------- Cookie/consent banner ----------
+  // TradeLista sets no analytics or advertising cookies today (see
+  // privacy.html) — nothing here is required by law yet. It exists so
+  // "accept/reject/manage" is already wired up and the stored choice is
+  // meaningful the day any real analytics/marketing script gets added,
+  // rather than bolting a consent flow on retroactively.
+  const COOKIE_CONSENT_KEY = 'tradelista_cookie_consent';
+
+  function saveCookieConsent(analytics, marketing){
+    try{
+      localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify({ analytics: !!analytics, marketing: !!marketing, ts: Date.now() }));
+    }catch(e){}
+  }
+
+  function openCookiePrefs(onDone){
+    ensureStyles();
+    const overlay = document.createElement('div');
+    overlay.className = 'tl-overlay';
+    overlay.innerHTML = `
+      <div class="tl-modal" role="dialog" aria-modal="true" style="max-width:440px; text-align:left;">
+        <h3 style="text-align:center;">Cookie preferences</h3>
+        <div class="tl-cookie-cat">
+          <div>
+            <div class="tl-cookie-cat-name">Essential</div>
+            <div class="tl-cookie-cat-desc">Keeps you logged in and remembers your settings. Required for the app to work — can't be turned off.</div>
+          </div>
+          <input type="checkbox" checked disabled>
+        </div>
+        <div class="tl-cookie-cat">
+          <div>
+            <div class="tl-cookie-cat-name">Analytics</div>
+            <div class="tl-cookie-cat-desc">Not currently used — TradeLista sets no analytics cookies today.</div>
+          </div>
+          <input type="checkbox" id="tlCookieAnalytics">
+        </div>
+        <div class="tl-cookie-cat">
+          <div>
+            <div class="tl-cookie-cat-name">Marketing</div>
+            <div class="tl-cookie-cat-desc">Not currently used — TradeLista sets no advertising cookies today.</div>
+          </div>
+          <input type="checkbox" id="tlCookieMarketing">
+        </div>
+        <div class="tl-actions" style="margin-top:18px;">
+          <button type="button" class="btn btn-primary" id="tlCookieSave">Save preferences</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#tlCookieSave').addEventListener('click', ()=>{
+      const analytics = overlay.querySelector('#tlCookieAnalytics').checked;
+      const marketing = overlay.querySelector('#tlCookieMarketing').checked;
+      overlay.remove();
+      onDone(analytics, marketing);
+    });
+  }
+
+  function initCookieBanner(){
+    let existing;
+    try{ existing = localStorage.getItem(COOKIE_CONSENT_KEY); }catch(e){ existing = 'unavailable'; }
+    if(existing) return;
+
+    ensureStyles();
+    const bar = document.createElement('div');
+    bar.className = 'tl-cookie-bar';
+    bar.innerHTML = `
+      <p>We use only essential cookies/local storage to keep you logged in and save your settings — no analytics or advertising. See our <a href="privacy.html">Privacy Policy</a>.</p>
+      <div class="tl-cookie-actions">
+        <button type="button" class="btn btn-ghost" id="tlCookieManageBtn">Manage</button>
+        <button type="button" class="btn btn-ghost" id="tlCookieRejectBtn">Reject non-essential</button>
+        <button type="button" class="btn btn-primary" id="tlCookieAcceptBtn">Accept all</button>
+      </div>
+    `;
+    document.body.appendChild(bar);
+
+    bar.querySelector('#tlCookieAcceptBtn').addEventListener('click', ()=>{
+      saveCookieConsent(true, true);
+      bar.remove();
+    });
+    bar.querySelector('#tlCookieRejectBtn').addEventListener('click', ()=>{
+      saveCookieConsent(false, false);
+      bar.remove();
+    });
+    bar.querySelector('#tlCookieManageBtn').addEventListener('click', ()=>{
+      openCookiePrefs((analytics, marketing)=>{
+        saveCookieConsent(analytics, marketing);
+        bar.remove();
+      });
+    });
+  }
+  initCookieBanner();
 
   TLAuth.data = {
     getUserTrades,
