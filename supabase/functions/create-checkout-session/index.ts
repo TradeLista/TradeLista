@@ -7,7 +7,7 @@
 //   SITE_URL           — e.g. http://localhost:5173 for local testing
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are provided automatically.
 //
-// Optional secret:
+// Optional secrets:
 //   TAX_ENABLED        — set to the literal string "true" to turn on Stripe
 //     Tax (automatic VAT/sales tax calculation at checkout). Left unset
 //     (or anything else) means tax stays off — the default, since Stripe
@@ -15,6 +15,13 @@
 //     jurisdictions you're charging in first (Stripe Dashboard -> Tax ->
 //     Registrations). Flipping this on before that's set up won't produce
 //     correct tax, so don't set it to "true" until that's actually done.
+//   STRIPE_PRICE_ID    — overrides the price below. Use this once you've
+//     created a tax-inclusive $10/mo price in Stripe (Products -> Pro ->
+//     Add another price -> tick "Tax behavior: inclusive") — the $10 stays
+//     $10 for the customer everywhere, tax is already baked in, rather
+//     than being added on top at checkout. tax_behavior can't be changed
+//     on an existing price, which is why this needs a *new* price object,
+//     not an edit to the current one.
 
 import Stripe from 'npm:stripe@17';
 import { createClient } from 'npm:@supabase/supabase-js@2';
@@ -25,7 +32,7 @@ const supabaseAdmin = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 );
 
-const PRICE_ID = 'price_1TuWtiK3hVexCjbWUSCD5xnb';
+const PRICE_ID = Deno.env.get('STRIPE_PRICE_ID') ?? 'price_1TuWtiK3hVexCjbWUSCD5xnb';
 const SITE_URL = Deno.env.get('SITE_URL') ?? 'http://localhost:5173';
 const TAX_ENABLED = Deno.env.get('TAX_ENABLED') === 'true';
 
