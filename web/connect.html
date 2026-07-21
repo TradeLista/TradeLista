@@ -202,6 +202,9 @@
   .gstep-shot.missing{border-color:var(--border);}
   .gstep-shot.missing img{display:none;}
   .gstep-shot.missing .gstep-shot-fallback{display:flex;}
+  .gstep-shot-row{display:flex; gap:10px; margin-top:14px;}
+  .gstep-shot-row .gstep-shot{margin-top:0; flex:1; min-width:0;}
+  @media (max-width:640px){.gstep-shot-row{flex-direction:column;}}
   .gstep small.substep{display:block; color:var(--text-faint); font-size:12px; margin:2px 0 8px;}
 
   /* Hand-built UI mockups for the manual-entry guide (real screenshots
@@ -405,6 +408,7 @@
       <h3>Allow MetaTrader to talk to TradeLista</h3>
       <p>This one setting lets the EA send your closed trades to TradeLista. Without it, nothing will arrive — and MetaTrader won't tell you why.</p>
       <p>In MetaTrader, click <code>Tools</code> in the top menu bar, then <code>Options</code>. Open the <strong>"Expert Advisors"</strong> tab.</p>
+      <figure class="gstep-shot"><img src="images/guide/mt-03-toolsmenu.png" alt="MetaTrader Tools menu with Options highlighted" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: Tools → Options</div></figure>
       <p>Check the box <strong>"Allow WebRequest for listed URL"</strong>. Click into the empty field below it, paste this address, and press Enter:</p>
       <div class="code-box">https://xkmpknoughjnxalkoatx.supabase.co</div>
       <p>Click <strong>OK</strong>.</p>
@@ -418,6 +422,7 @@
       <p>Click your avatar in the top-right corner, then <strong>"Account settings"</strong>. Scroll down to <strong>"Trading accounts"</strong> and click <strong>"+ Add trading account"</strong>.</p>
       <p>Give it a name (e.g. <span class="mt5-only">"My MT5"</span><span class="mt4-only">"My MT4"</span>), choose Live or Demo, choose <span class="mt5-only">MT5</span><span class="mt4-only">MT4</span> as the platform, and click <strong>"Add account"</strong>.</p>
       <p>Click <strong>"🔑 Copy key"</strong> next to your new account. Keep this tab open — you'll paste this key in step 8.</p>
+      <p>Lost the key later or need it on another device? It's always there — open your avatar → <strong>"Account settings"</strong> → <strong>"Trading accounts"</strong> and click <strong>"🔑 Copy key"</strong> next to that account again.</p>
       <figure class="gstep-shot"><img src="images/guide/tl-04-apikey.png" alt="TradeLista's Trading accounts section with the Copy key button" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: copying the API key in TradeLista</div></figure>
     </div>
 
@@ -435,7 +440,12 @@
       <div class="gnum">6</div>
       <h3>Put the file where MetaTrader can find it</h3>
       <p>In MetaTrader, click <code>File → Open Data Folder</code>. A Windows folder window opens.</p>
+      <figure class="gstep-shot"><img src="images/guide/mt-06-datafolder.png" alt="MetaTrader File menu with Open Data Folder highlighted" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: File → Open Data Folder</div></figure>
       <p>Double-click the <strong class="mt5-only">MQL5</strong><strong class="mt4-only">MQL4</strong> folder, then double-click <strong>Experts</strong>.</p>
+      <div class="gstep-shot-row mt5-only">
+        <figure class="gstep-shot"><img src="images/guide/mt5-06-mql5folder.png" alt="The MQL5 folder selected in the data folder" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the MQL5 folder</div></figure>
+        <figure class="gstep-shot"><img src="images/guide/mt5-06-expertsfolder.png" alt="The Experts folder selected inside MQL5" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the Experts folder</div></figure>
+      </div>
       <p>Copy the <code class="mt5-only">TradeListaSync.mq5</code><code class="mt4-only">TradeListaSync.mq4</code> file you downloaded in step 5 into this <strong>Experts</strong> folder (drag and drop, or copy-paste).</p>
       <figure class="gstep-shot mt5-only"><img src="images/guide/mt5-06-experts-folder.png" alt="The MQL5\Experts folder with TradeListaSync.mq5 copied in" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the file placed in the MQL5\Experts folder</div></figure>
       <figure class="gstep-shot mt4-only"><img src="images/guide/mt4-06-experts-folder.png" alt="The MQL4\Experts folder with TradeListaSync.mq4 copied in" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the file placed in the MQL4\Experts folder</div></figure>
@@ -446,7 +456,12 @@
       <h3>Compile it</h3>
       <p>Back in MetaTrader, look at the <strong>Navigator</strong> panel on the left (press <code>Ctrl+N</code> if you don't see it).</p>
       <p>Right-click <strong>"Expert Advisors"</strong> and click <strong>"Refresh"</strong>. <code>TradeListaSync</code> should now appear in that list.</p>
-      <p>Double-click it — this opens a second window called <strong>MetaEditor</strong> with the code inside. Click the <strong>"Compile"</strong> button near the top (or press <code>F7</code>). At the bottom it should say <strong>"0 errors, 0 warnings"</strong>.</p>
+      <div class="gstep-shot-row mt5-only">
+        <figure class="gstep-shot"><img src="images/guide/mt5-07-navrefresh.png" alt="Right-clicking Expert Advisors and selecting Refresh in the Navigator" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: right-click → Refresh</div></figure>
+        <figure class="gstep-shot"><img src="images/guide/mt5-07-navresult.png" alt="TradeListaSync now listed under Expert Advisors in the Navigator" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: TradeListaSync appears in the list</div></figure>
+      </div>
+      <p>Right-click it and choose <strong>"Modify"</strong> — this opens a second window called <strong>MetaEditor</strong> with the code inside. (Double-clicking attaches it straight to a chart instead — that's step 8, not this one.)</p>
+      <p>In MetaEditor, click the <strong>"Compile"</strong> button near the top (or press <code>F7</code>). This turns the code into a program MetaTrader can actually run — without it, there's nothing to attach to a chart in step 8. At the bottom it should say <strong>"0 errors, 0 warnings"</strong>.</p>
       <figure class="gstep-shot"><img src="images/guide/mt-07-compile.png" alt="MetaEditor showing '0 errors, 0 warnings' after compiling" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: successful compile in MetaEditor</div></figure>
     </div>
 
