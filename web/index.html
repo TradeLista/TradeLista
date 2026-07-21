@@ -806,6 +806,15 @@
     .feat-row:nth-child(even) .feat-visual{order:2;}
     .feat-num{display:none;}
   }
+
+  /* Pre-checkout consent (right of withdrawal, EU digital-goods rule) */
+  .tl-consent-row{
+    display:flex; align-items:flex-start; gap:10px; text-align:left; margin-bottom:20px;
+    padding:12px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm);
+  }
+  .tl-consent-row input[type="checkbox"]{margin-top:2px; width:16px; height:16px; flex-shrink:0; accent-color:var(--accent);}
+  .tl-consent-row label{font-size:12.5px; color:var(--text-dim); line-height:1.5; cursor:pointer;}
+  .tl-modal .btn:disabled{opacity:.45; cursor:not-allowed;}
 </style>
 </head>
 <body>
@@ -1356,6 +1365,7 @@
         <textarea id="cmMessage" required></textarea>
       </div>
       <div id="contactModalStatus" style="font-size:12.5px; min-height:16px; margin-bottom:8px; text-align:center;"></div>
+      <p style="color:var(--text-faint); font-size:12px; line-height:1.5; margin:-4px 0 14px;">We'll only use these details to respond to your message — never for marketing, and never shared with anyone else.</p>
       <button type="submit" class="btn btn-primary" id="contactModalSubmit" style="width:100%;">Send message</button>
     </form>
   </div>
@@ -1501,6 +1511,43 @@
     status.textContent = 'Message sent — we\'ll get back to you by email.';
     document.getElementById('contactModalForm').reset();
   });
+  // EU consumer-rights law (§ 356(4) BGB, implementing Art. 16(m) of the EU
+  // Consumer Rights Directive) gives buyers of digital services a 14-day
+  // right of withdrawal — UNLESS they've explicitly agreed to immediate
+  // delivery and acknowledged that doing so ends that right. Stripe's own
+  // checkout page doesn't ask this on our behalf, so it has to happen here,
+  // before we ever hand off to Stripe. This wording covers the required
+  // substance (immediate delivery + loss of withdrawal right) but hasn't
+  // been reviewed by a lawyer — get that reviewed before relying on it.
+  function showCheckoutConsent(onConfirm){
+    const existing = document.querySelector('.tl-overlay');
+    if(existing) existing.remove();
+    const overlay = document.createElement('div');
+    overlay.className = 'tl-overlay';
+    overlay.innerHTML = `
+      <div class="tl-modal" role="dialog" aria-modal="true">
+        <div class="tl-ic">⭐</div>
+        <h3>Continue to checkout</h3>
+        <p>You're subscribing to TradeLista Pro — $10/month, cancel anytime from your account settings.</p>
+        <div class="tl-consent-row">
+          <input type="checkbox" id="tlWithdrawConsent">
+          <label for="tlWithdrawConsent">I agree that TradeLista Pro starts immediately once payment is confirmed, and I acknowledge that I lose my 14-day right of withdrawal as a result, since the service will have already begun.</label>
+        </div>
+        <div class="tl-actions">
+          <button type="button" class="btn btn-primary" id="tlConsentContinue" disabled>Continue to checkout</button>
+          <button type="button" class="tl-cancel" id="tlConsentCancel">Cancel</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    const checkbox = overlay.querySelector('#tlWithdrawConsent');
+    const continueBtn = overlay.querySelector('#tlConsentContinue');
+    checkbox.addEventListener('change', ()=>{ continueBtn.disabled = !checkbox.checked; });
+    continueBtn.addEventListener('click', ()=>{ overlay.remove(); onConfirm(); });
+    overlay.querySelector('#tlConsentCancel').addEventListener('click', ()=> overlay.remove());
+    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
+  }
+
   const goProBtn = document.getElementById('goProBtn');
   if(goProBtn){
     goProBtn.addEventListener('click', async (e)=>{
@@ -1513,18 +1560,20 @@
         location.href = 'app.html';
         return;
       }
-      const res = await TLAuth.startCheckout();
-      if(!res.ok){
-        TLAuth.ui.showModal({
-          icon:'⚠️',
-          title:'Could not start checkout',
-          message: res.error || 'Something went wrong. Please try again.',
-          primaryLabel:'Close',
-          primaryAction: ()=>{ document.querySelector('.tl-overlay')?.remove(); }
-        });
-        return;
-      }
-      location.href = res.url;
+      showCheckoutConsent(async ()=>{
+        const res = await TLAuth.startCheckout();
+        if(!res.ok){
+          TLAuth.ui.showModal({
+            icon:'⚠️',
+            title:'Could not start checkout',
+            message: res.error || 'Something went wrong. Please try again.',
+            primaryLabel:'Close',
+            primaryAction: ()=>{ document.querySelector('.tl-overlay')?.remove(); }
+          });
+          return;
+        }
+        location.href = res.url;
+      });
     });
   }
 

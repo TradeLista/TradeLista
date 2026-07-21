@@ -108,6 +108,7 @@
   .form-row textarea{resize:vertical; min-height:120px;}
   .form-grid-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
   .form-success{color:var(--green); font-size:13px; margin:-6px 0 14px; min-height:14px;}
+  .form-privacy-note{color:var(--text-faint); font-size:12px; line-height:1.5; margin:-4px 0 14px;}
 
   @media (max-width:600px){
     .form-grid-2{grid-template-columns:1fr;}
@@ -188,6 +189,7 @@
         <textarea id="cMessage" required></textarea>
       </div>
       <div class="form-success" id="contactSuccess"></div>
+      <p class="form-privacy-note">We'll only use these details to respond to your message — never for marketing, and never shared with anyone else.</p>
       <button type="submit" class="btn btn-primary" id="contactSubmit" style="width:100%;">Send message</button>
     </form>
   </div>
