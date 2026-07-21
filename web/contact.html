@@ -146,7 +146,12 @@
   .footer-col h4{font-size:12px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:14px;}
   .footer-col a{display:block; font-size:13.5px; color:var(--text-dim); margin-bottom:10px;}
   .footer-col a:hover{color:var(--text);}
-  .footer-bottom{max-width:1180px; margin:36px auto 0; padding-top:24px; border-top:1px solid var(--border-soft); font-size:12px; color:var(--text-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  .footer-bottom{max-width:1180px; margin:36px auto 0; padding-top:24px; border-top:1px solid var(--border-soft); font-size:12px; color:var(--text-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; align-items:center;}
+  .footer-withdraw-btn{
+    border:1px solid var(--border); border-radius:99px; padding:7px 14px; font-size:12px; font-weight:700;
+    color:var(--text-dim); background:var(--bg-elevated);
+  }
+  .footer-withdraw-btn:hover{border-color:var(--accent); color:var(--accent);}
 </style>
 </head>
 <body>
@@ -215,6 +220,10 @@
           <input type="text" id="cLastName" required>
         </div>
       </div>
+      <div style="position:absolute; left:-9999px;" aria-hidden="true">
+        <label for="cWebsite">Leave blank</label>
+        <input type="text" id="cWebsite" name="website" tabindex="-1" autocomplete="off">
+      </div>
       <div class="form-row">
         <label for="cEmail">Email</label>
         <input type="email" id="cEmail" required>
@@ -278,6 +287,7 @@
   </div>
   <div class="footer-bottom">
     <span>© 2026 TradeLista. All rights reserved.</span>
+    <a class="footer-withdraw-btn" href="withdrawal.html">Withdraw from contract</a>
     <span>tradelista.com</span>
   </div>
 </footer>
@@ -350,6 +360,7 @@
     const email = document.getElementById('cEmail').value.trim();
     const subject = document.getElementById('cSubject').value.trim();
     const message = document.getElementById('cMessage').value.trim();
+    const website = document.getElementById('cWebsite').value.trim();
     const status = document.getElementById('contactSuccess');
     const submitBtn = document.getElementById('contactSubmit');
 
@@ -358,7 +369,7 @@
     status.style.color = '';
     status.textContent = '';
 
-    const res = await TLAuth.sendContactMessage({ firstName, lastName, email, subject, message });
+    const res = await TLAuth.sendContactMessage({ firstName, lastName, email, subject, message, website });
 
     submitBtn.disabled = false;
     submitBtn.textContent = 'Send message';

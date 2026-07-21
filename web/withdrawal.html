@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TradeLista — Privacy</title>
+<title>TradeLista — Withdraw from contract</title>
 <link rel="stylesheet" href="fonts/fonts.css">
 <style>
   :root{
@@ -73,9 +73,6 @@
   }
   .navright{display:flex; align-items:center; gap:12px;}
   .navright .btn{padding:8px 15px; font-size:13px;}
-  /* Mobile menu — .navlinks just disappears below the breakpoint with
-     nothing to replace it otherwise, so there'd be no way to reach
-     Connect Account/Pricing/Contact/FAQ from a phone. */
   .nav-hamburger{
     display:none; width:38px; height:38px; flex-shrink:0; border-radius:10px;
     background:var(--bg-elevated); border:1px solid var(--border);
@@ -109,25 +106,30 @@
   .btn-ghost{background:var(--bg-card); border-color:var(--border); color:var(--text);}
   .btn-ghost:hover{border-color:var(--accent); color:var(--accent);}
 
-  .page{max-width:680px; margin:0 auto; padding:48px 24px 80px;}
+  .page{max-width:640px; margin:0 auto; padding:48px 24px 80px;}
   .page-eyebrow{
     display:inline-flex; align-items:center; gap:8px; font-size:11.5px; font-weight:700; color:var(--accent);
     text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px; width:100%; justify-content:center;
   }
   .page h1{font-size:26px; font-weight:800; letter-spacing:-0.01em; margin-bottom:8px; text-align:center;}
-  .page > p.lead{color:var(--text-dim); font-size:14.5px; margin:0 auto 32px; line-height:1.6; text-align:center; max-width:520px;}
+  .page > p.lead{color:var(--text-dim); font-size:14.5px; margin:0 auto 28px; line-height:1.6; text-align:center; max-width:520px;}
 
   .notice{
     background:var(--accent-dim); border:1px solid rgba(79,140,255,0.3); border-radius:var(--radius-sm);
-    padding:14px 16px; font-size:13px; color:var(--text-dim); line-height:1.6; margin-bottom:32px;
+    padding:14px 16px; font-size:13px; color:var(--text-dim); line-height:1.6; margin-bottom:24px;
   }
-  .card{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin-bottom:20px;}
-  .card h2{font-size:16px; font-weight:700; margin-bottom:12px;}
-  .card p{color:var(--text-dim); font-size:14px; line-height:1.7; margin-bottom:10px;}
-  .card p:last-child{margin-bottom:0;}
-  .card ul{color:var(--text-dim); font-size:14px; line-height:1.7; margin:0 0 10px 20px;}
-  .card ul:last-child{margin-bottom:0;}
-  .card strong{color:var(--text);}
+  .card{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px;}
+
+  .form-row{margin-bottom:16px;}
+  .form-row label{display:block; font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px;}
+  .form-row input, .form-row textarea{
+    width:100%; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm);
+    color:var(--text); font-family:inherit; font-size:13.5px; padding:10px 12px; outline:none;
+  }
+  .form-row input:focus, .form-row textarea:focus{border-color:var(--accent);}
+  .form-row textarea{resize:vertical; min-height:90px;}
+  .form-success{color:var(--green); font-size:13px; margin:-6px 0 14px; min-height:14px;}
+  .form-privacy-note{color:var(--text-faint); font-size:12px; line-height:1.5; margin:-4px 0 14px;}
 
   footer{border-top:1px solid var(--border-soft); padding:48px 24px 32px;}
   .footer-inner{max-width:1180px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:32px;}
@@ -174,7 +176,7 @@
     <a href="app.html" class="js-calendar-link">Calendar</a>
     <a href="connect.html">Connect Account</a>
     <a href="index.html#pricing">Pricing</a>
-    <a href="contact.html">Contact</a>
+    <a href="#" class="js-contact-link">Contact</a>
     <a href="faq.html">FAQ</a>
   </div>
   <div style="display:flex; align-items:center; gap:10px;">
@@ -189,55 +191,46 @@
     <a href="app.html" class="js-calendar-link">Calendar</a>
     <a href="connect.html">Connect Account</a>
     <a href="index.html#pricing">Pricing</a>
-    <a href="contact.html">Contact</a>
+    <a href="#" class="js-contact-link">Contact</a>
     <a href="faq.html">FAQ</a>
   </div>
 </div>
 
 <div class="page" style="display:none">
-  <div class="page-eyebrow">Privacy</div>
-  <h1>Privacy Policy</h1>
-  <p class="lead">What data TradeLista collects, why, and what your rights are.</p>
+  <div class="page-eyebrow">Right of withdrawal</div>
+  <h1>Withdraw from your contract</h1>
+  <p class="lead">If you're within your 14-day statutory right of withdrawal, use this form to tell us. You don't need to be logged in to submit it.</p>
 
   <div class="notice">
-    This page explains our actual data practices in plain language. It is not yet a complete, lawyer-reviewed Datenschutzerklärung/GDPR notice (that also needs our full legal entity details, which will follow separately) — treat it as an accurate starting point, not a final legal document.
+    Submitting this form only confirms that we've <strong>received</strong> your declaration — it does not by itself cancel a subscription or issue a refund. We review each request (checking the withdrawal deadline and anything you agreed to at checkout) and reply by email with the outcome.
   </div>
 
   <div class="card">
-    <h2>What we collect</h2>
-    <p>Only what's needed to run the service:</p>
-    <ul>
-      <li><strong>Account info</strong> — your email and name, when you create an account.</li>
-      <li><strong>Trading data you enter</strong> — trades, notes, tags, reflection answers and screenshots you add to your journal.</li>
-      <li><strong>Billing reference</strong> — if you subscribe to Pro, a reference ID linking your account to your Stripe customer record. We never see or store your card details — Stripe handles those directly.</li>
-      <li><strong>Contact messages</strong> — your name, email, subject and message, only if you write to us via the Contact page.</li>
-    </ul>
-  </div>
-
-  <div class="card">
-    <h2>Why we collect it</h2>
-    <p>To provide your trading journal (store and show you your own trades and notes), to process your Pro subscription, and to reply when you contact us. We don't use your data for advertising, and we don't sell it.</p>
-  </div>
-
-  <div class="card">
-    <h2>Who else sees it</h2>
-    <p>A few service providers process data on our behalf, strictly to run TradeLista:</p>
-    <ul>
-      <li><strong>Supabase</strong> — hosts our database, authentication and file storage.</li>
-      <li><strong>Stripe</strong> — processes Pro subscription payments.</li>
-      <li><strong>IONOS</strong> — delivers the emails sent through our Contact form.</li>
-    </ul>
-    <p>None of them are permitted to use your data for their own purposes.</p>
-  </div>
-
-  <div class="card">
-    <h2>Cookies &amp; tracking</h2>
-    <p>We don't use cookies, analytics, or advertising trackers of any kind. The only things stored in your browser are functional (your login session and app preferences) — nothing that tracks you across sites. Fonts are served from our own server rather than a third party's, so no font request ever leaves a trace with anyone else either.</p>
-  </div>
-
-  <div class="card">
-    <h2>Your rights</h2>
-    <p>You can access, correct, export or delete your trades and notes at any time from within the app. If you'd like your entire account and all associated data erased, or have any other request about your data, reach out via the <a href="contact.html" style="color:var(--accent); text-decoration:underline;">Contact page</a> — we'll act on it promptly.</p>
+    <form id="withdrawalForm" novalidate>
+      <div class="form-row">
+        <label for="wName">Your name</label>
+        <input type="text" id="wName" required>
+      </div>
+      <div style="position:absolute; left:-9999px;" aria-hidden="true">
+        <label for="wWebsite">Leave blank</label>
+        <input type="text" id="wWebsite" name="website" tabindex="-1" autocomplete="off">
+      </div>
+      <div class="form-row">
+        <label for="wContractRef">Account email or contract reference</label>
+        <input type="text" id="wContractRef" placeholder="The email address your TradeLista account uses" required>
+      </div>
+      <div class="form-row">
+        <label for="wEmail">Your email (for our reply)</label>
+        <input type="email" id="wEmail" required>
+      </div>
+      <div class="form-row">
+        <label for="wDetails">Details — e.g. what you'd like to withdraw from, or a partial withdrawal (optional)</label>
+        <textarea id="wDetails"></textarea>
+      </div>
+      <div class="form-success" id="withdrawalSuccess"></div>
+      <p class="form-privacy-note">Please see our <a href="privacy.html" style="color:var(--text-dim); text-decoration:underline;">Privacy Policy</a> for how we handle this information.</p>
+      <button type="submit" class="btn btn-primary" id="withdrawalSubmit" style="width:100%;">Confirm withdrawal</button>
+    </form>
   </div>
 </div>
 
@@ -275,7 +268,7 @@
       </div>
       <div class="footer-col">
         <h4>Company</h4>
-        <a href="contact.html">Contact</a>
+        <a href="#" class="js-contact-link">Contact</a>
         <a href="faq.html">FAQ</a>
         <a href="privacy.html">Privacy Policy</a>
         <a href="#" onclick="return false;">Imprint</a>
@@ -297,10 +290,14 @@
     document.querySelector('.page').style.display = '';
     const loggedIn = await TLAuth.isLoggedIn();
     if(loggedIn){
+      const user = await TLAuth.getCurrentUser();
+      document.getElementById('wName').value = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+      document.getElementById('wContractRef').value = user.email || '';
+      document.getElementById('wEmail').value = user.email || '';
       document.getElementById('navLinks').innerHTML = `
         <a href="app.html">Calendar</a>
         <a href="connect.html">Connect Account</a>
-        <a href="contact.html">Contact</a>
+        <a href="#" class="js-contact-link">Contact</a>
         <a href="faq.html">FAQ</a>
       `;
       document.getElementById('mobileNavLinks').innerHTML = document.getElementById('navLinks').innerHTML;
@@ -321,6 +318,13 @@
     });
   });
 
+  document.querySelectorAll('.js-contact-link').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.preventDefault();
+      location.href = 'contact.html';
+    });
+  });
+
   const navHamburger = document.getElementById('navHamburger');
   const mobileNavLinks = document.getElementById('mobileNavLinks');
   navHamburger.addEventListener('click', (e)=>{
@@ -333,6 +337,34 @@
     mobileNavLinks.classList.remove('open');
     navHamburger.classList.remove('open');
     navHamburger.setAttribute('aria-expanded', false);
+  });
+
+  document.getElementById('withdrawalForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const name = document.getElementById('wName').value.trim();
+    const contractRef = document.getElementById('wContractRef').value.trim();
+    const email = document.getElementById('wEmail').value.trim();
+    const details = document.getElementById('wDetails').value.trim();
+    const website = document.getElementById('wWebsite').value.trim();
+    const status = document.getElementById('withdrawalSuccess');
+    const submitBtn = document.getElementById('withdrawalSubmit');
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
+    status.style.color = '';
+    status.textContent = '';
+
+    const res = await TLAuth.submitWithdrawal({ name, contractRef, email, details, website });
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Confirm withdrawal';
+    if(!res.ok){
+      status.style.color = 'var(--red)';
+      status.textContent = res.error;
+      return;
+    }
+    status.textContent = 'Received — check your inbox for a confirmation email.';
+    document.getElementById('withdrawalForm').reset();
   });
 </script>
 </body>

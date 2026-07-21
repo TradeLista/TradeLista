@@ -41,12 +41,41 @@
   }
 
   // Unauthenticated on purpose — contact-form visitors aren't logged in.
-  async function sendContactMessage({ firstName, lastName, email, subject, message }){
-    const res = await fetch(`${FUNCTIONS_URL}/send-contact-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ firstName, lastName, email, subject, message })
-    });
+  // A network-level failure (offline, DNS, an ad-blocker eating the
+  // request, CORS misconfig) throws from fetch() itself, before there's
+  // any response to check .ok on — without this catch, that throw would
+  // propagate out of the caller's submit handler and leave its "Sending…"
+  // button disabled forever, with no error ever shown.
+  async function sendContactMessage({ firstName, lastName, email, subject, message, website }){
+    let res;
+    try {
+      res = await fetch(`${FUNCTIONS_URL}/send-contact-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName, lastName, email, subject, message, website })
+      });
+    } catch (err) {
+      return { ok:false, error: 'Could not reach the server. Check your connection and try again.' };
+    }
+    const body = await res.json().catch(() => ({}));
+    if(!res.ok) return { ok:false, error: body.error || 'Something went wrong. Please try again.' };
+    return { ok:true };
+  }
+
+  // Unauthenticated on purpose — required by law (§356a BGB) to be usable
+  // without logging in, so the person submitting isn't assumed to still
+  // have (or want) account access.
+  async function submitWithdrawal({ name, contractRef, email, details, website }){
+    let res;
+    try {
+      res = await fetch(`${FUNCTIONS_URL}/submit-withdrawal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, contractRef, email, details, website })
+      });
+    } catch (err) {
+      return { ok:false, error: 'Could not reach the server. Check your connection and try again.' };
+    }
     const body = await res.json().catch(() => ({}));
     if(!res.ok) return { ok:false, error: body.error || 'Something went wrong. Please try again.' };
     return { ok:true };
@@ -84,6 +113,12 @@
       if(used >= limit){
         return { ok:false, error: `You've used all ${Math.round(limit/(1024*1024))} MB of your storage — delete a screenshot or some notes to free up space before saving more.` };
       }
+    }
+
+    // Reflection answers are a Pro feature — notes and tags aren't, so only
+    // block this one field rather than the whole save.
+    if(trade.answers && Object.keys(trade.answers).length && !(await isProUser(session.user.id))){
+      return { ok:false, error:'Reflection questions are a Pro feature. Upgrade to save answers to your trades.' };
     }
 
     const row = {
@@ -175,6 +210,7 @@
   async function uploadTradeImage(tradeId, file){
     const { data: { session } } = await sb.auth.getSession();
     if(!session) return { ok:false, error:'Not logged in.' };
+    if(!(await isProUser(session.user.id))) return { ok:false, error:'Image uploads are a Pro feature. Upgrade to add screenshots to your trades.' };
     const { used, limit } = await getStorageUsage();
     if(used + file.size > limit){
       const usedMb = Math.round(used / (1024*1024));
@@ -245,6 +281,20 @@
     return { ok:true };
   }
 
+  // Invalidates the old key immediately — any EA still using it starts
+  // failing on its next send, which is the point (this is how a leaked key
+  // gets revoked without deleting the whole account and its trade history).
+  async function regenerateApiKey(id){
+    const newKey = crypto.randomUUID();
+    const { data, error } = await sb.from('trading_accounts')
+      .update({ api_key: newKey })
+      .eq('id', id)
+      .select()
+      .single();
+    if(error) return { ok:false, error: error.message };
+    return { ok:true, account: data };
+  }
+
   // Which account the calendar is currently scoped to. Kept in localStorage
   // (not Supabase) since it's a per-browser view preference, not user data.
   const ACTIVE_ACCOUNT_KEY = 'tradelista_active_account';
@@ -288,6 +338,21 @@
     };
   }
 
+  // Shared by TLAuth.isPro() and every server-reachable function that gates
+  // a Pro-only feature (image uploads, reflection answers) — those checks
+  // used to live only in the UI's requirePro() calls, which is trivial to
+  // bypass from the browser console since it never touched the functions
+  // actually doing the writing.
+  async function isProUser(userId){
+    const profile = await fetchProfile(userId);
+    if(!profile || profile.plan !== 'pro') return false;
+    if(profile.cancelAtPeriodEnd && profile.periodEnd && Date.now() >= profile.periodEnd){
+      await sb.from('profiles').update({ plan:'free', cancel_at_period_end:false, period_end:null }).eq('id', userId);
+      return false;
+    }
+    return true;
+  }
+
   const TLAuth = {
     async isLoggedIn(){
       return !!(await getSessionUser());
@@ -302,13 +367,9 @@
     },
 
     async isPro(){
-      const u = await this.getCurrentUser();
-      if(!u || u.plan !== 'pro') return false;
-      if(u.cancelAtPeriodEnd && u.periodEnd && Date.now() >= u.periodEnd){
-        await sb.from('profiles').update({ plan:'free', cancel_at_period_end:false, period_end:null }).eq('id', u.id);
-        return false;
-      }
-      return true;
+      const user = await getSessionUser();
+      if(!user) return false;
+      return isProUser(user.id);
     },
 
     async getPlanInfo(){
@@ -343,6 +404,57 @@
 
     async logout(){
       await sb.auth.signOut();
+    },
+
+    // Permanently deletes the account and everything tied to it (profile,
+    // trading accounts, trades, screenshots) and cancels any active Stripe
+    // subscription first. Irreversible — the confirmation UI calling this
+    // needs to make that unmistakable.
+    async deleteMyAccount(){
+      const { data: { session } } = await sb.auth.getSession();
+      if(!session) return { ok:false, error:'Not logged in.' };
+      const res = await fetch(`${FUNCTIONS_URL}/delete-account`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      });
+      const body = await res.json().catch(() => ({}));
+      if(!res.ok) return { ok:false, error: body.error || 'Something went wrong. Please try again.' };
+      await sb.auth.signOut();
+      return { ok:true };
+    },
+
+    // Emails a recovery link that lands back on auth.html?mode=reset with a
+    // Supabase recovery token in the URL — the client library picks that up
+    // on its own and fires a PASSWORD_RECOVERY auth-state event, which the
+    // page listens for to show the "set a new password" panel.
+    async requestPasswordReset(email){
+      email = (email || '').trim().toLowerCase();
+      if(!EMAIL_RE.test(email)) return { ok:false, error:'Please enter a valid email address.' };
+      const { error } = await sb.auth.resetPasswordForEmail(email, {
+        redirectTo: `${location.origin}/auth.html?mode=reset`
+      });
+      if(error) return { ok:false, error: error.message };
+      return { ok:true };
+    },
+
+    // Only valid right after following a recovery-link redirect, which is
+    // what supplies the short-lived session this relies on instead of the
+    // current password changePassword() re-checks.
+    async setPasswordAfterReset(newPassword){
+      if(!newPassword || newPassword.length < 8) return { ok:false, error:'Password must be at least 8 characters.' };
+      const { error } = await sb.auth.updateUser({ password: newPassword });
+      if(error) return { ok:false, error: error.message };
+      return { ok:true };
+    },
+
+    // Fires once when Supabase's client picks up a recovery token from the
+    // URL after a password-reset email link — the only reliable signal for
+    // this, since exactly when the token finishes processing isn't
+    // synchronous with page load.
+    onPasswordRecovery(callback){
+      sb.auth.onAuthStateChange((event) => {
+        if(event === 'PASSWORD_RECOVERY') callback();
+      });
     },
 
     // Redirects the browser to a real Stripe Checkout page for the Pro plan.
@@ -383,7 +495,8 @@
       return { ok:true };
     },
 
-    sendContactMessage
+    sendContactMessage,
+    submitWithdrawal
   };
 
   /* ---------- Shared modal UI ---------- */
@@ -408,6 +521,12 @@
       }
       .tl-modal h3{font-size:17px; font-weight:700; margin-bottom:8px;}
       .tl-modal p{font-size:13.5px; color:var(--text-dim); line-height:1.6; margin-bottom:20px;}
+      .tl-confirm-input{
+        width:100%; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm);
+        color:var(--text); font-family:inherit; font-size:13.5px; padding:10px 12px; outline:none;
+        text-align:left; margin:-8px 0 20px;
+      }
+      .tl-confirm-input:focus{border-color:var(--accent);}
       .tl-modal .tl-actions{display:flex; flex-direction:column; gap:10px;}
       .tl-modal .btn{width:100%;}
       .tl-modal .btn-danger{background:var(--red-dim); border-color:var(--red-border); color:var(--red);}
@@ -570,7 +689,7 @@
     document.head.appendChild(style);
   }
 
-  function showModal({ icon, title, message, primaryLabel, primaryHref, primaryAction, primaryDanger, secondaryLabel, secondaryHref, cancelLabel }){
+  function showModal({ icon, title, message, primaryLabel, primaryHref, primaryAction, primaryDanger, secondaryLabel, secondaryHref, cancelLabel, confirmText }){
     ensureStyles();
     const existing = document.querySelector('.tl-overlay');
     if(existing) existing.remove();
@@ -582,8 +701,9 @@
         <div class="tl-ic">${icon}</div>
         <h3>${title}</h3>
         <p>${message}</p>
+        ${confirmText ? `<input type="text" class="tl-confirm-input" id="tlConfirmInput" placeholder="Type ${escapeHtml(confirmText)} to confirm" autocomplete="off">` : ''}
         <div class="tl-actions">
-          <a class="btn ${primaryDanger ? 'btn-danger' : 'btn-primary'}" id="tlPrimaryBtn" href="${primaryHref || '#'}">${primaryLabel}</a>
+          <a class="btn ${primaryDanger ? 'btn-danger' : 'btn-primary'}" id="tlPrimaryBtn" href="${primaryHref || '#'}"${confirmText ? ' aria-disabled="true" style="opacity:.5; pointer-events:none;"' : ''}>${primaryLabel}</a>
           ${secondaryLabel ? `<a class="btn btn-ghost" href="${secondaryHref || '#'}">${secondaryLabel}</a>` : ''}
           <button type="button" class="tl-cancel" id="tlCancelBtn">${cancelLabel || 'Not now'}</button>
         </div>
@@ -591,9 +711,20 @@
     `;
     document.body.appendChild(overlay);
 
+    const primaryBtn = overlay.querySelector('#tlPrimaryBtn');
+    if(confirmText){
+      const input = overlay.querySelector('#tlConfirmInput');
+      input.addEventListener('input', () => {
+        const matches = input.value.trim().toLowerCase() === confirmText.trim().toLowerCase();
+        primaryBtn.style.opacity = matches ? '' : '.5';
+        primaryBtn.style.pointerEvents = matches ? '' : 'none';
+        primaryBtn.setAttribute('aria-disabled', matches ? 'false' : 'true');
+      });
+    }
     if(primaryAction){
-      overlay.querySelector('#tlPrimaryBtn').addEventListener('click', (e) => {
+      primaryBtn.addEventListener('click', (e) => {
         e.preventDefault();
+        if(primaryBtn.getAttribute('aria-disabled') === 'true') return;
         primaryAction();
       });
     }
@@ -693,6 +824,7 @@
 
         <div class="tl-am-status" id="tlAmStatus"></div>
         <button type="button" class="btn btn-ghost" id="tlAmLogout" style="width:100%; margin-top:8px;">Log out</button>
+        <button type="button" id="tlAmDeleteAccount" style="width:100%; margin-top:14px; background:none; border:none; color:var(--text-faint); font-size:12px; text-decoration:underline; padding:4px;">Delete my account</button>
       </div>
     `;
     document.body.appendChild(overlay);
@@ -729,6 +861,24 @@
     overlay.querySelector('#tlAmLogout').addEventListener('click', async () => {
       await TLAuth.logout();
       location.reload();
+    });
+
+    overlay.querySelector('#tlAmDeleteAccount').addEventListener('click', () => {
+      showModal({
+        icon: '⚠️',
+        title: 'Delete your account?',
+        message: 'This permanently deletes your profile, every trading account, trade, note and screenshot, and cancels any active subscription. There is no way to undo this.',
+        primaryLabel: 'Delete my account permanently',
+        primaryDanger: true,
+        cancelLabel: 'Cancel',
+        confirmText: 'DELETE',
+        primaryAction: async () => {
+          document.querySelector('.tl-overlay')?.remove();
+          const res = await TLAuth.deleteMyAccount();
+          if(!res.ok){ overlay.querySelector('#tlAmStatus').textContent = res.error; return; }
+          location.href = 'index.html';
+        }
+      });
     });
 
     const addForm = overlay.querySelector('#tlAmAddAccountForm');
@@ -791,6 +941,7 @@
         </div>
         <div class="tl-am-acct-actions">
           <button type="button" class="tl-am-acct-key" data-key="${escapeHtml(a.api_key)}" title="Copy this account's API key">🔑 Copy key</button>
+          <button type="button" class="tl-am-acct-regen" data-id="${escapeHtml(a.id)}" data-label="${escapeHtml(a.label)}" title="Invalidate the old key and generate a new one">🔄</button>
           ${accounts.length > 1 ? `<button type="button" class="tl-am-acct-delete" data-id="${escapeHtml(a.id)}" data-label="${escapeHtml(a.label)}" title="Delete account">🗑</button>` : ''}
         </div>
       </div>
@@ -802,6 +953,25 @@
         const original = btn.textContent;
         btn.textContent = '✓ Copied';
         setTimeout(() => { btn.textContent = original; }, 1500);
+      });
+    });
+    list.querySelectorAll('.tl-am-acct-regen').forEach(btn => {
+      btn.addEventListener('click', () => {
+        showModal({
+          icon: '🔄',
+          title: `Regenerate the key for "${btn.dataset.label}"?`,
+          message: `The old key stops working immediately — if an EA is using it to auto-sync trades, you'll need to paste the new key into that EA's Inputs tab afterward.`,
+          primaryLabel: 'Regenerate key',
+          primaryDanger: true,
+          cancelLabel: 'Cancel',
+          primaryAction: async () => {
+            document.querySelector('.tl-overlay')?.remove();
+            const res = await regenerateApiKey(btn.dataset.id);
+            if(!res.ok){ overlay.querySelector('#tlAmStatus').textContent = res.error; return; }
+            await renderAccountModalAccounts(overlay);
+            overlay.querySelector('#tlAmStatus').textContent = 'New key generated — copy it and update your EA.';
+          }
+        });
       });
     });
     list.querySelectorAll('.tl-am-acct-delete').forEach(btn => {
@@ -1141,6 +1311,7 @@
     createAccount,
     updateAccount,
     deleteAccount,
+    regenerateApiKey,
     ensureDefaultAccount,
     getActiveAccountId,
     setActiveAccountId

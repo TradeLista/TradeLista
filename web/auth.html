@@ -145,6 +145,36 @@
         </div>
         <div class="form-error" id="loginError"></div>
         <button type="submit" class="btn btn-primary" id="loginSubmit">Log in</button>
+        <p class="fine" style="margin-top:14px;"><a href="#" id="forgotPasswordLink" style="text-decoration:underline;">Forgot your password?</a></p>
+      </form>
+    </div>
+
+    <div class="panel" id="panelForgot">
+      <h1>Reset your password</h1>
+      <p class="sub">We'll email you a link to set a new one.</p>
+      <form id="forgotForm" novalidate>
+        <div class="form-row">
+          <label for="forgotEmail">Email</label>
+          <input type="email" id="forgotEmail" autocomplete="email" required>
+        </div>
+        <div class="form-error" id="forgotError"></div>
+        <div class="form-success" id="forgotSuccess"></div>
+        <button type="submit" class="btn btn-primary" id="forgotSubmit">Send reset link</button>
+        <p class="fine" style="margin-top:14px;"><a href="#" id="backToLoginLink" style="text-decoration:underline;">&larr; Back to log in</a></p>
+      </form>
+    </div>
+
+    <div class="panel" id="panelReset">
+      <h1>Set a new password</h1>
+      <p class="sub">Choose a new password for your account.</p>
+      <form id="resetForm" novalidate>
+        <div class="form-row">
+          <label for="resetPassword">New password <span style="text-transform:none; color:var(--text-faint);">(min. 8 characters)</span></label>
+          <input type="password" id="resetPassword" autocomplete="new-password" required minlength="8">
+        </div>
+        <div class="form-error" id="resetError"></div>
+        <div class="form-success" id="resetSuccess"></div>
+        <button type="submit" class="btn btn-primary" id="resetSubmit">Set new password</button>
       </form>
     </div>
 
@@ -176,7 +206,7 @@
       </form>
     </div>
 
-    <p class="fine">By continuing you agree this is a demo account stored only in your browser.</p>
+    <p class="fine">By continuing you agree to our <a href="privacy.html" style="color:inherit; text-decoration:underline;">Privacy Policy</a>.</p>
   </div>
 </div>
 
@@ -191,27 +221,87 @@
   const ALLOWED_REDIRECTS = ['app.html', 'connect.html', 'index.html', 'faq.html', 'contact.html'];
   const redirect = ALLOWED_REDIRECTS.includes(params.get('redirect')) ? params.get('redirect') : 'app.html';
 
+  const tabsBar = document.querySelector('.tabs');
   const tabLogin = document.getElementById('tabLogin');
   const tabSignup = document.getElementById('tabSignup');
-  const panelLogin = document.getElementById('panelLogin');
-  const panelSignup = document.getElementById('panelSignup');
+  const panels = {
+    login: document.getElementById('panelLogin'),
+    signup: document.getElementById('panelSignup'),
+    forgot: document.getElementById('panelForgot'),
+    reset: document.getElementById('panelReset')
+  };
 
   function showTab(mode){
     const isLogin = mode !== 'signup';
     tabLogin.classList.toggle('active', isLogin);
     tabSignup.classList.toggle('active', !isLogin);
-    panelLogin.classList.toggle('active', isLogin);
-    panelSignup.classList.toggle('active', !isLogin);
+    panels.login.classList.toggle('active', isLogin);
+    panels.signup.classList.toggle('active', !isLogin);
+    panels.forgot.classList.remove('active');
+    panels.reset.classList.remove('active');
+    tabsBar.style.display = '';
+  }
+  function showPanel(name){
+    Object.values(panels).forEach(p => p.classList.remove('active'));
+    panels[name].classList.add('active');
+    tabsBar.style.display = (name === 'forgot' || name === 'reset') ? 'none' : '';
   }
   tabLogin.onclick = () => showTab('login');
   tabSignup.onclick = () => showTab('signup');
   showTab(params.get('mode'));
 
+  document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    showPanel('forgot');
+  });
+  document.getElementById('backToLoginLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    showTab('login');
+  });
+
+  // A recovery-link click carries its own short-lived session, so the
+  // normal "already logged in -> bounce to the app" redirect below must not
+  // fire while we're waiting to see if this is that case.
+  const isResetLanding = params.get('mode') === 'reset';
+  if(isResetLanding) showPanel('reset');
+
+  TLAuth.onPasswordRecovery(() => showPanel('reset'));
+
   (async function redirectIfLoggedIn(){
+    if(isResetLanding) return;
     if(await TLAuth.isLoggedIn()){
       location.replace(redirect);
     }
   })();
+
+  document.getElementById('forgotForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errEl = document.getElementById('forgotError');
+    const successEl = document.getElementById('forgotSuccess');
+    const btn = document.getElementById('forgotSubmit');
+    errEl.textContent = '';
+    successEl.textContent = '';
+    btn.disabled = true;
+    const res = await TLAuth.requestPasswordReset(document.getElementById('forgotEmail').value);
+    btn.disabled = false;
+    if(!res.ok){ errEl.textContent = res.error; return; }
+    successEl.textContent = "If that email has an account, we've sent a reset link — check your inbox.";
+    document.getElementById('forgotForm').reset();
+  });
+
+  document.getElementById('resetForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errEl = document.getElementById('resetError');
+    const successEl = document.getElementById('resetSuccess');
+    const btn = document.getElementById('resetSubmit');
+    errEl.textContent = '';
+    btn.disabled = true;
+    const res = await TLAuth.setPasswordAfterReset(document.getElementById('resetPassword').value);
+    btn.disabled = false;
+    if(!res.ok){ errEl.textContent = res.error; return; }
+    successEl.textContent = 'Password updated — taking you to your calendar...';
+    setTimeout(() => location.href = redirect, 1200);
+  });
 
   document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();

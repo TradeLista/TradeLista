@@ -37,7 +37,7 @@ const SITE_URL = Deno.env.get('SITE_URL') ?? 'http://localhost:5173';
 const TAX_ENABLED = Deno.env.get('TAX_ENABLED') === 'true';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('SITE_URL') ?? '*',
   'Access-Control-Allow-Headers': 'authorization, content-type',
 };
 

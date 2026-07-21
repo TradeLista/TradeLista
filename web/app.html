@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TradeLista — Calendar Demo</title>
+<title>TradeLista — Calendar &amp; PnL</title>
 <link rel="stylesheet" href="fonts/fonts.css">
 <style>
   :root{
@@ -753,7 +753,12 @@
   .footer-col h4{font-size:12px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:14px;}
   .footer-col a{display:block; font-size:13.5px; color:var(--text-dim); margin-bottom:10px;}
   .footer-col a:hover{color:var(--text);}
-  .footer-bottom{max-width:1180px; margin:36px auto 0; padding-top:24px; border-top:1px solid var(--border-soft); font-size:12px; color:var(--text-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  .footer-bottom{max-width:1180px; margin:36px auto 0; padding-top:24px; border-top:1px solid var(--border-soft); font-size:12px; color:var(--text-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; align-items:center;}
+  .footer-withdraw-btn{
+    border:1px solid var(--border); border-radius:99px; padding:7px 14px; font-size:12px; font-weight:700;
+    color:var(--text-dim); background:var(--bg-elevated);
+  }
+  .footer-withdraw-btn:hover{border-color:var(--accent); color:var(--accent);}
 </style>
 </head>
 <body>
@@ -807,7 +812,7 @@
     <div>
       <div class="page-eyebrow"><span class="dotpulse"></span> Live account · <span id="eyebrowMonth">—</span></div>
       <h1>Calendar &amp; PnL</h1>
-      <p>Demo data — click a colored day to see trades, click a trade to add notes, images and reflection.</p>
+      <p>Click a colored day to see trades, click a trade to add notes, images and reflection.</p>
     </div>
     <div class="page-head-right">
       <div class="account-pill" id="accountPillWrap">
@@ -989,6 +994,7 @@
   </div>
   <div class="footer-bottom">
     <span>© 2026 TradeLista. All rights reserved.</span>
+    <a class="footer-withdraw-btn" href="withdrawal.html">Withdraw from contract</a>
     <span>tradelista.com</span>
   </div>
 </footer>
@@ -1308,10 +1314,6 @@ document.addEventListener('tl-accounts-changed', async () => {
   if(TLAuth.data.getActiveAccountId() !== before) location.reload();
 });
 
-/* ---------- Mock data generation (deterministic) ---------- */
-function seeded(n){ let x = Math.sin(n*9973)*10000; return x - Math.floor(x); }
-
-const SYMBOLS = ['EURUSD','GBPUSD','XAUUSD','US30','NAS100','BTCUSD'];
 const STARTING_BALANCE = 10000;
 let CURRENCY = 'USD';
 
@@ -1401,10 +1403,8 @@ function fmtDateKey(d){
 }
 
 function genMonthTrades(year, month){
-  // Demo (randomly-generated) trades only ever populate the default account —
-  // any other account is a fresh one the user just created, so it starts
-  // with a genuinely empty calendar until real trades (manual or EA) exist.
-  const showDemoData = !activeAccount || activeAccount.is_default;
+  // Every day starts empty until real trades (manual entry or EA sync)
+  // exist for it — no fabricated data, on the default account or any other.
   const daysInMonth = new Date(year, month+1, 0).getDate();
   for(let day=1; day<=daysInMonth; day++){
     const d = new Date(year, month, day);
@@ -1413,34 +1413,7 @@ function genMonthTrades(year, month){
     if(dow===0 || dow===6) continue; // skip weekends
     const key = fmtDateKey(d);
     if(tradesByDate[key]) continue;
-    if(!showDemoData){ tradesByDate[key] = []; continue; }
-    const seedBase = year*10000 + (month+1)*100 + day;
-    const r = seeded(seedBase);
-    if(r < 0.32){ tradesByDate[key] = []; continue; } // no trading that day
-    const numTrades = 1 + Math.floor(seeded(seedBase+1)*3); // 1-3
-    const trades = [];
-    for(let i=0;i<numTrades;i++){
-      const s2 = seedBase*13 + i*7;
-      const symbol = SYMBOLS[Math.floor(seeded(s2)*SYMBOLS.length)];
-      const win = seeded(s2+1) < 0.56;
-      const lot = (0.1 + Math.floor(seeded(s2+2)*20)/10).toFixed(1);
-      const base = 20 + seeded(s2+3)*180;
-      const profit = win ? +(base).toFixed(2) : -(base*0.85).toFixed(2);
-      const entry = (1 + seeded(s2+4)*2).toFixed(4);
-      const exit = win ? (parseFloat(entry)+0.0037).toFixed(4) : (parseFloat(entry)-0.0029).toFixed(4);
-      const hour = 8 + Math.floor(seeded(s2+5)*12); // 08:00-19:59, roughly market hours
-      const minute = Math.floor(seeded(s2+6)*60);
-      const time = String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0');
-      trades.push({
-        id: key+'-'+i,
-        date: key,
-        time,
-        symbol, lot: parseFloat(lot),
-        entry: parseFloat(entry), exit: parseFloat(exit),
-        profit: parseFloat(profit)
-      });
-    }
-    tradesByDate[key] = trades;
+    tradesByDate[key] = [];
   }
 }
 
