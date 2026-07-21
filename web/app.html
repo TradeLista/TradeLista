@@ -1295,10 +1295,17 @@ async function renderTopNav(){
 })();
 
 // An account was added/deleted from the account modal (possibly opened via
-// the nav dropdown) — reload so the account switcher and every render path
-// that depends on accountsList/activeAccount picks up the change.
-document.addEventListener('tl-accounts-changed', () => {
-  if(document.querySelector('.page').style.display !== 'none') location.reload();
+// the nav dropdown). Most of the time that doesn't touch the account you're
+// actually looking at — just refresh the switcher in place so the modal you
+// were just using (and its updated list) stays right where it is. Only if
+// the active account itself got deleted (a new one had to be auto-picked)
+// do we fall back to a full reload, since every trade-dependent render path
+// (calendar, KPIs, chart) needs to re-hydrate for the new account anyway.
+document.addEventListener('tl-accounts-changed', async () => {
+  if(document.querySelector('.page').style.display === 'none') return;
+  const before = TLAuth.data.getActiveAccountId();
+  await loadAccountsAndResolveActive();
+  if(TLAuth.data.getActiveAccountId() !== before) location.reload();
 });
 
 /* ---------- Mock data generation (deterministic) ---------- */
