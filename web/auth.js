@@ -1068,6 +1068,7 @@
         <div class="tl-actions" style="margin-top:18px;">
           <button type="button" class="btn btn-primary" id="tlCookieSave">Save preferences</button>
         </div>
+        <button type="button" class="tl-cancel" id="tlCookieBack">← Back</button>
       </div>
     `;
     document.body.appendChild(overlay);
@@ -1077,6 +1078,11 @@
       overlay.remove();
       onDone(analytics, marketing);
     });
+    // Closing without saving just re-reveals the still-present 3-button
+    // banner underneath — it was never removed, only covered by this
+    // overlay — rather than dismissing the whole consent flow outright.
+    overlay.querySelector('#tlCookieBack').addEventListener('click', ()=> overlay.remove());
+    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
   }
 
   function initCookieBanner(){
