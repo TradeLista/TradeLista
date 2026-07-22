@@ -471,6 +471,48 @@
       return callFunction('create-portal-session');
     },
 
+    // Backs the "Cancel contract here" button (§312k BGB): stops the Stripe
+    // subscription from renewing at the end of the period already paid for,
+    // and emails an immediate confirmation. Distinct from deleteMyAccount —
+    // this only ends the subscription, not the whole account.
+    async cancelSubscription(){
+      const { data: { session } } = await sb.auth.getSession();
+      if(!session) return { ok:false, error:'Not logged in.' };
+      let res;
+      try {
+        res = await fetch(`${FUNCTIONS_URL}/cancel-subscription`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        });
+      } catch (err) {
+        return { ok:false, error: 'Could not reach the server. Check your connection and try again.' };
+      }
+      const body = await res.json().catch(() => ({}));
+      if(!res.ok) return { ok:false, error: body.error || 'Something went wrong. Please try again.' };
+      return { ok:true, periodEnd: body.periodEnd };
+    },
+
+    // Undoes a pending cancelSubscription() call. Calls the Stripe API
+    // directly server-side rather than routing through the Stripe Billing
+    // Portal's own "reactivate" button, which could not be confirmed to
+    // work reliably in testing.
+    async resumeSubscription(){
+      const { data: { session } } = await sb.auth.getSession();
+      if(!session) return { ok:false, error:'Not logged in.' };
+      let res;
+      try {
+        res = await fetch(`${FUNCTIONS_URL}/resume-subscription`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        });
+      } catch (err) {
+        return { ok:false, error: 'Could not reach the server. Check your connection and try again.' };
+      }
+      const body = await res.json().catch(() => ({}));
+      if(!res.ok) return { ok:false, error: body.error || 'Something went wrong. Please try again.' };
+      return { ok:true, periodEnd: body.periodEnd };
+    },
+
     async updateProfile({ firstName, lastName }){
       firstName = (firstName || '').trim();
       lastName = (lastName || '').trim();
@@ -1010,7 +1052,10 @@
       actionBox.innerHTML = `<a class="btn btn-primary" style="width:100%; display:block; text-align:center;" href="index.html#pricing">Upgrade to Pro</a>`;
     } else if(info.cancelAtPeriodEnd){
       box.innerHTML = `<strong style="color:var(--text);">Pro plan</strong> — cancelled, active until <strong>${fmt(info.periodEnd)}</strong>`;
-      actionBox.innerHTML = `<button type="button" class="btn btn-ghost" id="tlAmManagePro" style="width:100%;">Manage subscription</button>`;
+      actionBox.innerHTML = `
+        <button type="button" class="btn btn-primary" id="tlAmResumePro" style="width:100%; margin-bottom:8px;">Resume subscription</button>
+        <button type="button" class="btn btn-ghost" id="tlAmManagePro" style="width:100%;">Manage subscription</button>
+      `;
     } else {
       box.innerHTML = `<strong style="color:var(--text);">Pro plan</strong> — renews on <strong>${fmt(info.periodEnd)}</strong>`;
       actionBox.innerHTML = `<button type="button" class="btn btn-danger" id="tlAmManagePro" style="width:100%;">Manage subscription</button>`;
@@ -1021,6 +1066,20 @@
         const res = await TLAuth.openBillingPortal();
         if(!res.ok){ overlay.querySelector('#tlAmStatus').textContent = res.error; return; }
         location.href = res.url;
+      };
+    }
+    const resumeBtn = actionBox.querySelector('#tlAmResumePro');
+    if(resumeBtn){
+      resumeBtn.onclick = async () => {
+        const statusEl = overlay.querySelector('#tlAmStatus');
+        statusEl.textContent = '';
+        resumeBtn.disabled = true;
+        resumeBtn.textContent = 'Resuming…';
+        const res = await TLAuth.resumeSubscription();
+        resumeBtn.disabled = false;
+        resumeBtn.textContent = 'Resume subscription';
+        if(!res.ok){ statusEl.textContent = res.error; return; }
+        await renderAccountModalPlan(overlay);
       };
     }
   }

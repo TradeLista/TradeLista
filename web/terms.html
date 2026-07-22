@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TradeLista — Terms &amp; Conditions</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root{
+    --bg:#0a0e14;
+    --bg-elevated:#11161f;
+    --bg-card:#151b26;
+    --bg-hover:#1b2330;
+    --border:#232b3a;
+    --border-soft:#1a2130;
+    --text:#e7edf5;
+    --text-dim:#8b96a8;
+    --text-faint:#5c6678;
+    --green:#1fd18a;
+    --green-dim:rgba(31,209,138,0.14);
+    --green-border:rgba(31,209,138,0.35);
+    --red:#f0475a;
+    --red-dim:rgba(240,71,90,0.14);
+    --red-border:rgba(240,71,90,0.35);
+    --accent:#4f8cff;
+    --accent-dim:rgba(79,140,255,0.14);
+    --accent2:#8b6cff;
+    --radius:14px;
+    --radius-sm:9px;
+    --font-ui:'Inter',system-ui,-apple-system,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 1100px 620px at 12% -12%, rgba(79,140,255,0.16), transparent 70%),
+      radial-gradient(ellipse 950px 540px at 102% -4%, rgba(139,108,255,0.13), transparent 70%),
+      radial-gradient(ellipse 900px 520px at 102% 70%, rgba(79,140,255,0.08), transparent 70%),
+      radial-gradient(ellipse 850px 500px at -6% 100%, rgba(139,108,255,0.08), transparent 70%),
+      var(--bg);
+    background-attachment:fixed;
+    color:var(--text);
+    font-family:var(--font-ui);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit; cursor:pointer;}
+  ::selection{background:var(--accent-dim);}
+
+  .topnav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px; position:sticky; top:0; z-index:50;
+    background:rgba(10,14,20,0.7); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border-soft);
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:21px; letter-spacing:-0.02em;}
+  .brand-icon{flex-shrink:0; display:block;}
+  .brand-trade{color:#f5f5f7;}
+  .brand-accent{background:linear-gradient(135deg,#9d9ff5,#6366f1); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .navlinks{
+    display:flex; align-items:center; gap:2px; font-size:13.5px; color:var(--text-dim);
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    background:rgba(21,27,38,0.6); border:1px solid var(--border-soft);
+    padding:4px; border-radius:99px;
+  }
+  .navlinks a{padding:7px 14px; border-radius:99px; white-space:nowrap; transition:color .15s, background .15s;}
+  .navlinks a:hover{color:var(--text); background:var(--bg-hover);}
+  .navlinks a.active{color:var(--text); background:var(--bg-elevated);}
+  @media (max-width:860px){
+    .navlinks{display:none;}
+  }
+  .navright{display:flex; align-items:center; gap:12px;}
+  .navright .btn{padding:8px 15px; font-size:13px;}
+  .nav-hamburger{
+    display:none; width:38px; height:38px; flex-shrink:0; border-radius:10px;
+    background:var(--bg-elevated); border:1px solid var(--border);
+    align-items:center; justify-content:center; flex-direction:column; gap:4px; cursor:pointer;
+  }
+  .nav-hamburger span{display:block; width:16px; height:2px; background:var(--text-dim); border-radius:1px; transition:transform .2s, opacity .2s;}
+  .nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg);}
+  .nav-hamburger.open span:nth-child(2){opacity:0;}
+  .nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+  .mobile-navlinks{
+    display:none; position:absolute; top:100%; left:0; right:0; z-index:60;
+    flex-direction:column; gap:4px;
+    background:var(--bg-card); border-bottom:1px solid var(--border-soft); padding:10px 20px 18px;
+    box-shadow:0 24px 44px -18px rgba(0,0,0,0.65);
+  }
+  .mobile-navlinks.open{display:flex;}
+  .mobile-navlinks a{padding:12px 14px; border-radius:10px; font-size:14.5px; font-weight:600; color:var(--text-dim);}
+  .mobile-navlinks a:hover, .mobile-navlinks a.active{color:var(--text); background:var(--bg-elevated);}
+  @media (max-width:860px){
+    .nav-hamburger{display:flex;}
+  }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:10px 18px; border-radius:99px; font-size:14px; font-weight:600; border:1px solid transparent;
+    transition:transform .12s, box-shadow .12s, border-color .12s, background .12s;
+    white-space:nowrap;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; box-shadow:0 8px 24px -8px rgba(79,140,255,0.6);}
+  .btn-primary:hover{box-shadow:0 10px 30px -6px rgba(79,140,255,0.75);}
+  .btn-ghost{background:var(--bg-card); border-color:var(--border); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--accent); color:var(--accent);}
+
+  .page{max-width:760px; margin:0 auto; padding:48px 24px 80px;}
+  .page-eyebrow{
+    display:inline-flex; align-items:center; gap:8px; font-size:11.5px; font-weight:700; color:var(--accent);
+    text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px; width:100%; justify-content:center;
+  }
+  .page h1{font-size:26px; font-weight:800; letter-spacing:-0.01em; margin-bottom:8px; text-align:center;}
+  .page > p.lead{color:var(--text-dim); font-size:14.5px; margin:0 auto 32px; line-height:1.6; text-align:center; max-width:560px;}
+
+  .terms-toc{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px 28px; margin-bottom:40px;}
+  .terms-toc h4{font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); margin-bottom:12px;}
+  .terms-toc-cols{display:flex; gap:40px; flex-wrap:wrap;}
+  .terms-toc ol{margin:0 0 0 18px; color:var(--text-dim); font-size:13.5px; line-height:1.85; flex:1; min-width:200px;}
+  .terms-toc a:hover{color:var(--accent); text-decoration:underline;}
+
+  .terms-part{font-size:19px; font-weight:800; margin:44px 0 20px; letter-spacing:-0.01em;}
+  .terms-part:first-of-type{margin-top:0;}
+
+  .legal-block{margin-bottom:26px; scroll-margin-top:80px;}
+  .legal-block:last-child{margin-bottom:0;}
+  .legal-block h3{font-size:15.5px; font-weight:700; margin-bottom:10px; color:var(--text);}
+  .legal-block p{color:var(--text-dim); font-size:14px; line-height:1.7;}
+  .legal-block p + p{margin-top:10px;}
+  .legal-block ul{color:var(--text-dim); font-size:14px; line-height:1.7; margin:10px 0 10px 20px;}
+  .legal-block ul:last-child{margin-bottom:0;}
+  .legal-block strong{color:var(--text);}
+  .legal-block a{color:var(--accent); text-decoration:underline;}
+
+  .terms-copyright{font-size:11.5px; color:var(--text-faint); margin-top:56px; padding-top:20px; border-top:1px solid var(--border-soft); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  .terms-copyright img{max-height:20px; display:block;}
+
+  footer{border-top:1px solid var(--border-soft); padding:48px 24px 32px;}
+  .footer-inner{max-width:1180px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:32px;}
+  .footer-brand{max-width:280px;}
+  .footer-brand p{font-size:13px; color:var(--text-faint); margin-top:10px; line-height:1.6;}
+  .footer-cols{display:flex; gap:56px; flex-wrap:wrap;}
+  .footer-col h4{font-size:12px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:14px;}
+  .footer-col a{display:block; font-size:13.5px; color:var(--text-dim); margin-bottom:10px;}
+  .footer-col a:hover{color:var(--text);}
+  .footer-bottom{max-width:1180px; margin:36px auto 0; padding-top:24px; border-top:1px solid var(--border-soft); font-size:12px; color:var(--text-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px 16px; align-items:center;}
+  .footer-legal-links{display:flex; gap:8px; flex-wrap:wrap;}
+  .footer-withdraw-btn{
+    border:1px solid var(--border); border-radius:99px; padding:7px 14px; font-size:12px; font-weight:700;
+    color:var(--text-dim); background:var(--bg-elevated); white-space:nowrap;
+  }
+  .footer-withdraw-btn:hover{border-color:var(--accent); color:var(--accent);}
+  @media (max-width:640px){
+    .footer-bottom{flex-direction:column; text-align:center;}
+    .footer-legal-links{justify-content:center;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topnav" id="topnav">
+  <a class="brand" href="index.html">
+    <svg class="brand-icon" width="28" height="28" viewBox="0 0 112 112" aria-hidden="true">
+      <rect width="112" height="112" rx="28" fill="url(#logoGrad)"/>
+      <rect x="16" y="16" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+      <rect x="44" y="16" width="24" height="24" rx="6" fill="#22c55e"/>
+      <rect x="72" y="16" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+      <rect x="16" y="44" width="24" height="24" rx="6" fill="#ef4444"/>
+      <rect x="44" y="44" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+      <rect x="72" y="44" width="24" height="24" rx="6" fill="#22c55e"/>
+      <rect x="16" y="72" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+      <rect x="44" y="72" width="24" height="24" rx="6" fill="#22c55e"/>
+      <rect x="72" y="72" width="24" height="24" rx="6" fill="#ef4444"/>
+      <defs>
+        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#000000"/>
+          <stop offset="100%" stop-color="#8081F8"/>
+        </linearGradient>
+      </defs>
+    </svg><span class="brand-word"><span class="brand-trade">Trade</span><span class="brand-accent">Lista</span></span>
+  </a>
+  <div class="navlinks" id="navLinks" style="visibility:hidden">
+    <a href="index.html#features">Features</a>
+    <a href="index.html#how-it-works">How it works</a>
+    <a href="app.html" class="js-calendar-link">Calendar</a>
+    <a href="connect.html">Connect Account</a>
+    <a href="index.html#pricing">Pricing</a>
+    <a href="contact.html">Contact</a>
+    <a href="faq.html">FAQ</a>
+  </div>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <button type="button" class="nav-hamburger" id="navHamburger" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navright" id="navRight" style="visibility:hidden"></div>
+  </div>
+  <div class="mobile-navlinks" id="mobileNavLinks">
+    <a href="index.html#features">Features</a>
+    <a href="index.html#how-it-works">How it works</a>
+    <a href="app.html" class="js-calendar-link">Calendar</a>
+    <a href="connect.html">Connect Account</a>
+    <a href="index.html#pricing">Pricing</a>
+    <a href="contact.html">Contact</a>
+    <a href="faq.html">FAQ</a>
+  </div>
+</div>
+
+<div class="page" style="display:none">
+  <div class="page-eyebrow">Legal</div>
+  <h1>General Terms and Conditions</h1>
+  <p class="lead">With customer information, and an annex on switching providers.</p>
+
+  <div class="terms-toc">
+    <h4>Contents</h4>
+    <div class="terms-toc-cols">
+      <div>
+        <strong style="font-size:13px; color:var(--text);">A. General Terms and Conditions</strong>
+        <ol>
+          <li><a href="#a1">Scope of Application</a></li>
+          <li><a href="#a2">Services of the Provider</a></li>
+          <li><a href="#a3">Changes to Services</a></li>
+          <li><a href="#a4">Conclusion of Contract</a></li>
+          <li><a href="#a5">Right of Withdrawal</a></li>
+          <li><a href="#a6">Granting of Rights of Use by the Provider</a></li>
+          <li><a href="#a7">Granting of Rights of Use by the Client</a></li>
+          <li><a href="#a8">Client Obligations</a></li>
+          <li><a href="#a9">Moderation and Restriction of Content</a></li>
+          <li><a href="#a10">Remuneration and Payment Terms</a></li>
+          <li><a href="#a11">Contract Term and Termination</a></li>
+          <li><a href="#a12">Switching Provider</a></li>
+          <li><a href="#a13">Liability for Defects</a></li>
+          <li><a href="#a14">Liability</a></li>
+          <li><a href="#a15">Indemnification</a></li>
+          <li><a href="#a16">Confidentiality</a></li>
+          <li><a href="#a17">Amendment to the Terms and Conditions</a></li>
+          <li><a href="#a18">Applicable Law, Place of Jurisdiction</a></li>
+          <li><a href="#a19">Alternative Dispute Resolution</a></li>
+        </ol>
+      </div>
+      <div>
+        <strong style="font-size:13px; color:var(--text);">B. Annex: Switching Providers</strong>
+        <ol>
+          <li><a href="#b1">Scope of Application</a></li>
+          <li><a href="#b2">Definitions</a></li>
+          <li><a href="#b3">Pre-contractual Information</a></li>
+          <li><a href="#b4">Switching and Exit Plan</a></li>
+          <li><a href="#b5">Initiation of the Switching Process</a></li>
+          <li><a href="#b6">Transition Period</a></li>
+          <li><a href="#b7">Obligations of the Provider during the Switching Process</a></li>
+          <li><a href="#b8">Customer Obligations</a></li>
+          <li><a href="#b9">Data Recovery and Deletion</a></li>
+          <li><a href="#b10">Remuneration for the Switching Process and Exit Fees</a></li>
+          <li><a href="#b11">Completion of the Switching Process</a></li>
+          <li><a href="#b12">Termination of Contract</a></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="terms-part">A. General Terms and Conditions with Customer Information</div>
+
+  <div class="legal-block" id="a1">
+    <h3>1) Scope of Application</h3>
+    <p><strong>1.1</strong> These General Terms and Conditions (hereinafter &ldquo;GTC&rdquo;) of Savvas Apostolidis (hereinafter referred to as &ldquo;Provider&rdquo;), apply to all contracts for the provision of services in the area of Software-as-a-Service (hereinafter referred to as &ldquo;SaaS&rdquo;) that a consumer or entrepreneur (hereinafter referred to as &ldquo;Client&rdquo;) concludes with the Provider with regard to the services described by the Provider on its website. The subject matter of the contract is the provision of software (hereinafter referred to as &ldquo;Software&rdquo;) in digital form via the Internet for a fee and for a period limited to the term of the contract, as well as the provision of storage space on the Provider's servers. The inclusion of the Client's own terms and conditions is hereby rejected, unless otherwise agreed.</p>
+    <p><strong>1.2</strong> A consumer pursuant to these GTC is any natural person concluding a legal transaction for a purpose attributed neither to a mainly commercial nor a self-employed occupational activity.</p>
+    <p><strong>1.3</strong> A trader pursuant to these GTC is a natural or legal person or a partnership with legal capacity who, when concluding a legal transaction, acts in the exercise of his commercial or independent professional activity.</p>
+    <p><strong>1.4</strong> The Software may contain links to third-party services. These GTC do not apply to such services that are not provided by the Provider but by a third party. This also applies if the services are provided free of charge and/or if registration with the Provider is required for their use. These services are governed exclusively by the terms and conditions used by the third-party provider or the statutory provisions governing the relationship between the Client and the third-party provider. In this respect, the Provider merely facilitates technical access to these services.</p>
+  </div>
+
+  <div class="legal-block" id="a2">
+    <h3>2) Services of the Provider</h3>
+    <p><strong>2.1</strong> The Provider shall provide the Client with Software in digital form via the Internet for the duration of the agreed contract period. To this end, the Provider shall enable the Client to access the Software, which shall remain on the Provider's server. The range of functions and technical specifications of the Software are described in more detail in the service description on the Provider's website. The Provider is only responsible for providing the Software with the functionalities defined in more detail in the service description. In particular, the Provider is not responsible for establishing and maintaining the data connection between the Client's IT system and the Provider's server.</p>
+    <p><strong>2.2</strong> The Software is updated by the Provider at irregular intervals. Accordingly, the Client only receives a right to use the software in its current version. The Client has no claim to the creation of a specific state of the Software.</p>
+    <p><strong>2.3</strong> The Provider shall provide the Client with limited storage space on its servers for the use of the Software. The amount of storage space is described in more detail in the service description on the Provider's website.</p>
+    <p><strong>2.4</strong> The Provider's services are offered subject to availability. 100 percent availability is technically impossible and therefore cannot be guaranteed to the Client by the Provider. However, the Provider endeavors to keep the service available as consistently as possible. In particular, maintenance, security, or capacity issues, as well as events beyond the Provider's control (disruptions to public communication networks, power outages, etc.), may lead to disruptions or temporary shutdowns of the service.</p>
+    <p><strong>2.5</strong> The Provider shall take state-of-the-art measures to ensure data security. However, the Provider shall not be subject to any duty of safekeeping or custody. The Client is responsible for ensuring adequate data security.</p>
+    <p><strong>2.6</strong> The Provider shall provide the Client with an operating manual in electronic form.</p>
+    <p><strong>2.7</strong> The Provider offers additional support services. The content and scope of the support services are specified in the service description on the Provider's website.</p>
+  </div>
+
+  <div class="legal-block" id="a3">
+    <h3>3) Changes to Services</h3>
+    <p><strong>3.1</strong> The Provider reserves the right to change the services offered or to offer different services, unless this is unreasonable for the Client.</p>
+    <p><strong>3.2</strong> The Provider also reserves the right to change the services offered or to offer different services</p>
+    <ul>
+      <li>if it is obliged to do so due to a change in the legal situation;</li>
+      <li>if it does so in order to comply with a court ruling or an official decision against it;</li>
+      <li>if the respective change is necessary to close existing security gaps;</li>
+      <li>if the change is solely advantageous for the Client; or</li>
+      <li>if the change is purely technical or procedural in nature and has no significant impact on the Client.</li>
+    </ul>
+    <p><strong>3.3</strong> Changes that have only an insignificant impact on the Provider's services do not constitute changes to services within the meaning of this clause. This applies in particular to changes of a purely graphical nature and mere changes to the arrangement of functions.</p>
+  </div>
+
+  <div class="legal-block" id="a4">
+    <h3>4) Conclusion of Contract</h3>
+    <p><strong>4.1</strong> The services described on the Provider's website do not constitute binding offers on the part of the Provider but are intended for the submission of a binding offer by the Client.</p>
+    <p><strong>4.2</strong> The Client can submit the offer using the online order form provided on the Provider's website. After entering their personal data, the Client submits a legally binding contractual offer with regard to the selected services by clicking the button that completes the ordering process.</p>
+    <p><strong>4.3</strong> The Provider may accept the Client's offer within five days</p>
+    <ul>
+      <li>by sending the Client a written order confirmation or an order confirmation in text form (fax or email), whereby receipt of the order confirmation by the Client is decisive, or</li>
+      <li>by requesting payment from the Client after the Client has placed their order.</li>
+    </ul>
+    <p>If several of the above alternatives apply, the contract is concluded at the point in time when one of the above alternatives occurs first. The period for accepting the offer begins on the day after the Client sends the offer and ends at the end of the fifth day following the sending of the offer. If the Provider does not accept the Client's offer within the aforementioned period, this shall be deemed a rejection of the offer, with the result that the Client is no longer bound by their declaration of intent.</p>
+    <p><strong>4.4</strong> When submitting an offer via the Provider's online order form, the contract text is stored by the Provider after conclusion of the contract and transmitted to the Client in text form (e.g., e-mail, fax, or letter) after the Client has submitted their order. The Provider will not make the contract text available beyond this. If the Client has set up a user account for the Provider's website before sending their order, the order data will be archived on the Provider's website and can be accessed by the Client free of charge via their password-protected user account by entering the corresponding login data.</p>
+    <p><strong>4.5</strong> Before placing a binding order via the Provider's online order form, the Client can identify any input errors by carefully reading the information displayed on the screen. An effective technical means of better identifying input errors can be the browser's zoom function, which enlarges the display on the screen. During the electronic ordering process, the Client can correct their entries using the usual keyboard and mouse functions until they click on the button that completes the ordering process.</p>
+    <p><strong>4.6</strong> The English language is available for the conclusion of the contract.</p>
+    <p><strong>4.7</strong> Order processing and contact are usually carried out by e-mail and automated order processing. The Client must ensure that the e-mail address provided for order processing is correct so that e-mails sent by the Provider can be received at this address. In particular, when using spam filters, the Client must ensure that all e-mails sent by the Provider or third parties commissioned by the Provider to process the order can be delivered.</p>
+  </div>
+
+  <div class="legal-block" id="a5">
+    <h3>5) Right of Withdrawal</h3>
+    <p>Clients generally have a right of withdrawal. Further information on the right of withdrawal can be found in the Provider's <a href="withdrawal.html">withdrawal policy</a>.</p>
+  </div>
+
+  <div class="legal-block" id="a6">
+    <h3>6) Granting of Rights of Use by the Provider</h3>
+    <p>The Provider is the owner of all rights of use required to provide the Software. Unless otherwise stated in the service description on the Provider's website, the Provider grants the Client the non-exclusive, non-transferable right to use the Software for private purposes within the scope of these GTC for the duration of the contract. Any use of the Software beyond this is not permitted.</p>
+  </div>
+
+  <div class="legal-block" id="a7">
+    <h3>7) Granting of Rights of Use by the Client</h3>
+    <p>The Provider is entitled to use content and information provided to it by the Client for the service within the scope of its contractual obligations and whose processing is necessary for the proper provision of services. The Client grants the Provider, free of charge, non-exclusively and for the duration of the contract, the necessary rights of use, in particular the right to permanent provision and storage, the right to reproduction and the right to processing, and warrants that it is entitled to grant these rights of use.</p>
+  </div>
+
+  <div class="legal-block" id="a8">
+    <h3>8) Client Obligations</h3>
+    <p><strong>8.1</strong> The Client shall ensure that the hardware and software used by them, including workstation computers, routers, data communication devices, etc., meets the minimum technical requirements for using the currently offered software version.</p>
+    <p><strong>8.2</strong> The Client is obliged to protect and store the access data provided to them in accordance with the state of the art against access by third parties. The Client shall ensure that use is only made to the extent contractually agreed. Unauthorized access by third parties must be reported to the provider immediately.</p>
+    <p><strong>8.3</strong> The Client may not store any data on the storage space provided whose use violates applicable law, official requirements or orders, the rights of third parties, or agreements with third parties.</p>
+    <p><strong>8.4</strong> The content stored by the Client in the storage space designated for them may be protected by data protection laws. The Client is responsible for checking whether their use of personal data complies with data protection requirements.</p>
+    <p><strong>8.5</strong> The Client is responsible for regularly performing appropriate data backups.</p>
+    <p><strong>8.6</strong> The Client is obligated to check their data and information for viruses or other harmful components before entering it and to use state-of-the-art measures (e.g., virus protection programs) for this purpose.</p>
+    <p><strong>8.7</strong> The Client shall ensure that any programs, scripts, or similar items installed by them do not jeopardize the operation of the Provider's server or communication network or the security and integrity of other data stored on the Provider's servers.</p>
+    <p><strong>8.8</strong> If programs, scripts, or similar items installed by the Client endanger or impair the operation of the server or the Provider's communication network or the security and integrity of other data stored on the Provider's servers, the Provider may deactivate or uninstall these programs, scripts, etc. If necessary to eliminate the threat or impairment, the Provider is also entitled to interrupt the connection of the content stored on the server to the Internet. The Provider will inform the Client of this measure without delay.</p>
+  </div>
+
+  <div class="legal-block" id="a9">
+    <h3>9) Moderation and Restriction of Content</h3>
+    <p><strong>9.1</strong> The Provider is generally not obligated to proactively review content posted by Client for legality or compatibility with the rights of third parties or these GTC. Nevertheless, the Provider reserves the right to review the legality of Client content on its own initiative in individual cases and to take measures in accordance with the following provisions in the event of identified violations.</p>
+    <p><strong>9.2</strong> Clients and affected third parties can report suspected illegal content to the Provider using the contact information in the Provider's legal notice (e.g., by e-mail). The Provider is free to forward the content of a report to the Client who posted the reported content. The identity of the reporting person will only be disclosed to the Client if this is absolutely necessary.</p>
+    <p><strong>9.3</strong> In the case of reports and in the context of checks carried out on the Provider's own initiative, human content control is always carried out. In individual cases, automated technical testing procedures may also be used.</p>
+    <p><strong>9.4</strong> If, following a report or as part of an inspection on the Provider's own initiative, the illegality of content published by the Client is determined, the Provider is entitled, at its reasonable discretion, to take one or more of the following measures without prior notice or contact:</p>
+    <ul>
+      <li>Warning the Client who published the content,</li>
+      <li>Temporary blocking or permanent deletion of the content in question,</li>
+      <li>Temporary or permanent suspension of the contractual obligations,</li>
+      <li>Termination of the contractual relationship (ordinary or extraordinary for good cause).</li>
+    </ul>
+    <p><strong>9.5</strong> When choosing the measures to be taken, the Provider will take into account the principles of proportionality and weigh the interests of the Client concerned against its own interests in the unhindered, undisturbed, and honest continuation of its business activities. Criteria that will be taken into account when imposing a measure are:</p>
+    <ul>
+      <li>the statement and meaning of the specific content and its potential to cause injury or harm,</li>
+      <li>the frequency with which the Client publishes inadmissible content,</li>
+      <li>the relationship between the Client's publication of inadmissible content and their other use of services,</li>
+      <li>if recognizable, the Client's intentions in publishing inadmissible content,</li>
+      <li>if recognizable, the existence and degree of fault on the part of the Client publishing the content.</li>
+    </ul>
+    <p><strong>9.6</strong> If Clients frequently submit reports or complaints that are obviously unfounded, the Provider will suspend the processing of reports and complaints from these Clients for a reasonable period of time after issuing a prior warning.</p>
+  </div>
+
+  <div class="legal-block" id="a10">
+    <h3>10) Remuneration and Payment Terms</h3>
+    <p><strong>10.1</strong> Unless otherwise stated in the Provider's service description, the prices quoted are total prices that include statutory Value Added Tax (VAT).</p>
+    <p><strong>10.2</strong> The payment options and payment terms are communicated to the Client on the Provider's website.</p>
+    <p><strong>10.3</strong> If you select a payment method offered via the payment service &ldquo;Stripe,&rdquo; payment processing will be handled by the payment service provider Stripe Payments Europe Ltd., 1 Grand Canal Street Lower, Grand Canal Dock, Dublin, Ireland (hereinafter &ldquo;Stripe&rdquo;). The individual payment methods offered via Stripe are communicated to the Client on the Provider's website. Stripe may use other payment services to process payments, for which special payment terms may apply, which will be communicated to the Client separately if necessary. Further information about Stripe is available on the Internet at <a href="https://stripe.com/de" target="_blank" rel="noopener">stripe.com/de</a>.</p>
+  </div>
+
+  <div class="legal-block" id="a11">
+    <h3>11) Contract Term and Termination</h3>
+    <p><strong>11.1</strong> The contract is concluded for an indefinite period and can be terminated by the Client at any time without notice and by the Provider with 14 days' notice.</p>
+    <p><strong>11.2</strong> The right to extraordinary termination for good cause remains unaffected. Good cause shall be deemed to exist if the terminating party cannot reasonably be expected to continue the contractual relationship until the agreed termination or until the expiry of a notice period, considering all circumstances of the individual case and weighing the interests of both parties.</p>
+    <p><strong>11.3</strong> Terminations can be made in writing, in text form (e.g., by e-mail), or in electronic form using the <a href="cancel-contract.html">termination feature (termination button)</a> provided by the provider on its website.</p>
+    <p><strong>11.4</strong> Upon termination of the contract, the Client loses access to their user account. Furthermore, upon termination of the contract, the Provider's obligation to store the Client's uploaded data also expires.</p>
+  </div>
+
+  <div class="legal-block" id="a12">
+    <h3>12) Switching Provider</h3>
+    <p>If the Client wishes to switch to another provider or to an ICT infrastructure on their own premises, the provisions in the <a href="#b1">Annex on changing providers</a>, which is attached to these GTC as an appendix, shall apply.</p>
+  </div>
+
+  <div class="legal-block" id="a13">
+    <h3>13) Liability for Defects</h3>
+    <p>If the Client is acting as a Consumer, the provisions of statutory liability for defects shall apply.</p>
+    <p>If the Client is acting as a Trader, the provisions of statutory liability for defects shall apply, subject to the following restrictions.</p>
+    <p><strong>13.1</strong> The Client must immediately notify the Provider of any defects, malfunctions, or damage that occur.</p>
+    <p><strong>13.2</strong> The statutory liability for defects for only minor reductions in the suitability of the service is excluded.</p>
+    <p><strong>13.3</strong> Strict liability pursuant to Section 536a (1) of the German Civil Code (BGB) for defects that already existed at the time the contract was concluded is excluded.</p>
+    <p><strong>13.4</strong> Termination by the Client due to failure to grant contractual use is only permissible if the Provider has been given sufficient opportunity to remedy the defect and this has failed. Remedying the defect shall only be deemed to have failed if it is impossible, if it is refused or unreasonably delayed by the Provider, if there are justified doubts as to the prospects of success, or if it is unreasonable for the Client for other reasons.</p>
+  </div>
+
+  <div class="legal-block" id="a14">
+    <h3>14) Liability</h3>
+    <p><strong>14.1</strong> The Provider shall be liable without limitation for any legal reason</p>
+    <ul>
+      <li>in the event of wilful intent or gross negligence,</li>
+      <li>in the event of wilful or negligent injury to life, limb or health,</li>
+      <li>based on a guarantee promise, unless otherwise regulated in this respect,</li>
+      <li>due to mandatory liability such as under the German Product Liability Act (Produkthaftungsgesetz).</li>
+    </ul>
+    <p><strong>14.2</strong> Any further liability of the Provider is excluded.</p>
+    <p><strong>14.3</strong> The above liability provisions also apply with regard to the liability of the Provider for its vicarious agents and legal representatives.</p>
+    <p><strong>14.4</strong> If the Provider negligently breaches a material contractual obligation, liability shall be limited to the foreseeable damage typical for the contract, unless unlimited liability applies in accordance with the above clause. Essential contractual obligations are obligations which the contract imposes on the Provider according to its content to achieve the purpose of the contract, the fulfilment of which is essential for the proper execution of the contract and on its observance the Client may regularly rely.</p>
+    <p><strong>14.5</strong> The Provider shall be liable for all contractual, quasi-contractual, and statutory claims, including tortious claims for damages and reimbursement of expenses, in accordance with the above provisions.</p>
+  </div>
+
+  <div class="legal-block" id="a15">
+    <h3>15) Indemnification</h3>
+    <p>The Client shall indemnify the Provider against all claims asserted against the Provider by other customers or other third parties due to infringement of their rights based on content posted by the Client or due to other use by the Client. The Client shall also bear the necessary costs of legal defense, including all court and attorney's fees in the statutory amount. This shall not apply if the Client is not responsible for the infringement. In the event of a claim by third parties, the Client is obligated to provide the Provider immediately, truthfully, and completely with all information necessary for the examination of the claims and a defense.</p>
+  </div>
+
+  <div class="legal-block" id="a16">
+    <h3>16) Confidentiality</h3>
+    <p>The Provider undertakes to maintain confidentiality regarding all confidential information that comes to its knowledge in connection with this contract and its implementation and not to disclose such information to third parties. Confidential information is information that is marked as confidential or whose confidentiality is apparent from the circumstances, regardless of whether it has been communicated in written, electronic, physical, or oral form. The confidentiality obligation does not apply if the Provider is required by law or by a valid or final decision of an authority or court to disclose the confidential information.</p>
+  </div>
+
+  <div class="legal-block" id="a17">
+    <h3>17) Amendment to the Terms and Conditions</h3>
+    <p><strong>17.1</strong> The Provider reserves the right to change these GTC at any time, provided that the Client agrees to the change.</p>
+    <p><strong>17.2</strong> The Provider also reserves the right to amend these GTC without the Client's consent</p>
+    <ul>
+      <li>if it is obliged to do so due to a change in the legal situation;</li>
+      <li>if it does so in order to comply with a court ruling or an official decision against it;</li>
+      <li>if it introduces additional, entirely new services or service elements that require a service description in the GTC, unless this adversely affects the previous usage relationship;</li>
+      <li>if the change is solely advantageous for the Client; or</li>
+      <li>if the change is purely technical or procedural, unless it has a significant impact on the Client.</li>
+    </ul>
+    <p><strong>17.3</strong> The Provider shall inform the Client of any significant changes to these GTC in a timely manner and in an appropriate form. Significant changes are those that would significantly disadvantage the Client or be equivalent to the conclusion of a completely new contract. These include, for example, provisions regarding the type and scope of the service or the contract term and termination conditions.</p>
+    <p><strong>17.4</strong> The Client's right of termination remains unaffected by this.</p>
+  </div>
+
+  <div class="legal-block" id="a18">
+    <h3>18) Applicable Law, Place of Jurisdiction</h3>
+    <p>The law of the Federal Republic of Germany shall apply to all legal relationships between the parties. For Consumers, this choice of law shall only apply insofar as the protection granted by mandatory provisions of the law of the country in which the Consumer has his habitual residence is not withdrawn.</p>
+  </div>
+
+  <div class="legal-block" id="a19">
+    <h3>19) Alternative Dispute Resolution</h3>
+    <p>The Provider is neither obliged nor willing to participate in dispute resolution proceedings before a consumer arbitration board.</p>
+  </div>
+
+  <div class="terms-part">B. Annex: Regulations for Switching Providers</div>
+
+  <div class="legal-block" id="b1">
+    <h3>1) Scope of Application</h3>
+    <p>The following provisions apply in the event that the Client wishes to switch to another provider or to an ICT infrastructure on its own premises.</p>
+  </div>
+
+  <div class="legal-block" id="b2">
+    <h3>2) Definitions</h3>
+    <p><strong>2.1</strong> &ldquo;Data processing service&rdquo; within the meaning of these GTC is a digital service provided to the Client that enables comprehensive, on-demand network access to a shared pool of configurable, scalable, and elastic computing resources of a centralized, distributed, or highly distributed nature, which can be rapidly provisioned and released with minimal management effort or interaction on the part of the Provider.</p>
+    <p><strong>2.2</strong> &ldquo;Digital Assets&rdquo; within the meaning of these GTC are elements in digital form&mdash;including applications&mdash;for which the Client has a right of use, regardless of the contractual relationship with the data processing service that they wish to change.</p>
+    <p><strong>2.3</strong> For the purposes of these GTC, &ldquo;ICT infrastructure on the Client's premises&rdquo; refers to ICT infrastructure and computing resources that are owned, rented, or leased by the Client, located in the Client's data center, and operated by the Client or a third party.</p>
+    <p><strong>2.4</strong> &ldquo;Switching&rdquo; within the meaning of these GTC is a process involving the Provider, the Client, and, if applicable, a receiving provider of data processing services, in which the Client switches from using the Provider's data processing service to using another data processing service of the same type offered by another provider, or to an ICT infrastructure on the Client's own premises, including through extraction, conversion, and uploading of the data.</p>
+    <p><strong>2.5</strong> &ldquo;Exportable Data&rdquo; within the meaning of these GTC refers to input and output data, including metadata, that is generated directly or indirectly through the Client's use of the data processing service, with the exception of assets or data belonging to the Provider or third parties that are protected by intellectual property rights or constitute a trade secret.</p>
+  </div>
+
+  <div class="legal-block" id="b3">
+    <h3>3) Pre-contractual Information</h3>
+    <p><strong>3.1</strong> The Provider's <a href="data-register.html">online register</a> with data structures and formats, relevant standards, and open interoperability specifications for data is available on the Provider's website.</p>
+    <p><strong>3.2</strong> Before ordering data processing services, the Provider shall provide the Client with clear information on the following points:</p>
+    <ul>
+      <li>its standard remuneration and, where applicable, penalties for early termination;</li>
+      <li>the switching fees;</li>
+      <li>services that require a highly complex or costly switch or where a switch is not possible without significant disruption to the data, digital assets, or service architecture, where relevant;</li>
+      <li>specific services to which the migration and termination obligations do not apply, if applicable;</li>
+      <li>a complete list of the categories of data and digital assets that can be transferred, including at least all exportable data;</li>
+      <li>a complete list of categories of data that are specific to the internal functioning of the Provider's data processing service and are exempt from the data export obligation if there is a risk of violating the Provider's trade secrets;</li>
+      <li>clear information about known risks to the continuity of the provision of the Provider's functions or services.</li>
+    </ul>
+  </div>
+
+  <div class="legal-block" id="b4">
+    <h3>4) Switching and Exit Plan</h3>
+    <p><strong>4.1</strong> The parties agree on a switching and exit plan (hereinafter referred to as &ldquo;Plan&rdquo;) which includes, in particular:</p>
+    <ul>
+      <li>details of the switching and exit assistance, including porting methods and formats, as well as the steps required to carry out the switching process;</li>
+      <li>the contact persons designated by the Client or the Provider to implement the Plan;</li>
+      <li>an estimate of the time required to export and switch the data and digital assets from the original Provider's environment;</li>
+      <li>restrictions and technical limitations, including those resulting from the storage of data outside the EU;</li>
+      <li>a description of the sequence of operations proposed by the Provider;</li>
+      <li>a description of the testing method proposed by the Provider, if testing is to be carried out.</li>
+    </ul>
+    <p><strong>4.2</strong> At the Client's request, the Provider must provide the personnel designated by the Client (or other third parties authorized by the Client) with information explaining the relevant procedures.</p>
+    <p><strong>4.3</strong> At the Client's request, the Provider undertakes to either organize a test or assist the Client with their tests to verify that the Plan works in practice for Exportable Data and Digital Assets. If problems arise during the test, the parties will analyze the causes in good faith and work towards solutions.</p>
+    <p><strong>4.4</strong> The Provider and the Client undertake to update the Plan as necessary and, at least at the Client's request, to check whether changes are required.</p>
+  </div>
+
+  <div class="legal-block" id="b5">
+    <h3>5) Initiation of the Switching Process</h3>
+    <p><strong>5.1</strong> The Client must send the Provider a switching notification with two months' notice, stating that they are initiating the switching. If the Client only wishes to transfer certain services, data, or Digital Assets, they must specify this in the notification.</p>
+    <p><strong>5.2</strong> In the switching notification, the Client must state whether they intend to:</p>
+    <ul>
+      <li>switch to another data processing service provider. In this case, the Client should provide the necessary information about the target provider;</li>
+      <li>switch to the Client's local ICT infrastructure; or</li>
+      <li>not switch, but only delete their Exportable Data and Digital Assets.</li>
+    </ul>
+    <p><strong>5.3</strong> The Provider shall confirm receipt of the switching notification to the Client within three business days at the latest using the same means of communication that the Client used.</p>
+  </div>
+
+  <div class="legal-block" id="b6">
+    <h3>6) Transition Period</h3>
+    <p><strong>6.1</strong> The transition period is 30 calendar days and begins at the end of the notice period for initiating the switching process.</p>
+    <p><strong>6.2</strong> If the Provider is unable to comply with the agreed transition period for technical reasons, it undertakes to:</p>
+    <ul>
+      <li>notify the Client in writing or in text form within 14 working days of receiving the notice of termination;</li>
+      <li>specify an alternative transition period, which may not exceed seven (7) months from the date of the Client's notice of termination; and</li>
+      <li>provide reasonable justification for the technical impossibility.</li>
+    </ul>
+    <p>The Client must confirm receipt of this extension notice in writing or in text form within 3 business days.</p>
+    <p><strong>6.3</strong> The Client may extend the transition period once by a period that they deem appropriate for their purposes, but not longer than three months. In the case of complex migrations, the parties may mutually agree on a longer period, but not exceeding 12 months. The Client must inform the Provider of their intention in writing or in text form by the end of the original transition period and specify the alternative transition period. The Provider will confirm receipt of such an extension notice in writing or in text form within three business days.</p>
+  </div>
+
+  <div class="legal-block" id="b7">
+    <h3>7) Obligations of the Provider during the Switching Process</h3>
+    <p>The Provider undertakes to provide the Client and third parties commissioned by the Client with appropriate support from the start and throughout the entire switching process so that the Client can switch within the agreed transition period. To this end, the Provider must in particular:</p>
+    <ul>
+      <li>provide skills, appropriate information (including the documents required to carry out the switching) and technical support. If problems are identified, the Provider and the Client shall analyze the causes in good faith and work towards solutions;</li>
+      <li>exercise due care to maintain business continuity and continue to provide the functions or services specified in the contract;</li>
+      <li>maintain a high level of security throughout the switching process, in particular for the security of data during its transmission.</li>
+    </ul>
+  </div>
+
+  <div class="legal-block" id="b8">
+    <h3>8) Customer Obligations</h3>
+    <p><strong>8.1</strong> The Client undertakes to take all reasonable measures to achieve an effective switch. The Client is responsible for importing and implementing data and Digital Assets into their own systems or into the systems of the target provider.</p>
+    <p><strong>8.2</strong> The Client or third parties commissioned by them, including the target provider, undertake to respect the intellectual property rights and trade secrets of the materials provided by the Provider during the switching process. The Client further undertakes to grant third parties or the target provider access to these materials and, if necessary, to grant sublicenses for their use only to the extent necessary for the execution of the switching process until the end of the agreed transition period, including the alternative transition period, while respecting the confidentiality obligations and the intellectual property rights granted by the Provider.</p>
+  </div>
+
+  <div class="legal-block" id="b9">
+    <h3>9) Data Recovery and Deletion</h3>
+    <p><strong>9.1</strong> The Client may retrieve or delete their data during the agreed period for data retrieval. The period for data retrieval is 30 calendar days and begins after the expiry of the agreed transition period. The parties may agree on a longer period if this is necessary in view of the interests of both parties.</p>
+    <p><strong>9.2</strong> After the agreed period for retrieval has expired and the switching process has been successfully completed, the Provider undertakes to delete all Exportable Data and Digital Assets generated by the Client or directly related to the Client and to confirm to the Client that it has done so. This does not apply to Exportable Data that the Provider is required to retain under mandatory EU law or the law of EU member states, provided that the Provider informs the Client which Exportable Data it retains, for how long, and for what reasons.</p>
+  </div>
+
+  <div class="legal-block" id="b10">
+    <h3>10) Remuneration for the Switching Process and Exit Fees</h3>
+    <p>The Provider does not charge any additional fees for the switching process.</p>
+  </div>
+
+  <div class="legal-block" id="b11">
+    <h3>11) Completion of the Switching Process</h3>
+    <p><strong>11.1</strong> Once the Client informs the Provider that the switching process has been successfully completed, the Provider will immediately inform the Client of the termination of the contract. If the Client fails to inform the Provider of the successful switch or the lack thereof, even though the Provider has reasonable grounds to believe that the switch was successfully completed, the Provider may request confirmation from the Client that the switch was successful. If the Client does not confirm the successful switch within 30 business days of this request, the switch will be deemed unsuccessful, and the contract will not be terminated but will continue under the existing terms and conditions.</p>
+    <p><strong>11.2</strong> If the Client does not wish to switch providers but instead wants to delete their Exportable Data and Digital Assets, the Provider is obligated to inform the Client of the termination of the contract at the end of the agreed notice period.</p>
+  </div>
+
+  <div class="legal-block" id="b12">
+    <h3>12) Termination of Contract</h3>
+    <p><strong>12.1</strong> The contract is considered terminated between the parties when one of the following events has fully occurred:</p>
+    <ul>
+      <li>upon successful completion of the switching process;</li>
+      <li>after the notice period has expired, if the Client does not wish to switch but wants to delete their Exportable Data and Digital Assets upon termination of the service.</li>
+    </ul>
+    <p><strong>12.2</strong> If the contract or the Provider's GTC contain clauses regarding termination due to legal provisions or related events, such as the following:</p>
+    <ul>
+      <li>a contracting party applies for a payment deferral or suspension of payments, or a contracting party has been declared insolvent;</li>
+      <li>a contracting party has still not fulfilled a material or other obligation under the contract in a timely manner, which (either contractually or by law) results in or could result in termination of the contract;</li>
+      <li>a party has become aware of a change in ownership or control that results in or could result in termination of the agreement, either contractually or by law;</li>
+      <li>the agreement is declared void due to a violation of or amendment to applicable mandatory law; or</li>
+      <li>similar or identical situations, or other situations that result in or could result in termination of the agreement, either contractually or by law,</li>
+    </ul>
+    <p>the agreement, along with the agreed-upon services and features, will not be terminated or expire before one of the events described in the preceding clause has clearly occurred. This does not affect any other rights or remedies that one party may have against the other.</p>
+    <p>The Client may agree on success criteria and milestones for the switch with the Provider and report their progress toward achieving these criteria during the switching process. In any case, the Client must inform the Provider of the successful switch.</p>
+    <p><strong>12.3</strong> If the switching process cannot be successfully completed, the parties must cooperate in good faith to improve the switching process and achieve a successful completion, ensure timely data transfer, and maintain service continuity. The Provider must, at the Client's request, assist in determining the reasons for the unsuccessful switch and advise the Client on how to resolve or circumvent the identified obstacles.</p>
+    <ul>
+      <li>The Client will, at its own discretion, engage the target provider on its behalf.</li>
+      <li>Without prejudice to any other remedies available under applicable law, this agreement will not be terminated or expire before the successful completion of the switching process or before a corresponding decision by a competent court or a forum chosen and agreed upon by the parties.</li>
+      <li>In the event of any conflict or inconsistency between these clauses and any other agreements between the parties regarding the termination of the contract, these clauses shall prevail.</li>
+    </ul>
+    <p><strong>12.4</strong> The switching process is considered successfully completed when:</p>
+    <ul>
+      <li>the agreed notice period has expired,</li>
+      <li>the transition period has begun after the notice period has expired,</li>
+      <li>the data retrieval period has begun after the transition period has expired, and</li>
+      <li>the data deletion has been successfully completed after the data retrieval period has expired or after an alternatively agreed period has expired following the successful completion of the switching process.</li>
+    </ul>
+    <p><strong>12.5</strong> If, at the end of the transition period, the Client decides not to delete all of their Exportable Data and Digital Assets at the end of the agreed data retrieval period and wishes to ensure that they remain available with limited functionality for a specific additional period, or if the Client and the Provider have agreed to maintain the contract without the provision of certain services unless the Client expressly orders otherwise, this can only occur after:</p>
+    <ul>
+      <li>the agreed notice period has expired,</li>
+      <li>the transition period has expired, and</li>
+      <li>an alternative data retrieval period and other terms for the service with limited functionality or the maintenance of the contract have been agreed upon between the Client and the Provider (in particular, permission for the Provider to delete the data after the alternative data retrieval period and/or the determination of the compensation for this additional period).</li>
+    </ul>
+    <p>If the alternative data retrieval period and other terms for the service are proposed by the Provider during this period, the contract may not be terminated or expire before the Client, at their sole discretion, has accepted the deletion and clearly confirmed that the contract has been terminated.</p>
+    <p><strong>12.6</strong> The right of the contracting parties to terminate the contractual relationship in the case of an open-ended contract by means of ordinary notice remains unaffected, provided that the reason for termination is neither a change of provider nor &ndash; on the part of the Client &ndash; an intention to delete data.</p>
+    <p><strong>12.7</strong> If the contract was expressly concluded for a specific duration and the expiry date is reached before the switching process is completed, and the Client has not requested the deletion of their Exportable Data and Digital Assets,</p>
+    <ul>
+      <li>the transition period begins on the contract's expiry date, and the Provider provides reasonable support during the switching;</li>
+      <li>the aforementioned provisions regarding the successful or unsuccessful completion of the switching process apply accordingly.</li>
+    </ul>
+  </div>
+
+  <div class="terms-copyright">
+    <a href="https://www.it-recht-kanzlei.de/" target="_blank" rel="noopener">
+      <img src="https://www.it-recht-kanzlei.de/logo/Copyright-Logo_AGB.png?i=3dbe0-24362-39c7-907d-1" alt="© IT-Recht Kanzlei" title="© IT-Recht Kanzlei">
+    </a>
+    <span>Version: 22.07.2026, 10:39:52</span>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="brand">
+        <svg class="brand-icon" width="28" height="28" viewBox="0 0 112 112" aria-hidden="true">
+          <rect width="112" height="112" rx="28" fill="url(#logoGradFooter)"/>
+          <rect x="16" y="16" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+          <rect x="44" y="16" width="24" height="24" rx="6" fill="#22c55e"/>
+          <rect x="72" y="16" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+          <rect x="16" y="44" width="24" height="24" rx="6" fill="#ef4444"/>
+          <rect x="44" y="44" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+          <rect x="72" y="44" width="24" height="24" rx="6" fill="#22c55e"/>
+          <rect x="16" y="72" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+          <rect x="44" y="72" width="24" height="24" rx="6" fill="#22c55e"/>
+          <rect x="72" y="72" width="24" height="24" rx="6" fill="#ef4444"/>
+          <defs>
+            <linearGradient id="logoGradFooter" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#000000"/>
+              <stop offset="100%" stop-color="#8081F8"/>
+            </linearGradient>
+          </defs>
+        </svg><span class="brand-word"><span class="brand-trade">Trade</span><span class="brand-accent">Lista</span></span>
+      </div>
+      <p>The trading journal for MT4/MT5 traders who are done with PDFs and spreadsheets.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="index.html#features">Features</a>
+        <a href="index.html#pricing">Pricing</a>
+        <a href="app.html">Calendar demo</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="contact.html">Contact</a>
+        <a href="faq.html">FAQ</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="impressum.html">Imprint</a>
+        <a href="terms.html">Terms</a>
+        <a href="data-register.html">Data Portability</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 TradeLista. All rights reserved.</span>
+    <div class="footer-legal-links">
+      <a class="footer-withdraw-btn" href="withdrawal.html">Withdraw from contract</a>
+      <a class="footer-withdraw-btn" href="cancel-contract.html">Cancel contract here</a>
+    </div>
+    <span>tradelista.com</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="auth.js"></script>
+<script>
+  (async function initPage(){
+    document.querySelector('.page').style.display = '';
+    const loggedIn = await TLAuth.isLoggedIn();
+    if(loggedIn){
+      document.getElementById('navLinks').innerHTML = `
+        <a href="app.html">Calendar</a>
+        <a href="connect.html">Connect Account</a>
+        <a href="contact.html">Contact</a>
+        <a href="faq.html">FAQ</a>
+      `;
+      document.getElementById('mobileNavLinks').innerHTML = document.getElementById('navLinks').innerHTML;
+    }
+    await TLAuth.ui.renderAccountNav(document.getElementById('navRight'));
+    document.getElementById('navLinks').style.visibility = 'visible';
+    document.getElementById('navRight').style.visibility = 'visible';
+  })();
+
+  document.querySelectorAll('.js-calendar-link').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const href = el.getAttribute('href');
+      TLAuth.isLoggedIn().then(loggedIn=>{
+        if(loggedIn) location.href = href;
+        else TLAuth.ui.requireAuth('app.html');
+      });
+    });
+  });
+
+  const navHamburger = document.getElementById('navHamburger');
+  const mobileNavLinks = document.getElementById('mobileNavLinks');
+  navHamburger.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const open = mobileNavLinks.classList.toggle('open');
+    navHamburger.classList.toggle('open', open);
+    navHamburger.setAttribute('aria-expanded', open);
+  });
+  document.addEventListener('click', ()=>{
+    mobileNavLinks.classList.remove('open');
+    navHamburger.classList.remove('open');
+    navHamburger.setAttribute('aria-expanded', false);
+  });
+</script>
+</body>
+</html>
