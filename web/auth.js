@@ -217,7 +217,7 @@
       return { ok:false, error: `You've used ${usedMb} MB of your ${limitMb} MB storage. Delete a few old screenshots to make room, or try a smaller image.` };
     }
     const ext = (file.name.split('.').pop() || 'png').toLowerCase();
-    const path = `${session.user.id}/${tradeId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const path = `${session.user.id}/${tradeId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
     const { error } = await sb.storage.from('trade-images').upload(path, file, { contentType: file.type });
     if(error) return { ok:false, error: error.message };
     const { data } = sb.storage.from('trade-images').getPublicUrl(path);
