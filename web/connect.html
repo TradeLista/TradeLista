@@ -392,6 +392,10 @@
   </div>
 
   <div class="ea-only-content">
+  <div class="callout" style="margin-bottom:32px;">
+    <span class="ic">ℹ️</span>
+    <div><strong>The EA can only send a trade while it's actually running</strong> — attached to a chart in an open MetaTrader terminal on that computer. MetaTrader's mobile apps can't run Expert Advisors at all, so trades placed from a phone aren't sent in real time. On startup, the EA automatically resends anything closed in the past 30 days (adjustable via the <strong>CatchUpDays</strong> input), so a trade placed while this terminal was closed still arrives once you reopen it — but there's no live, instant sync while the terminal itself is off. If you need a trade in TradeLista right away, you can always add it manually too.</div>
+  </div>
   <div class="guide">
     <div class="gstep">
       <div class="gnum">1</div>
