@@ -93,6 +93,45 @@ Deno.serve(async (req) => {
     });
   }
 
+  // The remaining EA-supplied fields either end up inside the row id (date,
+  // deal_ticket) or in typed numeric/date columns. Validate each one's shape
+  // here so a tampered EA config can't build a malformed id or push a value
+  // that would otherwise only blow up later at the database layer. Same
+  // reasoning as the symbol allow-list above — a leaked api_key shouldn't let
+  // anyone write junk into its owner's account.
+  const reject = (msg: string) => new Response(JSON.stringify({ error: msg }), {
+    status: 400,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+
+  // Must be exactly YYYY-MM-DD: it's concatenated into the id, which the
+  // client splits on '-' to recover the trade's date (a real calendar date
+  // is still enforced by the `date` column itself on upsert).
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(body.date)) {
+    return reject('Invalid date — expected YYYY-MM-DD.');
+  }
+  // MT5 deal tickets are integers; keep the id clean and predictable.
+  if (body.deal_ticket !== undefined && body.deal_ticket !== null && !/^\d{1,20}$/.test(String(body.deal_ticket))) {
+    return reject('Invalid deal_ticket.');
+  }
+  // typeof already passed above, but that still admits NaN/Infinity.
+  if (!Number.isFinite(body.profit)) {
+    return reject('Invalid profit.');
+  }
+  for (const field of ['lot', 'entry', 'exit'] as const) {
+    const v = body[field];
+    if (v !== undefined && v !== null && !Number.isFinite(v)) {
+      return reject(`Invalid ${field}.`);
+    }
+  }
+  if (body.time !== undefined && body.time !== null && !/^\d{1,2}:\d{2}$/.test(String(body.time))) {
+    return reject('Invalid time — expected HH:MM.');
+  }
+  if (body.tz_offset_minutes !== undefined && body.tz_offset_minutes !== null &&
+      (!Number.isInteger(body.tz_offset_minutes) || Math.abs(body.tz_offset_minutes) > 840)) {
+    return reject('Invalid tz_offset_minutes.');
+  }
+
   // Keyed off the MT5 deal ticket (stable and unique per account) rather
   // than a timestamp, so the exact same closed trade always maps to the
   // exact same row — if it's ever sent twice (MT5 firing the event twice,
