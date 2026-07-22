@@ -28,6 +28,32 @@ function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 }
 
+// Escape any user-supplied value before it goes into the HTML email body.
+function escapeHtml(s: string) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// Shared TradeLista branded email shell (dark header, light card, sign-off).
+function brandedEmail(greeting: string, bodyHtml: string) {
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6fb;padding:32px 0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+  <tr><td align="center">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(10,14,20,.06);">
+      <tr><td style="background:#0a0e14;padding:24px 32px;">
+        <span style="color:#e7edf5;font-size:20px;font-weight:800;letter-spacing:-.02em;">Trade<span style="color:#4f8cff;">Lista</span></span>
+      </td></tr>
+      <tr><td style="padding:36px 32px 8px;">
+        <p style="margin:0 0 16px;font-size:16px;color:#0a0e14;">${greeting}</p>
+        ${bodyHtml}
+      </td></tr>
+      <tr><td style="padding:20px 32px 32px;border-top:1px solid #eef1f6;">
+        <p style="margin:16px 0 0;font-size:15px;color:#3a4453;">Best regards,<br><strong style="color:#0a0e14;">The TradeLista Team</strong></p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>`;
+}
+const P = 'margin:0 0 16px;font-size:15px;line-height:1.6;color:#3a4453;';
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
@@ -84,6 +110,11 @@ Deno.serve(async (req) => {
           to: user.email,
           subject: 'Your TradeLista Pro subscription — resumed',
           text: `Hi ${profile.first_name || ''},\n\nYour earlier cancellation has been undone. Your TradeLista Pro subscription will now renew as normal, with the next charge on ${periodEndStr}.\n\n— TradeLista`,
+          html: brandedEmail(
+            profile.first_name ? `Hi ${escapeHtml(profile.first_name)},` : 'Hi there,',
+            `<p style="${P}">Your earlier cancellation has been undone. 🎉</p>
+             <p style="${P}">Your TradeLista Pro subscription will now renew as normal, with the next charge on <strong>${periodEndStr}</strong>.</p>`,
+          ),
         });
       } else {
         console.error('resume-subscription: missing SMTP secrets, confirmation email not sent.');

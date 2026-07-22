@@ -31,6 +31,33 @@ const supabaseAdmin = createClient(
 const RATE_LIMIT_WINDOW_MINUTES = 10;
 const RATE_LIMIT_MAX_SUBMISSIONS = 5;
 
+// Escape any user-supplied value before it goes into the HTML email body — the
+// withdrawal form's name/reference/details are visitor-controlled.
+function escapeHtml(s: string) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// Shared TradeLista branded email shell (dark header, light card, sign-off).
+function brandedEmail(greeting: string, bodyHtml: string) {
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6fb;padding:32px 0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+  <tr><td align="center">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(10,14,20,.06);">
+      <tr><td style="background:#0a0e14;padding:24px 32px;">
+        <span style="color:#e7edf5;font-size:20px;font-weight:800;letter-spacing:-.02em;">Trade<span style="color:#4f8cff;">Lista</span></span>
+      </td></tr>
+      <tr><td style="padding:36px 32px 8px;">
+        <p style="margin:0 0 16px;font-size:16px;color:#0a0e14;">${greeting}</p>
+        ${bodyHtml}
+      </td></tr>
+      <tr><td style="padding:20px 32px 32px;border-top:1px solid #eef1f6;">
+        <p style="margin:16px 0 0;font-size:15px;color:#3a4453;">Best regards,<br><strong style="color:#0a0e14;">The TradeLista Team</strong></p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>`;
+}
+const P = 'margin:0 0 16px;font-size:15px;line-height:1.6;color:#3a4453;';
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   if (req.method !== 'POST') {
@@ -113,6 +140,16 @@ Deno.serve(async (req) => {
       to: email,
       subject: 'We received your withdrawal request — TradeLista',
       text: `Hi ${name},\n\nThis confirms we received your withdrawal declaration on ${receivedAtStr}. Here's what you submitted:\n\nName: ${name}\nAccount email / contract reference: ${contractRef}\nDetails / partial withdrawal notes: ${details || '(none provided)'}\n\nThis email only confirms receipt — it does not itself confirm that the withdrawal is valid or effective. We'll review it and get back to you by email.\n\n— TradeLista`,
+      html: brandedEmail(
+        `Hi ${escapeHtml(name)},`,
+        `<p style="${P}">This confirms we received your withdrawal declaration on <strong>${receivedAtStr}</strong>. Here's what you submitted:</p>
+         <table cellpadding="0" cellspacing="0" style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#3a4453;">
+           <tr><td style="padding-right:12px;color:#8a93a3;vertical-align:top;">Name</td><td>${escapeHtml(name)}</td></tr>
+           <tr><td style="padding-right:12px;color:#8a93a3;vertical-align:top;">Account / contract reference</td><td>${escapeHtml(contractRef)}</td></tr>
+           <tr><td style="padding-right:12px;color:#8a93a3;vertical-align:top;">Details</td><td>${details ? escapeHtml(details) : '(none provided)'}</td></tr>
+         </table>
+         <p style="${P}">This email only confirms receipt — it does not itself confirm that the withdrawal is valid or effective. We'll review it and get back to you by email.</p>`,
+      ),
     });
   } catch (err) {
     console.error('submit-withdrawal failed:', err);
