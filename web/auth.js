@@ -387,7 +387,14 @@
       if(!password || password.length < 8) return { ok:false, error:'Password must be at least 8 characters.' };
       const { data, error } = await sb.auth.signUp({
         email, password,
-        options: { data: { first_name: firstName, last_name: lastName } }
+        options: {
+          data: { first_name: firstName, last_name: lastName },
+          // Without this, the confirmation email falls back to Supabase's
+          // static "Site URL" dashboard setting regardless of where the
+          // signup actually happened — explicit here so it always matches
+          // whatever domain the person is really signing up from.
+          emailRedirectTo: `${location.origin}/app.html`
+        }
       });
       if(error) return { ok:false, error: error.message };
       if(!data.session) return { ok:true, needsConfirmation:true };
