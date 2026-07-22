@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="canonical" href="https://www.tradelista.com/app.html">
 <meta name="description" content="Your TradeLista calendar — every trade green or red, PnL at a glance, with reflection built in.">
 <link rel="apple-touch-icon" href="images/favicon.png">
 <meta property="og:type" content="website">
@@ -2899,7 +2900,7 @@ async function openTrade(id){
   images.forEach((src, idx)=>{
     const slot = document.createElement('div');
     slot.className = 'img-slot has-img';
-    slot.innerHTML = `<img src="${escapeHtml(src)}"/><button type="button" class="img-slot-draw" title="Draw on image">✏️</button><button type="button" class="img-slot-remove" title="Remove image">✕</button>`;
+    slot.innerHTML = `<img src="${escapeHtml(src)}" alt="Trade screenshot"/><button type="button" class="img-slot-draw" title="Draw on image">✏️</button><button type="button" class="img-slot-remove" title="Remove image">✕</button>`;
     slot.querySelector('img').onclick = ()=> openLightbox(src);
     slot.querySelector('.img-slot-draw').onclick = (e)=>{
       e.stopPropagation();
