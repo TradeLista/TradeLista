@@ -16,6 +16,7 @@
 #property strict
 
 input string ApiKey = ""; // TradeLista account API key (Account settings > Trading accounts)
+input int CatchUpDays = 30; // On start, resend any closed trade from this many past days (e.g. ones placed from a phone while this terminal was closed)
 
 string EndpointUrl = "https://xkmpknoughjnxalkoatx.supabase.co/functions/v1/ingest-trade";
 
@@ -30,19 +31,47 @@ int lastHistoryTotal = 0;
 // ever restarted or attached to more than one chart on the same account).
 int sentTickets[];
 
-int OnInit()
-{
-   lastHistoryTotal = OrdersHistoryTotal();
-   if(StringLen(ApiKey) == 0)
-      Alert("TradeListaSync: no API key set — trades will not be sent. Open the EA's Inputs tab and paste your TradeLista account's API key.");
-   return(INIT_SUCCEEDED);
-}
-
 bool alreadySent(int ticket)
 {
    for(int i = 0; i < ArraySize(sentTickets); i++)
       if(sentTickets[i] == ticket) return true;
    return false;
+}
+
+int OnInit()
+{
+   int total = OrdersHistoryTotal();
+   lastHistoryTotal = total;
+
+   if(StringLen(ApiKey) == 0)
+   {
+      Alert("TradeListaSync: no API key set — trades will not be sent. Open the EA's Inputs tab and paste your TradeLista account's API key.");
+      return(INIT_SUCCEEDED);
+   }
+
+   // Catch up on anything closed while this EA wasn't running — e.g. trades
+   // placed from a phone while the desktop terminal was shut. The server
+   // upserts by ticket, so resending an already-synced trade is harmless;
+   // it just overwrites the same row with the same data.
+   datetime cutoff = TimeCurrent() - CatchUpDays * 86400;
+   for(int i = 0; i < total; i++)
+   {
+      if(!OrderSelect(i, SELECT_BY_POS, MODE_HISTORY)) continue;
+
+      int orderType = OrderType();
+      if(orderType != OP_BUY && orderType != OP_SELL) continue; // skip pending orders and balance/credit entries
+      if(OrderCloseTime() == 0 || OrderCloseTime() < cutoff) continue;
+
+      int ticket = OrderTicket();
+      if(alreadySent(ticket)) continue;
+      int idx = ArraySize(sentTickets);
+      ArrayResize(sentTickets, idx + 1);
+      sentTickets[idx] = ticket;
+
+      sendClosedOrder(ticket);
+   }
+
+   return(INIT_SUCCEEDED);
 }
 
 void OnTrade()
@@ -81,7 +110,6 @@ void sendClosedOrder(int ticket)
    double openPrice = OrderOpenPrice();
    double closePrice = OrderClosePrice();
    double profit = OrderProfit() + OrderSwap() + OrderCommission();
-   string side = OrderType() == OP_BUY ? "buy" : "sell";
 
    // OrderCloseTime() is in the broker's server time, which is usually not
    // the trader's own timezone (often off by 1-3 hours) — convert to the
@@ -100,8 +128,8 @@ void sendClosedOrder(int ticket)
    int tzOffsetMinutes = (int)((TimeLocal() - TimeGMT()) / 60);
 
    string json = StringFormat(
-      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\",\"time\":\"%s\",\"tz_offset_minutes\":%d,\"deal_ticket\":\"%s\",\"side\":\"%s\"}",
-      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr, timeStr, tzOffsetMinutes, ticketStr, side
+      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\",\"time\":\"%s\",\"tz_offset_minutes\":%d,\"deal_ticket\":\"%s\"}",
+      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr, timeStr, tzOffsetMinutes, ticketStr
    );
 
    // Deliberately not passing a codepage here (MQL4's StringToCharArray
