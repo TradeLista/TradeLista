@@ -146,6 +146,13 @@
   /* ---------- Hero calendar mockup ---------- */
   .mock-wrap{
     position:relative; margin-top:56px; width:100%; max-width:760px; perspective:1400px;
+    /* The whole mockup sits inside a link with real text in it (month
+       name, percentages, chip values) — on touch, a slow drag across
+       that text starts a native text-selection instead of a tap, which
+       feels like dragging the picture around. It's a static demo
+       graphic, nothing here needs to be selectable. */
+    -webkit-user-select:none; -moz-user-select:none; user-select:none;
+    -webkit-touch-callout:none;
   }
   .mock-glow{
     position:absolute; inset:-80px; z-index:0; pointer-events:none;
