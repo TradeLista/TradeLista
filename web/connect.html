@@ -407,7 +407,7 @@
   <div class="ea-only-content">
   <div class="callout" style="margin-bottom:32px;">
     <span class="ic">ℹ️</span>
-    <div><strong>The EA can only send a trade while it's actually running</strong> — attached to a chart in an open MetaTrader terminal on that computer. MetaTrader's mobile apps can't run Expert Advisors at all, so trades placed from a phone aren't sent in real time. On startup, the EA automatically resends anything closed in the past 30 days (adjustable via the <strong>CatchUpDays</strong> input), so a trade placed while this terminal was closed still arrives once you reopen it — but there's no live, instant sync while the terminal itself is off. If you need a trade in TradeLista right away, you can always add it manually too.</div>
+    <div><strong>The EA can only send a trade while it's actually running</strong> — attached to a chart in an open MetaTrader terminal on that computer. MetaTrader's mobile apps can't run Expert Advisors at all, so a trade you place from your phone won't reach TradeLista on its own — you'll need to add those manually. On startup the EA does a best-effort catch-up, re-sending closed trades from the past 30 days it finds in the terminal's history (adjustable via the <strong>CatchUpDays</strong> input) — handy after a quick restart — but there's no live sync while the terminal is off, and a phone trade isn't guaranteed to be picked up. When in doubt, add the trade manually.</div>
   </div>
   <div class="guide">
     <div class="gstep">
@@ -500,7 +500,7 @@
       <figure class="gstep-shot"><img src="images/guide/mt-08-drag.png" alt="Dragging TradeListaSync from the Navigator onto an open chart" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: dragging TradeListaSync onto a chart</div></figure>
       <p>A window pops up. Click the <strong>"Inputs"</strong> tab and paste the API key you copied in step 4 into the <strong>ApiKey</strong> field.</p>
       <figure class="gstep-shot"><img src="images/guide/mt-08-attach.png" alt="The EA Inputs tab with the TradeLista account API key field ready to paste into" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: pasting the API key into the Inputs tab</div></figure>
-      <p>There's also a <strong>CatchUpDays</strong> field (defaults to 30) — on startup, the EA resends any trade closed within that many past days, so trades placed from your phone while this terminal was closed still get synced once you reopen it.</p>
+      <p>There's also a <strong>CatchUpDays</strong> field (defaults to 30) — on startup the EA re-sends closed trades from the past that many days that are already in this terminal's history, a best-effort catch-up after a restart. It's not a guarantee: a trade you placed from your phone while your desktop was closed may not sync on its own, so add those to TradeLista manually.</p>
       <p>Click the <strong>"Common"</strong> tab and make sure <strong>"Allow algorithmic trading"</strong> (or "Allow live trading") is checked. Then click <strong>Save</strong> and <strong>OK</strong> to attach the EA.</p>
     </div>
 
