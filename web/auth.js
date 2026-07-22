@@ -1,8 +1,7 @@
 /* ---------- TradeLista Auth ----------
    Backed by Supabase (real accounts, real Postgres database). Requires the
    Supabase JS client <script> tag to be loaded before this file — see the
-   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/..."> tag
-   near the top of each page.
+   <script src="vendor/supabase.js"> tag near the top of each page.
 
    All TLAuth methods that touch the network are async — callers must
    `await` them.

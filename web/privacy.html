@@ -117,17 +117,18 @@
   .page h1{font-size:26px; font-weight:800; letter-spacing:-0.01em; margin-bottom:8px; text-align:center;}
   .page > p.lead{color:var(--text-dim); font-size:14.5px; margin:0 auto 32px; line-height:1.6; text-align:center; max-width:520px;}
 
-  .notice{
-    background:var(--accent-dim); border:1px solid rgba(79,140,255,0.3); border-radius:var(--radius-sm);
-    padding:14px 16px; font-size:13px; color:var(--text-dim); line-height:1.6; margin-bottom:32px;
-  }
-  .card{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin-bottom:20px;}
-  .card h2{font-size:16px; font-weight:700; margin-bottom:12px;}
-  .card p{color:var(--text-dim); font-size:14px; line-height:1.7; margin-bottom:10px;}
-  .card p:last-child{margin-bottom:0;}
-  .card ul{color:var(--text-dim); font-size:14px; line-height:1.7; margin:0 0 10px 20px;}
-  .card ul:last-child{margin-bottom:0;}
-  .card strong{color:var(--text);}
+  .legal-block{margin-bottom:26px;}
+  .legal-block:last-child{margin-bottom:0;}
+  .legal-block h2{font-size:15.5px; font-weight:700; margin-bottom:10px; color:var(--text);}
+  .legal-block p{color:var(--text-dim); font-size:14px; line-height:1.7;}
+  .legal-block p + p{margin-top:10px;}
+  .legal-block ul{color:var(--text-dim); font-size:14px; line-height:1.7; margin:10px 0 10px 20px;}
+  .legal-block ul:last-child{margin-bottom:0;}
+  .legal-block strong{color:var(--text);}
+  .legal-block a{color:var(--accent); text-decoration:underline;}
+
+  .terms-copyright{font-size:11.5px; color:var(--text-faint); margin-top:56px; padding-top:20px; border-top:1px solid var(--border-soft); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  .terms-copyright img{max-height:20px; display:block;}
 
   footer{border-top:1px solid var(--border-soft); padding:48px 24px 32px;}
   .footer-inner{max-width:1180px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:32px;}
@@ -200,49 +201,119 @@
 </div>
 
 <div class="page" style="display:none">
-  <div class="page-eyebrow">Privacy</div>
-  <h1>Privacy Policy</h1>
-  <p class="lead">What data TradeLista collects, why, and what your rights are.</p>
+  <div class="page-eyebrow">Legal</div>
+  <h1>Data Protection Declaration</h1>
+  <p class="lead">How TradeLista collects, uses and protects your personal data.</p>
 
-  <div class="notice">
-    This page explains our actual data practices in plain language. It is not yet a complete, lawyer-reviewed Datenschutzerklärung/GDPR notice (that also needs our full legal entity details, which will follow separately) — treat it as an accurate starting point, not a final legal document.
+  <div class="legal-block">
+    <h2>1) Information on the Collection of Personal Data and Contact Details of the Controller</h2>
+    <p><strong>1.1</strong> We are pleased that you are visiting our website and thank you for your interest. On the following pages, we inform you about the handling of your personal data when using our website. Personal data is all data with which you can be personally identified.</p>
+    <p><strong>1.2</strong> The controller in charge of data processing on this website, within the meaning of the General Data Protection Regulation (GDPR), is Savvas Apostolidis, Tegernseer Landstra&szlig;e 65, 82024 Taufkirchen, Germany, Phone.: 015901300401, e-mail: info@tradelista.com. The controller in charge of the processing of personal data is the natural or legal person who alone or jointly with others determines the purposes and means of the processing of personal data.</p>
   </div>
 
-  <div class="card">
-    <h2>What we collect</h2>
-    <p>Only what's needed to run the service:</p>
+  <div class="legal-block">
+    <h2>2) Data Collection When You Visit Our Website</h2>
+    <p><strong>2.1</strong> When using our website for information only, i.e. if you do not register or otherwise provide us with information, we only collect data that your browser transmits to our server (so-called &quot;server log files&quot;). When you visit our website, we collect the following data that is technically necessary for us to display the website to you:</p>
     <ul>
-      <li><strong>Account info</strong> — your email and name, when you create an account.</li>
-      <li><strong>Trading data you enter</strong> — trades, notes, tags, reflection answers and screenshots you add to your journal.</li>
-      <li><strong>Billing reference</strong> — if you subscribe to Pro, a reference ID linking your account to your Stripe customer record. We never see or store your card details — Stripe handles those directly.</li>
-      <li><strong>Contact messages</strong> — your name, email, subject and message, only if you write to us via the Contact page.</li>
+      <li>Our visited website</li>
+      <li>Date and time at the moment of access</li>
+      <li>Amount of data sent in bytes</li>
+      <li>Source/reference from which you came to the page</li>
+      <li>Browser used</li>
+      <li>Operating system used</li>
+      <li>IP address used (if applicable: in anonymized form)</li>
     </ul>
+    <p>Data processing is carried out in accordance with Art. 6 (1) point f GDPR on the basis of our legitimate interest in improving the stability and functionality of our website. The data will not be passed on or used in any other way. However, we reserve the right to check the server log files subsequently, if there are any concrete indications of illegal use.</p>
+    <p><strong>2.2</strong> This website uses SSL or TLS encryption for security reasons and to protect the transmission of personal data and other confidential content (e.g. orders or inquiries to the controller). You can recognize an encrypted connection by the character string https:// and the lock symbol in your browser line.</p>
   </div>
 
-  <div class="card">
-    <h2>Why we collect it</h2>
-    <p>To provide your trading journal (store and show you your own trades and notes), to process your Pro subscription, and to reply when you contact us. We don't use your data for advertising, and we don't sell it.</p>
+  <div class="legal-block">
+    <h2>3) Hosting &amp; Content Delivery Network</h2>
+    <p>Vercel</p>
+    <p>For the hosting of our website and the display of the page content, we use the system of the following provider: Vercel Inc, 340 S Lemon Ave #4133, Walnut, CA 91789, USA</p>
+    <p>All data collected on our website is processed on the provider's servers. We have concluded an order processing agreement with the provider, ensuring the protection of our site visitors' data and prohibiting unauthorised disclosure to third parties.</p>
+    <p>For data transfers to the USA, the provider participates in the EU-US Data Privacy Framework, which ensures compliance with the European level of data protection on the basis of an adequacy decision by the European Commission.</p>
   </div>
 
-  <div class="card">
-    <h2>Who else sees it</h2>
-    <p>A few service providers process data on our behalf, strictly to run TradeLista:</p>
+  <div class="legal-block">
+    <h2>4) Cookies</h2>
+    <p>In order to make your visit to our website more attractive and to enable the use of certain functions, we use cookies, i.e. small text files that are stored on your end device. In some cases, these cookies are automatically deleted again after the browser is closed (so-called &quot;session cookies&quot;), in other cases, these cookies remain on your end device for longer and allow page settings to be saved (so-called &quot;persistent cookies&quot;). In the latter case, you can find the duration of the storage in the overview of the cookie settings of your web browser.</p>
+    <p>If personal data is also processed by individual cookies set by us, the processing is carried out either in accordance with Art. 6 (1) point b GDPR for the performance of the contract, in accordance with Art. 6 (1) point a GDPR in the case of consent given or in accordance with Art. 6 (1) point f GDPR to safeguard our legitimate interests in the best possible functionality of the website as well as a customer-friendly and effective design of the page visit.</p>
+    <p>You can set your browser in such a way that you are informed about the setting of cookies and you can decide individually about their acceptance or exclude the acceptance of cookies for certain cases or in general.</p>
+    <p>Please note that the functionality of our website may be limited if cookies are not accepted.</p>
+  </div>
+
+  <div class="legal-block">
+    <h2>5) Contacting Us</h2>
+    <p>When you contact us (e.g. via contact form or e-mail), personal data is collected. Which data is collected in the case of a contact form can be seen from the respective contact form. This data is stored and used exclusively for the purpose of responding to your request or for establishing contact and for the associated technical administration.</p>
+    <p>The legal basis for processing data is our legitimate interest in responding to your request in accordance with Art. 6 (1) point f GDPR. If your contact is aimed at concluding a contract, the additional legal basis for the processing is Art. 6 (1) point b GDPR. Your data will be deleted after final processing of your enquiry; this is the case if it can be inferred from the circumstances that the facts in question have been finally clarified, provided there are no legal storage obligations to the contrary.</p>
+  </div>
+
+  <div class="legal-block">
+    <h2>6) Data Processing When Opening a Customer Account and for Contract Processing</h2>
+    <p>Pursuant to Art. 6 (1) point b GDPR, personal data will continue to be collected and processed to the extent required in each case if you provide us with this data when opening a customer account. The data required for opening an account can be found in the input mask of the corresponding form on our website. Deletion of your customer account is possible at any time and can be done by sending a message to the above address of the person responsible. After deletion of your customer account, your data will be deleted, provided that all contracts concluded via it have been fully processed, no legal retention periods are opposed and no legitimate interest on our part in the continued storage exists.</p>
+  </div>
+
+  <div class="legal-block">
+    <h2>7) Processing of Data for the Purpose of Order Handling</h2>
+    <p><strong>7.1</strong> To fulfill the contract, we work with the following service provider(s), who support us in whole or in part in the execution of concluded contracts. Certain personal data is transferred to these service providers in accordance with the following information.</p>
+    <p><strong>7.2</strong> Use of Payment Service Providers</p>
+    <p>- Stripe</p>
+    <p>Online payment methods from the following provider are available on this website: Stripe Payments Europe Ltd., 1 Grand Canal Street Lower, Grand Canal Dock, Dublin, Ireland</p>
+    <p>If you select a payment method of the provider for which you make an advance payment (e.g. credit card payment), your payment data provided during the ordering process (including name, address, bank and payment card information, currency and transaction number) as well as information about the content of your order will be passed on to the provider in accordance with Art. 6 (1) point b GDPR. In this case, your data will only be passed on for the purpose of processing payment with the provider and only to the extent necessary for this purpose.</p>
+    <p><strong>7.3</strong> Electronic termination option for continuing obligations with consumers</p>
+    <p>Consumers who have concluded contracts on this website for continuing obligations for which payment is required (e.g., subscription contracts) have the option of terminating these contracts via an electronic button in accordance with the applicable notice periods. Pressing the button leads to a confirmation page on which the consumer can provide more detailed information on the termination, clearly identify himself and subsequently declare his termination electronically. The collection of personal data and its transmission to us is carried out in accordance with Art. 6 (1) point b GDPR and only to the extent necessary for the proper processing of the termination. Pursuant to Art. 6 (1) point b GDPR, the provided personal data will also be used to confirm receipt of the termination declaration and the termination date by electronic means in text form. The additional legal basis for such processing is Art. 6 (1) point c GDPR. We are legally obliged to provide an electronic termination option for consumer contracts concluded by means of electronic commerce regarding continuing obligations for which payment is required.</p>
+    <p><strong>7.4</strong> Electronic Withdrawal Function for Distance Contracts</p>
+    <p>Consumers who conclude contracts on this website for which a statutory right of withdrawal exists have the option to declare their withdrawal via an electronic withdrawal function, in accordance with the applicable withdrawal provisions.</p>
+    <p>When using the withdrawal function, in addition to details identifying the specific contract being withdrawn from, other personal information&mdash;such as the consumer's first name, last name, and email address&mdash;must be provided or confirmed.</p>
+    <p>The collection of this information and its transmission to us is carried out in accordance with Art. 6 (1) point b of the GDPR, and only to the extent necessary for the proper processing of the withdrawal request. Furthermore, and also based on Art. 6 (1) point b of the GDPR, the provided personal data is used to confirm receipt of the withdrawal declaration via email. An additional legal basis for this processing is Art. 6 (1) point c of the GDPR. We are legally obligated to provide an electronic cancellation function for remunerated distance contracts concluded with consumers.</p>
+  </div>
+
+  <div class="legal-block">
+    <h2>8) Tools and Miscellaneous</h2>
+    <p>This website uses a so-called &quot;cookie consent tool&quot; to obtain effective user consent for cookies and cookie-based applications that require consent. The &quot;cookie consent tool&quot; is displayed to users in the form of an interactive user interface when they access the page, on which consent for certain cookies and/or cookie-based applications can be given by ticking the appropriate box.</p>
+    <p>Using the tool, all cookies/services requiring consent are only loaded if the respective user provides the corresponding consent by ticking the corresponding box. This ensures that such cookies are only set on the respective end device of the user if consent has been granted.</p>
+    <p>The tool sets technically necessary cookies to save your cookie preferences. Personal user data is generally not processed.<br>
+    If, in individual cases, personal data (such as the IP address) is processed for the purpose of storing, assigning or logging cookie settings, this is done in accordance with Art. 6 (1) point f GDPR based on our legitimate interest in legally compliant, user-specific and user-friendly consent management for cookies and thus in a legally compliant design of our website.<br>
+    Further legal basis for the processing is Art. 6 (1) point c GDPR. As the responsible party, we are subject to the legal obligation to make the use of technically unnecessary cookies dependent on the respective user consent.<br>
+    Further information on the operator and the setting options of the cookie consent tool can be found directly in the corresponding user interface on our website.</p>
+  </div>
+
+  <div class="legal-block">
+    <h2>9) Rights of the Data Subject</h2>
+    <p><strong>9.1</strong> The applicable data protection law grants you the following comprehensive rights of data subjects (rights of information and intervention) vis-&agrave;-vis the data controller with regard to the processing of your personal data:</p>
     <ul>
-      <li><strong>Supabase</strong> — hosts our database, authentication and file storage.</li>
-      <li><strong>Stripe</strong> — processes Pro subscription payments.</li>
-      <li><strong>IONOS</strong> — delivers the emails sent through our Contact form.</li>
+      <li>Right of access by the data subject pursuant to Art. 15 GDPR;</li>
+      <li>Right to rectification pursuant to Art. 16 GDPR;</li>
+      <li>Right to erasure (&#8220;right to be forgotten&rdquo;) pursuant to Art. 17 GDPR;</li>
+      <li>Right to restriction of processing pursuant to Art. 18 GDPR;</li>
+      <li>Right to be informed pursuant to Art. 19 GDPR;</li>
+      <li>Right to data portability pursuant to Art. 20 GDPR;</li>
+      <li>Right to withdraw a given consent pursuant to Art. 7 (3) GDPR;</li>
+      <li>Right to lodge a complaint pursuant to Art. 77 GDPR.</li>
     </ul>
-    <p>None of them are permitted to use your data for their own purposes.</p>
+    <p><strong>9.2</strong> RIGHT TO OBJECT</p>
+    <p>IF, WITHIN THE FRAMEWORK OF A CONSIDERATION OF INTERESTS, WE PROCESS YOUR PERSONAL DATA ON THE BASIS OF OUR PREDOMINANT LEGITIMATE INTEREST, YOU HAVE THE RIGHT AT ANY TIME TO OBJECT TO THIS PROCESSING WITH EFFECT FOR THE FUTURE ON THE GROUNDS THAT ARISE FROM YOUR PARTICULAR SITUATION.</p>
+    <p>IF YOU EXERCISE YOUR RIGHT TO OBJECT, WE WILL STOP PROCESSING THE DATA CONCERNED. HOWEVER, WE RESERVE THE RIGHT TO FURTHER PROCESSING IF WE CAN PROVE COMPELLING REASONS WORTHY OF PROTECTION FOR PROCESSING WHICH OUTWEIGH YOUR INTERESTS, FUNDAMENTAL RIGHTS AND FREEDOMS, OR IF THE PROCESSING SERVES TO ASSERT, EXERCISE OR DEFEND LEGAL CLAIMS.</p>
+    <p>IF WE PROCESS YOUR PERSONAL DATA FOR DIRECT MARKETING PURPOSES, YOU HAVE THE RIGHT TO OBJECT AT ANY TIME TO THE PROCESSING OF YOUR PERSONAL DATA WHICH ARE USED FOR DIRECT MARKETING PURPOSES. YOU MAY EXERCISE THE OBJECTION AS DESCRIBED ABOVE.</p>
+    <p>IF YOU EXERCISE YOUR RIGHT TO OBJECT, WE WILL STOP PROCESSING THE DATA CONCERNED FOR DIRECT ADVERTISING PURPOSES.</p>
   </div>
 
-  <div class="card">
-    <h2>Cookies &amp; tracking</h2>
-    <p>We don't use cookies, analytics, or advertising trackers of any kind. The only things stored in your browser are functional (your login session and app preferences) — nothing that tracks you across sites. Fonts are served from our own server rather than a third party's, so no font request ever leaves a trace with anyone else either.</p>
+  <div class="legal-block">
+    <h2>10) Duration of Storage of Personal Data</h2>
+    <p>The duration of the storage of personal data is based on the respective legal basis, the purpose of processing and - if relevant &ndash; on the respective legal retention period (e.g. commercial and tax retention periods).</p>
+    <p>If personal data is processed on the basis of express consent pursuant to Art. 6 (1) point a GDPR, this data is stored until the data subject revokes his consent.</p>
+    <p>If there are legal storage periods for data that is processed within the framework of legal or similar obligations on the basis of Art. 6 (1) point b GDPR, this data will be routinely deleted after expiry of the storage periods if it is no longer necessary for the fulfillment of the contract or the initiation of the contract and/or if we no longer have a justified interest in further storage.</p>
+    <p>When processing personal data on the basis of Art. 6 (1) point f GDPR, this data is stored until the data subject exercises his right of objection in accordance with Art. 21 (1) GDPR, unless we can provide compelling grounds for processing worthy of protection which outweigh the interests, rights and freedoms of the data subject, or the processing serves to assert, exercise or defend legal claims.</p>
+    <p>If personal data is processed for the purpose of direct marketing based on Art. 6 (1) point f GDPR, this data is stored until the data subject exercises his right of objection pursuant to Art. 21 (2) GDPR.</p>
+    <p>Unless otherwise stated in the information contained in this declaration on specific processing situations, stored personal data will be deleted if it is no longer necessary for the purposes for which it was collected or otherwise processed.</p>
   </div>
 
-  <div class="card">
-    <h2>Your rights</h2>
-    <p>You can access, correct, export or delete your trades and notes at any time from within the app. If you'd like your entire account and all associated data erased, or have any other request about your data, reach out via the <a href="contact.html" style="color:var(--accent); text-decoration:underline;">Contact page</a> — we'll act on it promptly.</p>
+  <div class="terms-copyright">
+    <a href="https://www.it-recht-kanzlei.de/" target="_blank" rel="noopener">
+      <img src="https://www.it-recht-kanzlei.de/logo/Copyright-Logo_Datenschutzerklaerung.png?i=3dbe0-24362-39c8-907e-1" alt="© IT-Recht Kanzlei" title="© IT-Recht Kanzlei">
+    </a>
+    <span>Version: 22.07.2026, 13:52:48</span>
   </div>
 </div>
 
@@ -286,6 +357,7 @@
         <a href="impressum.html">Imprint</a>
         <a href="terms.html">Terms</a>
         <a href="data-register.html">Data Portability</a>
+        <a href="withdrawal-policy.html">Withdrawal Policy</a>
       </div>
     </div>
   </div>
@@ -299,21 +371,11 @@
   </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="vendor/supabase.js"></script>
 <script src="auth.js"></script>
 <script>
   (async function initPage(){
     document.querySelector('.page').style.display = '';
-    const loggedIn = await TLAuth.isLoggedIn();
-    if(loggedIn){
-      document.getElementById('navLinks').innerHTML = `
-        <a href="app.html">Calendar</a>
-        <a href="connect.html">Connect Account</a>
-        <a href="contact.html">Contact</a>
-        <a href="faq.html">FAQ</a>
-      `;
-      document.getElementById('mobileNavLinks').innerHTML = document.getElementById('navLinks').innerHTML;
-    }
     await TLAuth.ui.renderAccountNav(document.getElementById('navRight'));
     document.getElementById('navLinks').style.visibility = 'visible';
     document.getElementById('navRight').style.visibility = 'visible';

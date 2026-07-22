@@ -284,6 +284,7 @@
         <a href="impressum.html">Imprint</a>
         <a href="terms.html">Terms</a>
         <a href="data-register.html">Data Portability</a>
+        <a href="withdrawal-policy.html">Withdrawal Policy</a>
       </div>
     </div>
   </div>
@@ -297,21 +298,11 @@
   </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="vendor/supabase.js"></script>
 <script src="auth.js"></script>
 <script>
   (async function initPage(){
     document.querySelector('.page').style.display = '';
-    const loggedIn = await TLAuth.isLoggedIn();
-    if(loggedIn){
-      document.getElementById('navLinks').innerHTML = `
-        <a href="app.html">Calendar</a>
-        <a href="connect.html">Connect Account</a>
-        <a href="contact.html">Contact</a>
-        <a href="faq.html">FAQ</a>
-      `;
-      document.getElementById('mobileNavLinks').innerHTML = document.getElementById('navLinks').innerHTML;
-    }
     await TLAuth.ui.renderAccountNav(document.getElementById('navRight'));
     document.getElementById('navLinks').style.visibility = 'visible';
     document.getElementById('navRight').style.visibility = 'visible';

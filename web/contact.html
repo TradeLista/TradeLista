@@ -288,6 +288,7 @@
         <a href="impressum.html">Imprint</a>
         <a href="terms.html">Terms</a>
         <a href="data-register.html">Data Portability</a>
+        <a href="withdrawal-policy.html">Withdrawal Policy</a>
       </div>
     </div>
   </div>
@@ -301,7 +302,7 @@
   </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="vendor/supabase.js"></script>
 <script src="auth.js"></script>
 <script>
   // The contact form is public — anyone should be able to reach out without
@@ -320,13 +321,6 @@
       document.getElementById('cFirstName').value = user.firstName || '';
       document.getElementById('cLastName').value = user.lastName || '';
       document.getElementById('cEmail').value = user.email || '';
-      document.getElementById('navLinks').innerHTML = `
-        <a href="app.html">Calendar</a>
-        <a href="connect.html">Connect Account</a>
-        <a class="active" href="contact.html">Contact</a>
-        <a href="faq.html">FAQ</a>
-      `;
-      document.getElementById('mobileNavLinks').innerHTML = document.getElementById('navLinks').innerHTML;
     }
     await TLAuth.ui.renderAccountNav(document.getElementById('navRight'));
     document.getElementById('navLinks').style.visibility = 'visible';

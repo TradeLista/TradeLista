@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TradeLista — Withdraw from contract</title>
+<title>TradeLista — Instructions for Cancellation</title>
 <link rel="stylesheet" href="fonts/fonts.css">
 <style>
   :root{
@@ -106,30 +106,37 @@
   .btn-ghost{background:var(--bg-card); border-color:var(--border); color:var(--text);}
   .btn-ghost:hover{border-color:var(--accent); color:var(--accent);}
 
-  .page{max-width:640px; margin:0 auto; padding:48px 24px 80px;}
+  .page{max-width:680px; margin:0 auto; padding:48px 24px 80px;}
   .page-eyebrow{
     display:inline-flex; align-items:center; gap:8px; font-size:11.5px; font-weight:700; color:var(--accent);
     text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px; width:100%; justify-content:center;
   }
   .page h1{font-size:26px; font-weight:800; letter-spacing:-0.01em; margin-bottom:8px; text-align:center;}
-  .page > p.lead{color:var(--text-dim); font-size:14.5px; margin:0 auto 28px; line-height:1.6; text-align:center; max-width:520px;}
+  .page > p.lead{color:var(--text-dim); font-size:14.5px; margin:0 auto 32px; line-height:1.6; text-align:center; max-width:560px;}
 
   .notice{
     background:var(--accent-dim); border:1px solid rgba(79,140,255,0.3); border-radius:var(--radius-sm);
-    padding:14px 16px; font-size:13px; color:var(--text-dim); line-height:1.6; margin-bottom:24px;
+    padding:14px 16px; font-size:13px; color:var(--text-dim); line-height:1.6; margin-bottom:32px;
   }
-  .card{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px;}
+  .terms-part{font-size:19px; font-weight:800; margin:44px 0 20px; letter-spacing:-0.01em;}
+  .terms-part:first-of-type{margin-top:0;}
 
-  .form-row{margin-bottom:16px;}
-  .form-row label{display:block; font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px;}
-  .form-row input, .form-row textarea{
-    width:100%; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm);
-    color:var(--text); font-family:inherit; font-size:13.5px; padding:10px 12px; outline:none;
-  }
-  .form-row input:focus, .form-row textarea:focus{border-color:var(--accent);}
-  .form-row textarea{resize:vertical; min-height:90px;}
-  .form-success{color:var(--green); font-size:13px; margin:-6px 0 14px; min-height:14px;}
-  .form-privacy-note{color:var(--text-faint); font-size:12px; line-height:1.5; margin:-4px 0 14px;}
+  .legal-block{margin-bottom:26px;}
+  .legal-block:last-child{margin-bottom:0;}
+  .legal-block h3{font-size:15.5px; font-weight:700; margin-bottom:10px; color:var(--text);}
+  .legal-block p{color:var(--text-dim); font-size:14px; line-height:1.7;}
+  .legal-block p + p{margin-top:10px;}
+  .legal-block strong{color:var(--text);}
+  .legal-block a{color:var(--accent); text-decoration:underline;}
+
+  .cform{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; font-size:14px; color:var(--text-dim); line-height:1.8;}
+  .cform p{margin-bottom:14px;}
+  .cform .blank{display:inline-block; border-bottom:1px solid var(--border); min-width:100%; height:1.4em; margin-bottom:4px;}
+  .cform .field-label{color:var(--text-faint); font-size:12px; margin-bottom:16px;}
+  .cform .note{color:var(--text-faint); font-size:12px; margin-top:16px;}
+
+  .terms-copyright{font-size:11.5px; color:var(--text-faint); margin-top:56px; padding-top:20px; border-top:1px solid var(--border-soft); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  .terms-copyright img{max-height:20px; display:block;}
 
   footer{border-top:1px solid var(--border-soft); padding:48px 24px 32px;}
   .footer-inner{max-width:1180px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:32px;}
@@ -181,7 +188,7 @@
     <a href="app.html" class="js-calendar-link">Calendar</a>
     <a href="connect.html">Connect Account</a>
     <a href="index.html#pricing">Pricing</a>
-    <a href="#" class="js-contact-link">Contact</a>
+    <a href="contact.html">Contact</a>
     <a href="faq.html">FAQ</a>
   </div>
   <div style="display:flex; align-items:center; gap:10px;">
@@ -196,46 +203,70 @@
     <a href="app.html" class="js-calendar-link">Calendar</a>
     <a href="connect.html">Connect Account</a>
     <a href="index.html#pricing">Pricing</a>
-    <a href="#" class="js-contact-link">Contact</a>
+    <a href="contact.html">Contact</a>
     <a href="faq.html">FAQ</a>
   </div>
 </div>
 
 <div class="page" style="display:none">
-  <div class="page-eyebrow">Right of withdrawal</div>
-  <h1>Withdraw from your contract</h1>
-  <p class="lead">If you're within your 14-day statutory right of withdrawal, use this form to tell us. You don't need to be logged in to submit it.</p>
+  <div class="page-eyebrow">Legal</div>
+  <h1>Instructions for Cancellation &amp; Cancellation Form</h1>
+  <p class="lead">Consumers, i.e. any individual acting for purposes which are wholly or mainly outside those individual's trade, business, craft or profession, are entitled to cancel any contract on the following conditions.</p>
 
-  <div class="notice">
-    Submitting this form only confirms that we've <strong>received</strong> your declaration — it does not by itself cancel a subscription or issue a refund. We review each request (checking the withdrawal deadline and anything you agreed to at checkout) and reply by email with the outcome. Full details on your right to cancel, deadlines and a model cancellation form are in our <a href="withdrawal-policy.html" style="color:var(--accent); text-decoration:underline;">Instructions for Cancellation</a>.
+  <div class="terms-part">A. Instructions for Cancellation</div>
+
+  <div class="legal-block">
+    <h3>Right to Cancel</h3>
+    <p>You have the right to cancel this contract within fourteen days without giving any reason.</p>
+    <p>The cancellation period will expire after 14 days from the day of the conclusion of the contract.</p>
+    <p>To exercise the right to cancel, you must inform us (Savvas Apostolidis, Tegernseer Landstra&szlig;e 65, 82024 Taufkirchen, Germany, Phone.: 015901300401, e-mail: info@tradelista.com) of your decision to cancel this contract by a clear statement (e.g. by a letter sent by post, fax or email). You may use the model cancellation form below, but it is not obligatory.</p>
+    <p>You can also exercise your right of withdrawal online via the website at the internet address <a href="withdrawal.html">https://tradelista.com/withdrawal.html</a>. If you use this online feature, you will be sent an acknowledgement of receipt of the withdrawal on a durable medium (e.g. by email), including its content and the date and time of its submission, without undue delay.</p>
+    <p>To meet the cancellation deadline, it is sufficient for you to send your communication concerning your exercise of the right to cancel before the withdrawal period has expired.</p>
   </div>
 
-  <div class="card">
-    <form id="withdrawalForm" novalidate>
-      <div class="form-row">
-        <label for="wName">Your name</label>
-        <input type="text" id="wName" required>
-      </div>
-      <div style="position:absolute; left:-9999px;" aria-hidden="true">
-        <label for="wWebsite">Leave blank</label>
-        <input type="text" id="wWebsite" name="website" tabindex="-1" autocomplete="off">
-      </div>
-      <div class="form-row">
-        <label for="wContractRef">Account email or contract reference</label>
-        <input type="text" id="wContractRef" placeholder="The email address your TradeLista account uses" required>
-      </div>
-      <div class="form-row">
-        <label for="wEmail">Your email (for our reply)</label>
-        <input type="email" id="wEmail" required>
-      </div>
-      <div class="form-row">
-        <label for="wDetails">Details — e.g. what you'd like to withdraw from, or a partial withdrawal (optional)</label>
-        <textarea id="wDetails"></textarea>
-      </div>
-      <div class="form-success" id="withdrawalSuccess"></div>
-      <p class="form-privacy-note">Please see our <a href="privacy.html" style="color:var(--text-dim); text-decoration:underline;">Privacy Policy</a> for how we handle this information.</p>
-      <button type="submit" class="btn btn-primary" id="withdrawalSubmit" style="width:100%;">Confirm withdrawal</button>
-    </form>
+  <div class="legal-block">
+    <h3>Effects of cancellation</h3>
+    <p>If you cancel this contract, we will reimburse to you all payments received from you, including the costs of delivery (except for the supplementary costs arising if you chose a type of delivery other than the least expensive type of standard delivery offered by us). We will make the reimbursement, without undue delay, and not later than 14 days after the day on which we are informed about your decision to cancel this contract. We will make the reimbursement using the same means of payment as you used for the initial transaction, unless you have expressly agreed otherwise; in any event, you will not incur any fees as a result of such reimbursement.</p>
+  </div>
+
+  <div class="legal-block">
+    <h3>Expiration of right to cancel</h3>
+    <p>The right of cancellation shall expire prematurely if we have started the performance of the contract after you have expressly agreed that we start the performance of the contract before the expiry of the cancellation period, and you have confirmed to us your knowledge that you lose your right of cancellation by agreeing to start the performance of the contract, and if we have provided you with a confirmation of the contract on a durable medium containing the content of the contract including the aforementioned conditions relating to the premature expiry of the right of cancellation.</p>
+  </div>
+
+  <div class="terms-part">B. Cancellation Form</div>
+
+  <div class="legal-block">
+    <p>If you wish to cancel this contract by post, fax or email instead of using the <a href="withdrawal.html">online withdrawal form</a>, please complete and submit this form.</p>
+    <div class="cform">
+      <p>
+        Savvas Apostolidis<br>
+        Tegernseer Landstra&szlig;e 65<br>
+        82024 Taufkirchen<br>
+        Germany<br>
+        e-mail: info@tradelista.com
+      </p>
+      <p>I/We (*) hereby give notice that I/We (*) cancel my/our (*) contract of sale of the following goods (*) / for the supply of the following service (*),</p>
+      <div class="blank"></div>
+      <div class="blank" style="margin-bottom:14px;"></div>
+      <p>Ordered on (*) ____________ / received on (*) __________________</p>
+      <div class="blank"></div>
+      <div class="field-label">Name of consumer(s)</div>
+      <div class="blank"></div>
+      <div class="field-label">Address of consumer(s)</div>
+      <div class="blank"></div>
+      <div class="field-label">Signature of consumer(s) (only if this form is notified on paper)</div>
+      <div class="blank" style="max-width:220px;"></div>
+      <div class="field-label">Date</div>
+      <p class="note">(*) Delete as appropriate</p>
+    </div>
+  </div>
+
+  <div class="terms-copyright">
+    <a href="https://www.it-recht-kanzlei.de/" target="_blank" rel="noopener">
+      <img src="https://www.it-recht-kanzlei.de/logo/Copyright-Logo_Widerrufsbelehrung.png?i=3dbe0-24362-39c9-907f-1" alt="© IT-Recht Kanzlei" title="© IT-Recht Kanzlei">
+    </a>
+    <span>Version: 22.07.2026, 11:24:55</span>
   </div>
 </div>
 
@@ -273,7 +304,7 @@
       </div>
       <div class="footer-col">
         <h4>Company</h4>
-        <a href="#" class="js-contact-link">Contact</a>
+        <a href="contact.html">Contact</a>
         <a href="faq.html">FAQ</a>
         <a href="privacy.html">Privacy Policy</a>
         <a href="impressum.html">Imprint</a>
@@ -298,13 +329,6 @@
 <script>
   (async function initPage(){
     document.querySelector('.page').style.display = '';
-    const loggedIn = await TLAuth.isLoggedIn();
-    if(loggedIn){
-      const user = await TLAuth.getCurrentUser();
-      document.getElementById('wName').value = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-      document.getElementById('wContractRef').value = user.email || '';
-      document.getElementById('wEmail').value = user.email || '';
-    }
     await TLAuth.ui.renderAccountNav(document.getElementById('navRight'));
     document.getElementById('navLinks').style.visibility = 'visible';
     document.getElementById('navRight').style.visibility = 'visible';
@@ -321,13 +345,6 @@
     });
   });
 
-  document.querySelectorAll('.js-contact-link').forEach(el=>{
-    el.addEventListener('click', (e)=>{
-      e.preventDefault();
-      location.href = 'contact.html';
-    });
-  });
-
   const navHamburger = document.getElementById('navHamburger');
   const mobileNavLinks = document.getElementById('mobileNavLinks');
   navHamburger.addEventListener('click', (e)=>{
@@ -340,34 +357,6 @@
     mobileNavLinks.classList.remove('open');
     navHamburger.classList.remove('open');
     navHamburger.setAttribute('aria-expanded', false);
-  });
-
-  document.getElementById('withdrawalForm').addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    const name = document.getElementById('wName').value.trim();
-    const contractRef = document.getElementById('wContractRef').value.trim();
-    const email = document.getElementById('wEmail').value.trim();
-    const details = document.getElementById('wDetails').value.trim();
-    const website = document.getElementById('wWebsite').value.trim();
-    const status = document.getElementById('withdrawalSuccess');
-    const submitBtn = document.getElementById('withdrawalSubmit');
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending…';
-    status.style.color = '';
-    status.textContent = '';
-
-    const res = await TLAuth.submitWithdrawal({ name, contractRef, email, details, website });
-
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Confirm withdrawal';
-    if(!res.ok){
-      status.style.color = 'var(--red)';
-      status.textContent = res.error;
-      return;
-    }
-    status.textContent = 'Received — check your inbox for a confirmation email.';
-    document.getElementById('withdrawalForm').reset();
   });
 </script>
 </body>
