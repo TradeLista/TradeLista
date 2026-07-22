@@ -480,17 +480,18 @@
 
     <div class="gstep">
       <div class="gnum">7</div>
-      <h3>Compile it</h3>
+      <h3><span class="mt5-only">Compile it</span><span class="mt4-only">Refresh the Navigator</span></h3>
       <p>Back in MetaTrader, look at the <strong>Navigator</strong> panel on the left (press <code>Ctrl+N</code> if you don't see it).</p>
       <p>Right-click <strong>"Expert Advisors"</strong> and click <strong>"Refresh"</strong>. <code>TradeListaSync</code> should now appear in that list.</p>
       <div class="gstep-shot-row mt5-only">
         <figure class="gstep-shot"><img src="images/guide/mt5-07-navrefresh.png" alt="Right-clicking Expert Advisors and selecting Refresh in the Navigator" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: right-click → Refresh</div></figure>
         <figure class="gstep-shot"><img src="images/guide/mt5-07-navresult.png" alt="TradeListaSync now listed under Expert Advisors in the Navigator" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: TradeListaSync appears in the list</div></figure>
       </div>
-      <p>Right-click it and choose <strong>"Modify"</strong> — this opens a second window called <strong>MetaEditor</strong> with the code inside. (Double-clicking attaches it straight to a chart instead — that's step 8, not this one.)</p>
-      <p><strong>Seeing a "MQL Wizard" window instead</strong> (asking what you'd like to create)? That's MetaEditor's new-program wizard — it means the right-click landed on the <em>"Expert Advisors" folder title</em> rather than on <code>TradeListaSync</code> itself. Just click <strong>Cancel</strong>, then in MetaEditor's own Navigator panel on the left expand <strong>Experts</strong> and double-click <code>TradeListaSync</code> to open the code.</p>
-      <p>In MetaEditor, click the <strong>"Compile"</strong> button near the top (or press <code>F7</code>). This turns the code into a program MetaTrader can actually run — without it, there's nothing to attach to a chart in step 8. At the bottom it should say <strong>"0 errors, 0 warnings"</strong>.</p>
-      <figure class="gstep-shot"><img src="images/guide/mt-07-compile.png" alt="MetaEditor with the TradeListaSync code open and the Compile button highlighted" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: successful compile in MetaEditor</div></figure>
+      <p class="mt4-only">That's all for MetaTrader 4 — it compiles the file automatically as soon as it shows up in the list, so there's <strong>no separate editor or compile step</strong>. Continue to step 8.</p>
+      <p class="mt5-only">Right-click it and choose <strong>"Modify"</strong> — this opens a second window called <strong>MetaEditor</strong> with the code inside. (Double-clicking attaches it straight to a chart instead — that's step 8, not this one.)</p>
+      <p class="mt5-only"><strong>Seeing a "MQL Wizard" window instead</strong> (asking what you'd like to create)? That's MetaEditor's new-program wizard — it means the right-click landed on the <em>"Expert Advisors" folder title</em> rather than on <code>TradeListaSync</code> itself. Just click <strong>Cancel</strong>, then in MetaEditor's own Navigator panel on the left expand <strong>Experts</strong> and double-click <code>TradeListaSync</code> to open the code.</p>
+      <p class="mt5-only">In MetaEditor, click the <strong>"Compile"</strong> button near the top (or press <code>F7</code>). This turns the code into a program MetaTrader can actually run — without it, there's nothing to attach to a chart in step 8. At the bottom it should say <strong>"0 errors, 0 warnings"</strong>.</p>
+      <figure class="gstep-shot mt5-only"><img src="images/guide/mt-07-compile.png" alt="MetaEditor with the TradeListaSync code open and the Compile button highlighted" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: successful compile in MetaEditor</div></figure>
     </div>
 
     <div class="gstep">
@@ -499,7 +500,11 @@
       <p>Switch back to the main MetaTrader window. In the Navigator, under <strong>Expert Advisors</strong>, find <code>TradeListaSync</code> and drag it onto any open chart — the symbol and timeframe don't matter, it watches your whole account.</p>
       <figure class="gstep-shot"><img src="images/guide/mt-08-drag.png" alt="Dragging TradeListaSync from the Navigator onto an open chart" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: dragging TradeListaSync onto a chart</div></figure>
       <p>A window pops up. Click the <strong>"Inputs"</strong> tab and paste the API key you copied in step 4 into the <strong>ApiKey</strong> field.</p>
-      <figure class="gstep-shot"><img src="images/guide/mt-08-attach.png" alt="The EA Inputs tab with the TradeLista account API key field ready to paste into" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: pasting the API key into the Inputs tab</div></figure>
+      <figure class="gstep-shot mt5-only"><img src="images/guide/mt-08-attach.png" alt="The EA Inputs tab with the TradeLista account API key field ready to paste into" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: pasting the API key into the Inputs tab</div></figure>
+      <div class="gstep-shot-row mt4-only">
+        <figure class="gstep-shot"><img src="images/guide/mt4-08-common.png" alt="The MT4 Common tab with Allow live trading and Allow import of external experts ticked" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: Common tab — allow live trading</div></figure>
+        <figure class="gstep-shot"><img src="images/guide/mt4-08-inputs.png" alt="The MT4 Inputs tab with the API key field filled and the OK button" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: Inputs tab — paste key, then OK</div></figure>
+      </div>
       <p>There's also a <strong>CatchUpDays</strong> field (defaults to 30) — on startup the EA re-sends closed trades from the past that many days that are already in this terminal's history, a best-effort catch-up after a restart. It's not a guarantee: a trade you placed from your phone while your desktop was closed may not sync on its own, so add those to TradeLista manually.</p>
       <p>Click the <strong>"Common"</strong> tab and make sure <strong>"Allow algorithmic trading"</strong> (or "Allow live trading") is checked. Then click <strong>OK</strong> to attach the EA. <em>(Ignore the "Save" button — that only exports your settings as a file and isn't needed; if a "Save as" dialog pops up, just cancel it.)</em></p>
     </div>
