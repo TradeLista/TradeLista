@@ -2887,7 +2887,7 @@ async function openTrade(id){
   images.forEach((src, idx)=>{
     const slot = document.createElement('div');
     slot.className = 'img-slot has-img';
-    slot.innerHTML = `<img src="${src}"/><button type="button" class="img-slot-draw" title="Draw on image">✏️</button><button type="button" class="img-slot-remove" title="Remove image">✕</button>`;
+    slot.innerHTML = `<img src="${escapeHtml(src)}"/><button type="button" class="img-slot-draw" title="Draw on image">✏️</button><button type="button" class="img-slot-remove" title="Remove image">✕</button>`;
     slot.querySelector('img').onclick = ()=> openLightbox(src);
     slot.querySelector('.img-slot-draw').onclick = (e)=>{
       e.stopPropagation();
@@ -3397,7 +3397,7 @@ async function renderRules(){
   list.innerHTML = rules.map((r,i)=>`
     <div class="rule-item">
       <span class="idx">${i+1}</span>
-      <div class="text"><span title="${r.replace(/"/g,'&quot;')}">${r}</span></div>
+      <div class="text"><span title="${escapeHtml(r)}">${escapeHtml(r)}</span></div>
       <button onclick="removeRule(${i})">✕</button>
     </div>
   `).join('');
