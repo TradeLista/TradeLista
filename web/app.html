@@ -47,11 +47,15 @@
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
+    /* Same multi-hue wash as the trade-detail view — blue/purple with the
+       trading green (bottom-right) and red (bottom-left) plus a faint gold
+       centre — so the calendar shares that colourful backdrop. */
     background:
-      radial-gradient(ellipse 1150px 640px at 8% -12%, rgba(79,140,255,0.30), transparent 70%),
-      radial-gradient(ellipse 1000px 580px at 104% -8%, rgba(139,108,255,0.26), transparent 70%),
-      radial-gradient(ellipse 900px 520px at 100% 68%, rgba(79,140,255,0.18), transparent 70%),
-      radial-gradient(ellipse 850px 500px at -6% 102%, rgba(139,108,255,0.18), transparent 70%),
+      radial-gradient(ellipse 1150px 640px at 8% -12%, rgba(79,140,255,0.24), transparent 70%),
+      radial-gradient(ellipse 1000px 580px at 104% -8%, rgba(139,108,255,0.22), transparent 70%),
+      radial-gradient(ellipse 950px 540px at 100% 100%, rgba(31,209,138,0.15), transparent 70%),
+      radial-gradient(ellipse 900px 520px at -6% 102%, rgba(240,71,90,0.12), transparent 70%),
+      radial-gradient(ellipse 1000px 560px at 50% 55%, rgba(245,196,81,0.05), transparent 70%),
       var(--bg);
     background-attachment:fixed;
     color:var(--text);
