@@ -47,9 +47,19 @@
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
   body{
-    /* Same multi-hue wash as the calendar / trade view — blue · purple ·
-       trading green · red · faint gold — so the homepage shares that
-       colourful backdrop. */
+    background: var(--bg);
+    color:var(--text);
+    font-family:var(--font-ui);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  /* Colourful wash on a fixed, GPU-composited layer instead of
+     background-attachment:fixed — the latter repaints the whole page on every
+     scroll frame and was making scrolling janky. Same viewport-anchored look,
+     now smooth. */
+  body::before{
+    content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
     background:
       radial-gradient(ellipse 130% 100% at 0% -12%, rgba(79,140,255,0.34), transparent 70%),
       radial-gradient(ellipse 125% 95% at 100% -8%, rgba(139,108,255,0.32), transparent 70%),
@@ -57,12 +67,6 @@
       radial-gradient(ellipse 120% 95% at -8% 108%, rgba(240,71,90,0.20), transparent 70%),
       radial-gradient(ellipse 160% 130% at 50% 50%, rgba(245,196,81,0.08), transparent 74%),
       var(--bg);
-    background-attachment:fixed;
-    color:var(--text);
-    font-family:var(--font-ui);
-    min-height:100vh;
-    -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
   }
 
   .scroll-progress{
