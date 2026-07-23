@@ -483,20 +483,27 @@
   .trade-modal-footer .save-note{flex:1; margin:0; text-align:left;}
   .trade-modal-footer .btn{width:auto; padding:11px 26px;}
   /* The trade view is a full-screen overlay that covers the page footer, so the
-     legally-required risk disclaimer + imprint links are repeated here, pinned
-     to the end of the scrollable body like a normal page footer. */
-  .trade-legal{
-    max-width:1180px; margin:40px auto 0; padding-top:20px; border-top:1px solid var(--border-soft);
-    font-size:11px; color:var(--text-faint); line-height:1.6;
-  }
-  .trade-legal .links{display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; margin-top:10px;}
-  .trade-legal .links a{color:var(--text-dim); text-decoration:none;}
-  .trade-legal .links a:hover{color:var(--text);}
+     real site footer is repeated at the end of the scrollable body. Negative
+     side margins let it span the body's full width (edge-to-edge border-top)
+     despite the body's own padding; the footer keeps its normal inner padding. */
+  .trade-page-footer{margin:32px -32px 0;}
+  @media (max-width:960px){ .trade-page-footer{margin-left:-18px; margin-right:-18px;} }
 
-  /* 12-col grid: row 1 is the trade's "context" (symbol · time · side), row 2
-     the numbers (entry · exit · lot · profit) — balanced, no dead cells like
-     the old 5-across grid left. Spans reset to a plain 2-col flow below 960px. */
-  .trade-stats-row{display:grid; grid-template-columns:repeat(12,1fr); gap:12px; margin:0 auto 28px; max-width:1180px;}
+  /* One shared panel instead of seven separate cards (they read as visual
+     noise side by side). The 12-col 3+4 layout stays — row 1 context
+     (symbol · time · side), row 2 numbers — but the cells sit on a single
+     card surface, divided by hairlines: each cell carries a top/left border
+     and a -1px margin so those borders overlap into internal dividers
+     rather than per-cell frames. Matches the at-a-glance strip above. */
+  .trade-stats-row{
+    display:grid; grid-template-columns:repeat(12,1fr); gap:0; margin:0 auto 28px; max-width:1180px;
+    background:rgba(21,27,38,0.72); backdrop-filter:blur(6px); border:1px solid var(--border-soft);
+    border-radius:var(--radius); overflow:hidden; position:relative;
+  }
+  .trade-stats-row::after{
+    content:''; position:absolute; top:0; left:0; right:0; height:2px; pointer-events:none;
+    background:linear-gradient(90deg, rgba(79,140,255,0.65), rgba(139,108,255,0.65)); opacity:.6;
+  }
   .trade-stat:nth-child(1),
   .trade-stat:nth-child(2),
   .trade-stat:nth-child(3){grid-column:span 4;}
@@ -505,23 +512,19 @@
   .trade-stat:nth-child(6),
   .trade-stat:nth-child(7){grid-column:span 3;}
   .trade-stat{
-    background:rgba(21,27,38,0.72); backdrop-filter:blur(6px); border:1px solid var(--border-soft); border-radius:var(--radius);
-    padding:14px 16px; transition:border-color .15s, box-shadow .15s, transform .15s; position:relative; overflow:hidden;
+    padding:16px 20px; margin:-1px 0 0 -1px;
+    border-left:1px solid var(--border-soft); border-top:1px solid var(--border-soft);
+    transition:background .15s;
   }
-  .trade-stat::before{
-    content:''; position:absolute; top:0; left:0; right:0; height:2px;
-    background:linear-gradient(90deg, rgba(79,140,255,0.65), rgba(139,108,255,0.65)); opacity:.6;
-  }
-  .trade-stat:hover{transform:translateY(-1px); border-color:var(--border);}
-  .trade-stat:focus-within{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent), 0 0 20px -6px rgba(79,140,255,0.5);}
+  .trade-stat:focus-within{background:rgba(79,140,255,0.06);}
   .trade-stat .l{
     display:flex; align-items:center; gap:6px; font-size:10.5px; color:var(--text-faint); text-transform:uppercase;
     letter-spacing:.05em; margin-bottom:8px;
   }
-  .trade-stat.is-pos{border-color:var(--green-border); box-shadow:0 0 24px -8px rgba(31,209,138,0.45);}
-  .trade-stat.is-neg{border-color:var(--red-border); box-shadow:0 0 24px -8px rgba(240,71,90,0.45);}
-  .trade-stat.is-pos::before{background:var(--green); opacity:.8;}
-  .trade-stat.is-neg::before{background:var(--red); opacity:.8;}
+  /* Inside the shared panel the win/loss cue is a segment tint, not a border
+     glow — a glowing framed cell would reintroduce the card-in-card look. */
+  .trade-stat.is-pos{background:rgba(31,209,138,0.06);}
+  .trade-stat.is-neg{background:rgba(240,71,90,0.06);}
   .trade-stat .l svg{width:14px; height:14px; flex-shrink:0; color:var(--text-dim); opacity:.9;}
   /* The profit card is the point of the whole screen — let it read a touch
      bigger and bolder than the rest so the grid isn't seven equal cells. */
@@ -623,13 +626,18 @@
   }
   .trade-del:hover{background:var(--red); color:#fff; border-color:var(--red); transform:scale(1.06);}
 
+  /* Reads as a plain value at rest; hover/focus reveal that it's editable.
+     A visible box on every field made each grid cell look like a card inside
+     a card. The negative left margin keeps the text aligned with the label
+     while the padding still gives the revealed box breathing room. */
   .cell-input{
-    width:100%; background:rgba(10,14,20,0.35); border:1px solid var(--border-soft); border-radius:9px; outline:none; padding:8px 11px;
-    font-family:var(--font-mono); font-size:14px; font-weight:600; color:var(--text);
+    width:100%; background:transparent; border:1px solid transparent; border-radius:8px; outline:none;
+    padding:6px 10px; margin-left:-10px;
+    font-family:var(--font-mono); font-size:15px; font-weight:600; color:var(--text);
     transition:border-color .15s, background .15s, box-shadow .15s;
   }
-  .cell-input:hover{border-color:var(--border);}
-  .cell-input:focus{background:rgba(10,14,20,0.6); border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-dim);}
+  .cell-input:hover{background:rgba(10,14,20,0.45); border-color:var(--border-soft);}
+  .cell-input:focus{background:rgba(10,14,20,0.65); border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-dim);}
   /* No spinner arrows on the number fields — they clutter a clean value box. */
   .cell-input[type=number]{-moz-appearance:textfield;}
   .cell-input::-webkit-outer-spin-button,
@@ -1306,16 +1314,59 @@
           </div>
         </div>
       </div>
-      <div class="trade-legal">
-        <p>TradeLista is a trade-journaling tool for reviewing your own past trades — not investment advice, trade signals, or a broker. Trading in futures, currencies and options involves substantial risk and is not appropriate for everyone; only risk capital should be used for trading. Any testimonials appearing on this website may not be representative of other clients and are not a guarantee of future performance or success.</p>
-        <div class="links">
-          <a href="impressum.html">Imprint</a>
-          <a href="privacy.html">Privacy Policy</a>
-          <a href="terms.html">Terms</a>
-          <a href="withdrawal-policy.html">Withdrawal Policy</a>
-          <span>© 2026 TradeLista</span>
+      <footer class="trade-page-footer">
+        <div class="footer-inner">
+          <div class="footer-brand">
+            <div class="brand">
+              <svg class="brand-icon" width="28" height="28" viewBox="0 0 112 112" aria-hidden="true">
+                <rect width="112" height="112" rx="28" fill="url(#logoGradTradeFooter)"/>
+                <rect x="16" y="16" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+                <rect x="44" y="16" width="24" height="24" rx="6" fill="#22c55e"/>
+                <rect x="72" y="16" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+                <rect x="16" y="44" width="24" height="24" rx="6" fill="#ef4444"/>
+                <rect x="44" y="44" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+                <rect x="72" y="44" width="24" height="24" rx="6" fill="#22c55e"/>
+                <rect x="16" y="72" width="24" height="24" rx="6" fill="rgba(255,255,255,0.28)"/>
+                <rect x="44" y="72" width="24" height="24" rx="6" fill="#22c55e"/>
+                <rect x="72" y="72" width="24" height="24" rx="6" fill="#ef4444"/>
+                <defs>
+                  <linearGradient id="logoGradTradeFooter" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#000000"/>
+                    <stop offset="100%" stop-color="#8081F8"/>
+                  </linearGradient>
+                </defs>
+              </svg><span class="brand-word"><span class="brand-trade">Trade</span><span class="brand-accent">Lista</span></span>
+            </div>
+            <p style="font-size:11px; margin-top:8px; opacity:.85;">TradeLista is a trade-journaling tool for reviewing your own past trades — not investment advice, trade signals, or a broker. Trading in futures, currencies and options involves substantial risk and is not appropriate for everyone; only risk capital should be used for trading. Any testimonials appearing on this website may not be representative of other clients and are not a guarantee of future performance or success.</p>
+          </div>
+          <div class="footer-cols">
+            <div class="footer-col">
+              <h4>Product</h4>
+              <a href="index.html#features">Features</a>
+              <a href="index.html#pricing">Pricing</a>
+              <a href="app.html">Calendar demo</a>
+            </div>
+            <div class="footer-col">
+              <h4>Company</h4>
+              <a href="contact.html">Contact</a>
+              <a href="faq.html">FAQ</a>
+              <a href="privacy.html">Privacy Policy</a>
+              <a href="impressum.html">Imprint</a>
+              <a href="terms.html">Terms</a>
+              <a href="data-register.html">Data Portability</a>
+              <a href="withdrawal-policy.html">Withdrawal Policy</a>
+            </div>
+          </div>
         </div>
-      </div>
+        <div class="footer-bottom">
+          <span>© 2026 TradeLista. All rights reserved.</span>
+          <div class="footer-legal-links">
+            <a class="footer-withdraw-btn" href="withdrawal.html">Withdraw from contract</a>
+            <a class="footer-withdraw-btn" href="cancel-contract.html">Cancel contract here</a>
+          </div>
+          <span>tradelista.com</span>
+        </div>
+      </footer>
     </div>
 
     <div class="trade-modal-footer">
