@@ -227,14 +227,18 @@
   .kpi:hover{border-color:var(--border); transform:translateY(-2px);}
   .kpi[data-tip]::after{
     content:attr(data-tip);
-    position:absolute; top:calc(100% + 10px); left:50%; transform:translateX(-50%) translateY(4px);
+    /* Span the card (left/right:0) instead of a fixed 230px centred box, so the
+       tooltip never reaches past the viewport edge — where html's overflow-x:clip
+       (added for the mobile no-pan fix) would clip it and make the text
+       unreadable on hover. Higher z-index keeps it above the frosted cards. */
+    position:absolute; top:calc(100% + 10px); left:0; right:0; transform:translateY(4px);
     background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px;
     padding:10px 14px; font-size:12px; font-weight:400; text-transform:none; letter-spacing:normal;
-    color:var(--text-dim); width:230px; line-height:1.55;
-    box-shadow:0 16px 40px -10px rgba(0,0,0,0.7); z-index:30;
+    color:var(--text); line-height:1.55;
+    box-shadow:0 16px 40px -10px rgba(0,0,0,0.7); z-index:100;
     opacity:0; pointer-events:none; transition:opacity .15s, transform .15s;
   }
-  .kpi[data-tip]:hover::after{opacity:1; transform:translateX(-50%) translateY(0);}
+  .kpi[data-tip]:hover::after{opacity:1; transform:translateY(0);}
   .kpi-icon{
     width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center;
     font-size:15px; margin-bottom:12px; background:var(--accent-dim); color:var(--accent);
