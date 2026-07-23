@@ -407,12 +407,31 @@
   }
   #dayOverlay{align-items:center;}
   #dayOverlay .modal{
+    /* Cap the height and lay the modal out as a column so the trade list can
+       scroll inside it — otherwise a day with many trades grows taller than
+       the screen and, being centre-aligned, gets its top row clipped. */
+    display:flex; flex-direction:column; max-height:88vh;
     background:
       radial-gradient(ellipse 480px 300px at 10% -12%, rgba(79,140,255,0.16), transparent),
       radial-gradient(ellipse 420px 280px at 105% 8%, rgba(139,108,255,0.14), transparent),
       radial-gradient(ellipse 380px 240px at 90% 105%, rgba(31,209,138,0.10), transparent),
       var(--bg-card);
   }
+  /* The list is the only part that scrolls; the title and the "Add trade for
+     this day" button stay pinned. min-height:0 lets a flex child actually
+     shrink so overflow engages; overscroll-behavior keeps the wheel from
+     scrolling the page behind once the list hits its end. The tiny padding
+     keeps a row's hover/selected outline off the scroll edges. */
+  #dayTradesList{
+    flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch; padding:2px 2px 0;
+  }
+  #dayTradesList::-webkit-scrollbar{width:10px;}
+  #dayTradesList::-webkit-scrollbar-thumb{
+    background:var(--border); border-radius:99px;
+    border:3px solid transparent; background-clip:padding-box;
+  }
+  #dayTradesList::-webkit-scrollbar-thumb:hover{background:var(--text-faint);}
   .modal-lg{max-width:860px;}
   @keyframes pop{from{opacity:0; transform:translateY(8px) scale(.98);} to{opacity:1; transform:none;}}
   .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
