@@ -20,15 +20,10 @@ input int CatchUpDays = 30; // On start, resend any closed trade from this many 
 
 string EndpointUrl = "https://xkmpknoughjnxalkoatx.supabase.co/functions/v1/ingest-trade";
 
-// How many history entries existed last time we checked. MT4 has no
-// per-deal event like MT5's OnTradeTransaction, so instead we watch the
-// history list's length and process whatever got added since last time.
-int lastHistoryTotal = 0;
-
-// Order tickets already sent this session — guards against sending the
-// same closed order twice if OnTrade fires more than once for it. The
-// server independently de-duplicates by ticket too (in case the EA is
-// ever restarted or attached to more than one chart on the same account).
+// Tickets already sent this session — guards against sending the same
+// closed order twice when the timer below scans it again. The server
+// independently de-duplicates by ticket too (in case the EA is restarted
+// or attached to more than one chart on the same account).
 int sentTickets[];
 
 bool alreadySent(int ticket)
@@ -38,22 +33,20 @@ bool alreadySent(int ticket)
    return false;
 }
 
-int OnInit()
+// Scan the account's closed-order history and send anything within the
+// CatchUpDays window that hasn't been sent yet. Called once at startup
+// (to catch up) and then every few seconds from the timer, so a trade
+// closed while the EA is running reaches TradeLista within seconds.
+// MQL4 has no live trade event (OnTrade only exists in MQL5), so polling
+// the history on a timer is how newly closed trades get detected. The
+// CatchUpDays cutoff keeps a fresh attach from re-sending ancient history,
+// and alreadySent()/the server's ticket de-dup make repeated scans safe.
+void scanHistory()
 {
-   int total = OrdersHistoryTotal();
-   lastHistoryTotal = total;
+   if(StringLen(ApiKey) == 0) return;
 
-   if(StringLen(ApiKey) == 0)
-   {
-      Alert("TradeListaSync: no API key set — trades will not be sent. Open the EA's Inputs tab and paste your TradeLista account's API key.");
-      return(INIT_SUCCEEDED);
-   }
-
-   // Catch up on anything closed while this EA wasn't running — e.g. trades
-   // placed from a phone while the desktop terminal was shut. The server
-   // upserts by ticket, so resending an already-synced trade is harmless;
-   // it just overwrites the same row with the same data.
    datetime cutoff = TimeCurrent() - CatchUpDays * 86400;
+   int total = OrdersHistoryTotal();
    for(int i = 0; i < total; i++)
    {
       if(!OrderSelect(i, SELECT_BY_POS, MODE_HISTORY)) continue;
@@ -70,35 +63,29 @@ int OnInit()
 
       sendClosedOrder(ticket);
    }
+}
 
+int OnInit()
+{
+   if(StringLen(ApiKey) == 0)
+   {
+      Alert("TradeListaSync: no API key set — trades will not be sent. Open the EA's Inputs tab and paste your TradeLista account's API key.");
+      return(INIT_SUCCEEDED);
+   }
+
+   scanHistory();      // catch up on trades closed while the EA wasn't running
+   EventSetTimer(3);   // then poll every 3 seconds so newly closed trades sync live
    return(INIT_SUCCEEDED);
 }
 
-void OnTrade()
+void OnDeinit(const int reason)
 {
-   if(StringLen(ApiKey) == 0) return;
+   EventKillTimer();
+}
 
-   int total = OrdersHistoryTotal();
-   if(total <= lastHistoryTotal){ lastHistoryTotal = total; return; }
-
-   for(int i = lastHistoryTotal; i < total; i++)
-   {
-      if(!OrderSelect(i, SELECT_BY_POS, MODE_HISTORY)) continue;
-
-      int orderType = OrderType();
-      if(orderType != OP_BUY && orderType != OP_SELL) continue; // skip pending orders and balance/credit entries
-      if(OrderCloseTime() == 0) continue;
-
-      int ticket = OrderTicket();
-      if(alreadySent(ticket)) continue;
-      int idx = ArraySize(sentTickets);
-      ArrayResize(sentTickets, idx + 1);
-      sentTickets[idx] = ticket;
-
-      sendClosedOrder(ticket);
-   }
-
-   lastHistoryTotal = total;
+void OnTimer()
+{
+   scanHistory();
 }
 
 void sendClosedOrder(int ticket)
