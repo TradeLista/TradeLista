@@ -15,6 +15,11 @@
 //     jurisdictions you're charging in first (Stripe Dashboard -> Tax ->
 //     Registrations). Flipping this on before that's set up won't produce
 //     correct tax, so don't set it to "true" until that's actually done.
+//   STRIPE_TAX_RATE_ID — a manual Stripe tax rate id (txr_...) applied to
+//     every subscription while TAX_ENABLED is off. This is the free way to
+//     charge a fixed VAT (e.g. German 19%) without Stripe Tax's per-
+//     transaction fee. Defaults to the live German 19% rate; set to an empty
+//     string to charge no tax. Ignored when TAX_ENABLED is "true".
 //   STRIPE_PRICE_ID    — overrides the price below. Use this once you've
 //     created a tax-inclusive $10/mo price in Stripe (Products -> Pro ->
 //     Add another price -> tick "Tax behavior: inclusive") — the $10 stays
@@ -35,6 +40,13 @@ const supabaseAdmin = createClient(
 const PRICE_ID = Deno.env.get('STRIPE_PRICE_ID') ?? 'price_1TuWtiK3hVexCjbWUSCD5xnb';
 const SITE_URL = Deno.env.get('SITE_URL') ?? 'http://localhost:5173';
 const TAX_ENABLED = Deno.env.get('TAX_ENABLED') === 'true';
+// Manual VAT: a fixed Stripe tax rate (txr_...) applied to every subscription
+// and its recurring invoices while Stripe Tax's automatic_tax stays off
+// (TAX_ENABLED=false, the default). This is the free alternative to Stripe Tax
+// — no per-transaction Tax fee. Override with STRIPE_TAX_RATE_ID; falls back to
+// the live German 19% rate created in the Stripe Dashboard. Set the secret to
+// an empty string to charge no tax at all.
+const TAX_RATE_ID = Deno.env.get('STRIPE_TAX_RATE_ID') ?? 'txr_1TwNzMK3hVexCjbWIVso5YD6';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': Deno.env.get('SITE_URL') ?? '*',
@@ -80,6 +92,10 @@ Deno.serve(async (req) => {
     cancel_url: `${SITE_URL}/app.html`,
     subscription_data: {
       metadata: { supabase_user_id: user.id },
+      // Apply the manual VAT rate to the subscription and every renewal invoice.
+      // Skipped when TAX_ENABLED turns on automatic_tax below (only one of the
+      // two tax mechanisms may be active on a subscription at a time).
+      ...(!TAX_ENABLED && TAX_RATE_ID ? { default_tax_rates: [TAX_RATE_ID] } : {}),
     },
     // Stripe requires customer_update.address = 'auto' whenever an existing
     // Customer is combined with automatic_tax — otherwise it can't fill in
