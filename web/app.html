@@ -3113,27 +3113,29 @@ tradeNoteEl.addEventListener('input', saveTradeNote);
 const MAX_INLINE_IMAGE_BYTES = 15 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/png','image/jpeg','image/gif','image/webp']);
 
-// Downscales/re-encodes oversized images client-side before they ever reach
-// Storage, so a full-resolution phone photo doesn't burn through the bucket
-// quota for what's really just a chart screenshot. Animated GIFs are left
-// untouched (canvas would flatten them to a single frame), and anything
-// already small is uploaded as-is rather than re-compressed for no gain.
+// Downscales and re-encodes images to JPEG client-side before they ever reach
+// Storage, so a full-resolution phone photo — or a UI screenshot saved as a
+// heavy PNG — doesn't burn through the bucket quota for what's really just a
+// chart picture. A typical PNG screenshot is 3–4× larger than the same image
+// as JPEG, so we always attempt the re-encode rather than skipping anything
+// merely because it's under some byte threshold (that old skip is exactly why
+// PNG screenshots were stored full-size). The size guard below keeps the
+// original whenever re-encoding wouldn't actually shrink it, so quality is
+// only ever traded for a real space win. Animated GIFs are left untouched
+// (canvas would flatten them to a single frame), and already-tiny files are
+// skipped since there's nothing meaningful to reclaim.
 const MAX_IMAGE_DIMENSION = 1600;
 const IMAGE_QUALITY = 0.82;
-const SKIP_COMPRESSION_BYTES = 500 * 1024;
+const SKIP_COMPRESSION_BYTES = 40 * 1024;
 
 function compressImage(file){
   return new Promise(resolve=>{
-    if(file.type === 'image/gif'){ resolve(file); return; }
+    if(file.type === 'image/gif' || file.size <= SKIP_COMPRESSION_BYTES){ resolve(file); return; }
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = ()=>{
       URL.revokeObjectURL(url);
       const { width, height } = img;
-      if(width <= MAX_IMAGE_DIMENSION && height <= MAX_IMAGE_DIMENSION && file.size <= SKIP_COMPRESSION_BYTES){
-        resolve(file);
-        return;
-      }
       const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(width, height));
       const canvas = document.createElement('canvas');
       canvas.width = Math.round(width * scale);
