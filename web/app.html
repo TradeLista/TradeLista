@@ -1194,7 +1194,7 @@
               <span class="rte-sep"></span>
               <button type="button" class="rte-btn" id="rteImageBtn" title="Insert image">🖼️</button>
               <button type="button" class="rte-btn" data-cmd="removeFormat" title="Clear formatting"><span style="text-decoration:line-through;">A</span></button>
-              <input type="file" id="rteImageInput" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;">
+              <input type="file" id="rteImageInput" accept="image/*" style="display:none;">
             </div>
             <div class="rte-editor" id="tradeNote" contenteditable="true" data-placeholder="What happened on this trade? Paste a screenshot with Ctrl+V or use the image button above."></div>
           </div>
@@ -2952,8 +2952,8 @@ async function openTrade(id){
   input.onchange = async (e)=>{
     let file = e.target.files[0];
     if(!file) return;
-    if(!ALLOWED_IMAGE_TYPES.has(file.type)){
-      flashSaved('Please use a PNG, JPG, GIF or WEBP image.', true);
+    if(!isUploadableImage(file)){
+      flashSaved('That doesn’t look like an image — please pick a photo or screenshot.', true);
       return;
     }
     if(file.size > MAX_INLINE_IMAGE_BYTES){
@@ -3111,16 +3111,29 @@ const tradeNoteEl = document.getElementById('tradeNote');
 tradeNoteEl.addEventListener('input', saveTradeNote);
 
 const MAX_INLINE_IMAGE_BYTES = 15 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = new Set(['image/png','image/jpeg','image/gif','image/webp']);
+
+// Phone galleries hand over all sorts of image types — iPhone HEIC/HEIF,
+// newer-Android HEIF/WEBP/AVIF, plain JPEG, and occasionally a file with a
+// blank MIME type — so accept anything the browser calls an image (or, when
+// the type is blank, anything with an image file extension) rather than the
+// rigid four-type allow-list that used to turn ordinary phone photos away.
+// compressImage still decodes and re-encodes the picture; the note sanitizer
+// independently validates the final image URL, so this gate is only "did the
+// user mean to upload a picture", not a security boundary.
+const IMAGE_EXT_RE = /\.(png|jpe?g|gif|webp|heic|heif|avif|bmp|tiff?)$/i;
+function isUploadableImage(file){
+  if(file.type && file.type.startsWith('image/')) return true;
+  if(!file.type && IMAGE_EXT_RE.test(file.name || '')) return true; // some Android pickers give a blank type
+  return false;
+}
 
 // Downscales and re-encodes images to JPEG client-side before they ever reach
 // Storage, so a full-resolution phone photo — or a UI screenshot saved as a
 // heavy PNG — doesn't burn through the bucket quota for what's really just a
 // chart picture. A typical PNG screenshot is 3–4× larger than the same image
 // as JPEG, so we always attempt the re-encode rather than skipping anything
-// merely because it's under some byte threshold (that old skip is exactly why
-// PNG screenshots were stored full-size). The size guard below keeps the
-// original whenever re-encoding wouldn't actually shrink it, so quality is
+// merely because it's under some byte threshold. The size guard below keeps
+// the original whenever re-encoding wouldn't actually shrink it, so quality is
 // only ever traded for a real space win. Animated GIFs are left untouched
 // (canvas would flatten them to a single frame), and already-tiny files are
 // skipped since there's nothing meaningful to reclaim.
@@ -3128,34 +3141,47 @@ const MAX_IMAGE_DIMENSION = 1600;
 const IMAGE_QUALITY = 0.82;
 const SKIP_COMPRESSION_BYTES = 40 * 1024;
 
-function compressImage(file){
+// Decodes a file into something canvas can draw. Tries createImageBitmap first
+// because it (a) decodes more source formats than <img> in some browsers and
+// (b) applies the photo's EXIF orientation, so a portrait shot from a phone
+// doesn't land sideways after re-encoding. Falls back to <img> for older
+// browsers. Resolves null when nothing can decode it (e.g. an iPhone HEIC
+// opened in a non-Safari browser) so the caller can upload the original
+// untouched instead of failing.
+async function decodeImage(file){
+  if(window.createImageBitmap){
+    try{ return await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+    catch(e){ /* fall through to the <img> path */ }
+  }
   return new Promise(resolve=>{
-    if(file.type === 'image/gif' || file.size <= SKIP_COMPRESSION_BYTES){ resolve(file); return; }
     const url = URL.createObjectURL(file);
     const img = new Image();
-    img.onload = ()=>{
-      URL.revokeObjectURL(url);
-      const { width, height } = img;
-      const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(width, height));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(width * scale);
-      canvas.height = Math.round(height * scale);
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob(blob=>{
-        if(!blob || blob.size >= file.size){ resolve(file); return; } // re-encode didn't help — keep the original
-        const name = file.name.replace(/\.\w+$/, '') + '.jpg';
-        resolve(new File([blob], name, { type: 'image/jpeg' }));
-      }, 'image/jpeg', IMAGE_QUALITY);
-    };
-    img.onerror = ()=>{ URL.revokeObjectURL(url); resolve(file); };
+    img.onload = ()=>{ URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = ()=>{ URL.revokeObjectURL(url); resolve(null); };
     img.src = url;
   });
 }
 
+async function compressImage(file){
+  if(file.type === 'image/gif' || file.size <= SKIP_COMPRESSION_BYTES) return file;
+  const src = await decodeImage(file);
+  if(!src) return file; // undecodable here (e.g. HEIC on a non-Safari browser) — upload as-is
+  const w = src.width, h = src.height;
+  const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(w, h));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(w * scale);
+  canvas.height = Math.round(h * scale);
+  canvas.getContext('2d').drawImage(src, 0, 0, canvas.width, canvas.height);
+  if(src.close) src.close(); // free the ImageBitmap
+  const blob = await new Promise(res=> canvas.toBlob(res, 'image/jpeg', IMAGE_QUALITY));
+  if(!blob || blob.size >= file.size) return file; // re-encode didn't help — keep the original
+  return new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' });
+}
+
 async function insertImageFile(file){
   if(!(await TLAuth.isPro())){ TLAuth.ui.requirePro('Image uploads'); return; }
-  if(!ALLOWED_IMAGE_TYPES.has(file.type)){
-    flashSaved('Please use a PNG, JPG, GIF or WEBP image.', true);
+  if(!isUploadableImage(file)){
+    flashSaved('That doesn’t look like an image — please pick a photo or screenshot.', true);
     return;
   }
   if(file.size > MAX_INLINE_IMAGE_BYTES){
