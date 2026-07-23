@@ -1049,20 +1049,81 @@
   </div>
 
   <div class="sidebar">
-  <div class="card">
+  <style>
+    #scoreCard .score-ring-wrap{position:relative; width:150px; height:150px; margin:8px auto 4px;}
+    #scoreCard .score-ring{width:100%; height:100%; transform:rotate(-90deg);}
+    #scoreCard .score-ring-track{fill:none; stroke:var(--bg-elevated); stroke-width:10;}
+    #scoreCard .score-ring-arc{fill:none; stroke:#1fd18a; stroke-width:10; stroke-linecap:round; stroke-dasharray:327; stroke-dashoffset:327; transition:stroke-dashoffset .8s ease, stroke .4s ease;}
+    #scoreCard .score-ring-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+    #scoreCard .score-value{font-size:40px; font-weight:800; line-height:1; font-family:var(--font-mono);}
+    #scoreCard .score-outof{font-size:11px; color:var(--text-faint); margin-top:3px;}
+    #scoreCard .score-grade{text-align:center; font-size:13px; font-weight:700; margin:2px 0 16px;}
+    #scoreCard .score-factors{display:flex; flex-direction:column; gap:11px;}
+    #scoreCard .score-factor-top{display:flex; justify-content:space-between; align-items:baseline; font-size:12px; margin-bottom:4px;}
+    #scoreCard .score-factor-name{color:var(--text-dim);}
+    #scoreCard .score-factor-val{font-weight:700; font-family:var(--font-mono); font-size:12.5px;}
+    #scoreCard .score-factor-track{height:6px; background:var(--bg-elevated); border-radius:99px; overflow:hidden;}
+    #scoreCard .score-factor-fill{height:100%; border-radius:99px; transition:width .7s ease;}
+    #scoreCard .score-note{margin-top:16px; font-size:11px; line-height:1.5; color:var(--text-faint);}
+    #scoreCard .score-empty{font-size:13px; color:var(--text-dim); line-height:1.6; padding:12px 0;}
+    #insightsCard .ins-tiles{display:grid; grid-template-columns:repeat(auto-fit, minmax(118px, 1fr)); gap:10px; margin-bottom:22px;}
+    #insightsCard .ins-tile{background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:10px; padding:11px 13px;}
+    #insightsCard .ins-tile-label{font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-faint); font-weight:700; margin-bottom:6px;}
+    #insightsCard .ins-tile-val{font-size:19px; font-weight:800; font-family:var(--font-mono); line-height:1;}
+    #insightsCard .ins-tile-val.is-pos{color:var(--green);}
+    #insightsCard .ins-tile-val.is-neg{color:var(--red);}
+    #insightsCard .ins-breakdowns{display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:18px 32px; align-items:start;}
+    #insightsCard .ins-col > .insights-section-label{margin-top:0;}
+    #insightsCard .ins-row{padding:8px 0; border-bottom:1px solid var(--border-soft);}
+    #insightsCard .ins-row:last-child{border-bottom:none;}
+    #insightsCard .ins-row-top{display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:5px;}
+    #insightsCard .ins-name{font-size:12.5px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+    #insightsCard .ins-pnl{font-size:12.5px; font-weight:700; font-family:var(--font-mono); flex-shrink:0;}
+    #insightsCard .ins-pnl.is-pos{color:var(--green);}
+    #insightsCard .ins-pnl.is-neg{color:var(--red);}
+    #insightsCard .ins-bar{height:5px; background:var(--bg-elevated); border-radius:99px; overflow:hidden; margin-bottom:5px;}
+    #insightsCard .ins-fill{height:100%; border-radius:99px;}
+    #insightsCard .ins-sub{font-size:11px; color:var(--text-faint);}
+  </style>
+  <div class="card" id="scoreCard">
     <div class="cal-head">
-      <h2>📊 Insights <span style="color:var(--text-faint); font-weight:500; font-size:12.5px;">— by tag &amp; weekday</span></h2>
+      <h2>TradeLista Score <span id="scoreRangeLabel" style="color:var(--text-faint); font-weight:500; font-size:12.5px;">— your trading health, 0–100</span></h2>
+    </div>
+    <div id="scoreBody">
+      <div class="score-empty" id="scoreEmpty" style="display:none;">Log at least 5 trades in the selected period to generate your score.</div>
+      <div id="scoreMain">
+        <div class="score-ring-wrap">
+          <svg class="score-ring" viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="score-ring-track" cx="60" cy="60" r="52"></circle>
+            <circle class="score-ring-arc" id="scoreRingArc" cx="60" cy="60" r="52"></circle>
+          </svg>
+          <div class="score-ring-center">
+            <div class="score-value" id="scoreValue">—</div>
+            <div class="score-outof">/ 100</div>
+          </div>
+        </div>
+        <div class="score-grade" id="scoreGrade">—</div>
+        <div class="score-factors" id="scoreFactors"></div>
+        <div class="score-note">A blended read across six factors — profitability, risk and consistency — over the selected period. TradeLista's own metric.</div>
+      </div>
+    </div>
+  </div>
+  </div>
+  </div>
+
+  <div class="card" id="insightsCard">
+    <div class="cal-head">
+      <h2>📊 Insights <span id="insRangeLabel" style="color:var(--text-faint); font-weight:500; font-size:12.5px;">— performance breakdown</span></h2>
     </div>
     <div id="insightsBody">
-      <div class="insights-section-label">Key stats</div>
-      <div id="insightsKeyStats"></div>
-      <div class="insights-section-label">By tag</div>
-      <div id="insightsTagList"></div>
-      <div class="insights-section-label">By weekday</div>
-      <div id="insightsWeekdayList"></div>
+      <div class="ins-tiles" id="insTiles"></div>
+      <div class="ins-breakdowns">
+        <div class="ins-col"><div class="insights-section-label">By symbol</div><div id="insSymbolList"></div></div>
+        <div class="ins-col"><div class="insights-section-label">Long vs Short</div><div id="insSideList"></div></div>
+        <div class="ins-col"><div class="insights-section-label">By weekday</div><div id="insightsWeekdayList"></div></div>
+        <div class="ins-col"><div class="insights-section-label">By tag</div><div id="insightsTagList"></div></div>
+      </div>
     </div>
-  </div>
-  </div>
   </div>
 
   <div class="card">
@@ -2056,6 +2117,7 @@ function renderAll(){
   renderKPIs();
   renderEquityChart();
   renderInsights();
+  renderScore();
 }
 
 /* ---------- Equity curve chart (with date-range picker) ---------- */
@@ -2136,6 +2198,13 @@ function insightRowHTML(label, stat){
   return `<div class="insight-row"><span>${escapeHtml(label)}</span><span class="insight-mid">${stat.count} trade${stat.count===1?'':'s'} · ${winRate}% win</span><span class="${pnlClass}">${pnlSign}${stat.pnl.toFixed(2)}</span></div>`;
 }
 
+function fmtRangeLabel(from, to){
+  const opts = { day:'numeric', month:'short' };
+  const f = from.toLocaleDateString('en-GB', opts), t = to.toLocaleDateString('en-GB', opts);
+  const fy = from.getFullYear(), ty = to.getFullYear();
+  return fy !== ty ? `${f} ${fy} – ${t} ${ty}` : `${f} – ${t} ${ty}`;
+}
+
 async function renderInsights(){
   const body = document.getElementById('insightsBody');
   const lockId = 'insightsLock';
@@ -2158,28 +2227,119 @@ async function renderInsights(){
   body.style.display = '';
 
   const { from, to } = getChartRange();
+  document.getElementById('insRangeLabel').textContent = '— ' + fmtRangeLabel(from, to);
   const trades = collectTradesInRange(from, to);
   const meta = loadMeta();
 
-  const weekdayStats = WEEKDAY_NAMES.map(()=>({ count:0, wins:0, pnl:0 }));
-  const tagStats = {};
+  const bump = (obj, key, profit)=>{
+    if(!obj[key]) obj[key] = { count:0, wins:0, pnl:0 };
+    obj[key].count++; obj[key].pnl += profit; if(profit >= 0) obj[key].wins++;
+  };
 
+  let grossWin = 0, grossLoss = 0, winCount = 0, net = 0, best = -Infinity, worst = Infinity;
+  const dayTotals = {}, symStats = {}, sideStats = {}, weekdayStats = {}, tagStats = {};
   trades.forEach(t=>{
-    const dow = (new Date(t.date+'T00:00:00').getDay() + 6) % 7; // Mon=0..Sun=6
-    weekdayStats[dow].count++;
-    weekdayStats[dow].pnl += t.profit;
-    if(t.profit >= 0) weekdayStats[dow].wins++;
-
-    const tags = (meta[t.id] && meta[t.id].tags) || [];
-    tags.forEach(tag=>{
-      if(!tagStats[tag]) tagStats[tag] = { count:0, wins:0, pnl:0 };
-      tagStats[tag].count++;
-      tagStats[tag].pnl += t.profit;
-      if(t.profit >= 0) tagStats[tag].wins++;
-    });
+    const p = t.profit; net += p;
+    if(p >= 0){ grossWin += p; winCount++; } else { grossLoss += -p; }
+    if(p > best) best = p;
+    if(p < worst) worst = p;
+    dayTotals[t.date] = (dayTotals[t.date] || 0) + p;
+    if(t.symbol) bump(symStats, t.symbol, p);
+    if(t.side === 'buy' || t.side === 'sell') bump(sideStats, t.side, p);
+    bump(weekdayStats, WEEKDAY_NAMES[(new Date(t.date+'T00:00:00').getDay() + 6) % 7], p);
+    ((meta[t.id] && meta[t.id].tags) || []).forEach(tag=> bump(tagStats, tag, p));
   });
 
-  // Key stats: profit factor, average win/loss and the current day streak.
+  const n = trades.length;
+  const winRate = n ? Math.round(winCount / n * 100) : 0;
+  const pf = grossLoss > 0 ? grossWin / grossLoss : (grossWin > 0 ? Infinity : 0);
+  const avgTrade = n ? net / n : 0;
+  const money = v => (v >= 0 ? '+' : '') + v.toFixed(2);
+
+  const tiles = [
+    ['Net PnL',       n ? money(net) : '—',    net >= 0 ? 'is-pos' : 'is-neg'],
+    ['Win rate',      n ? winRate + '%' : '—', ''],
+    ['Profit factor', n ? (pf === Infinity ? '∞' : pf.toFixed(2)) : '—', pf >= 1 ? 'is-pos' : (n ? 'is-neg' : '')],
+    ['Avg trade',     n ? money(avgTrade) : '—', avgTrade >= 0 ? 'is-pos' : 'is-neg'],
+    ['Best trade',    n ? money(best) : '—',   best >= 0 ? 'is-pos' : 'is-neg'],
+    ['Worst trade',   n ? money(worst) : '—',  worst >= 0 ? 'is-pos' : 'is-neg'],
+  ];
+  document.getElementById('insTiles').innerHTML = tiles.map(([label,val,cls])=>
+    `<div class="ins-tile"><div class="ins-tile-label">${label}</div><div class="ins-tile-val ${cls}">${val}</div></div>`).join('');
+
+  const rows = (entries, emptyMsg)=>{
+    if(!entries.length) return `<div class="insights-empty">${emptyMsg}</div>`;
+    const maxAbs = Math.max(1, ...entries.map(([,s])=>Math.abs(s.pnl)));
+    return entries.map(([name, s])=>{
+      const wr = s.count ? Math.round(s.wins / s.count * 100) : 0;
+      const pos = s.pnl >= 0;
+      const w = Math.max(3, Math.round(Math.abs(s.pnl) / maxAbs * 100));
+      return `<div class="ins-row">`
+        + `<div class="ins-row-top"><span class="ins-name">${escapeHtml(name)}</span>`
+        + `<span class="ins-pnl ${pos ? 'is-pos' : 'is-neg'}">${money(s.pnl)}</span></div>`
+        + `<div class="ins-bar"><div class="ins-fill" style="width:${w}%; background:${pos ? 'var(--green)' : 'var(--red)'};"></div></div>`
+        + `<div class="ins-sub">${s.count} trade${s.count === 1 ? '' : 's'} · ${wr}% win</div></div>`;
+    }).join('');
+  };
+
+  const byCount = obj => Object.entries(obj).sort((a,b)=>b[1].count - a[1].count);
+  document.getElementById('insSymbolList').innerHTML = rows(byCount(symStats).slice(0,6), 'No symbol on these trades.');
+  const sideEntries = [];
+  if(sideStats.buy) sideEntries.push(['Long', sideStats.buy]);
+  if(sideStats.sell) sideEntries.push(['Short', sideStats.sell]);
+  document.getElementById('insSideList').innerHTML = rows(sideEntries, 'No buy/sell info on these trades.');
+  document.getElementById('insightsWeekdayList').innerHTML = rows(WEEKDAY_NAMES.filter(d=>weekdayStats[d]).map(d=>[d, weekdayStats[d]]), 'No trades in this period.');
+  document.getElementById('insightsTagList').innerHTML = rows(byCount(tagStats), 'No tagged trades — add a tag on a trade to see a breakdown.');
+}
+
+/* ---------- TradeLista Score ----------
+   A blended 0-100 read across six factors of the trader's own results over
+   the selected range. TradeLista's own factors, mapping and weights —
+   computed from the same trade + equity data the calendar and insights use. */
+function tlsBand(s){
+  if(s>=80) return { color:'#1fd18a', grade:'Excellent' };
+  if(s>=65) return { color:'#8fd14f', grade:'Strong' };
+  if(s>=50) return { color:'#f5c451', grade:'Solid' };
+  if(s>=35) return { color:'#ff8a3d', grade:'Developing' };
+  return { color:'#f0475a', grade:'Needs work' };
+}
+function tlsClamp(x){ return Math.max(0, Math.min(100, x)); }
+
+async function renderScore(){
+  const card = document.getElementById('scoreCard');
+  if(!card) return;
+  const body = document.getElementById('scoreBody');
+  let lock = document.getElementById('scoreLock');
+  const isPro = await TLAuth.isPro();
+
+  if(!isPro){
+    body.style.display = 'none';
+    if(!lock){
+      lock = document.createElement('div');
+      lock.className = 'pro-lock';
+      lock.id = 'scoreLock';
+      lock.innerHTML = `<strong>⭐ Pro feature</strong> Your TradeLista Score is part of the Pro plan. <button type="button">Upgrade</button>`;
+      lock.querySelector('button').onclick = ()=> TLAuth.ui.requirePro('TradeLista Score');
+      body.parentElement.insertBefore(lock, body);
+    }
+    return;
+  }
+  if(lock) lock.remove();
+  body.style.display = '';
+
+  const { from, to } = getChartRange();
+  document.getElementById('scoreRangeLabel').textContent = '— ' + fmtRangeLabel(from, to);
+  const trades = collectTradesInRange(from, to);
+  const emptyEl = document.getElementById('scoreEmpty');
+  const mainEl = document.getElementById('scoreMain');
+  if(trades.length < 5){
+    emptyEl.style.display = '';
+    mainEl.style.display = 'none';
+    return;
+  }
+  emptyEl.style.display = 'none';
+  mainEl.style.display = '';
+
   let grossWin = 0, grossLoss = 0, winCount = 0, lossCount = 0;
   const dayTotals = {};
   trades.forEach(t=>{
@@ -2187,36 +2347,61 @@ async function renderInsights(){
     else { grossLoss += -t.profit; lossCount++; }
     dayTotals[t.date] = (dayTotals[t.date] || 0) + t.profit;
   });
-  const profitFactor = grossLoss > 0 ? grossWin / grossLoss : null;
-  const pfText = grossLoss > 0 ? profitFactor.toFixed(2) : (grossWin > 0 ? '∞' : '—');
-  const pfClass = grossLoss > 0 ? (profitFactor >= 1 ? 'is-pos' : 'is-neg') : (grossWin > 0 ? 'is-pos' : '');
+  const n = trades.length;
+  const winRate = winCount / n;
+  const profitFactor = grossLoss > 0 ? grossWin / grossLoss : (grossWin > 0 ? Infinity : 0);
+  const avgWin = winCount ? grossWin / winCount : 0;
+  const avgLoss = lossCount ? grossLoss / lossCount : 0;
+  const payoff = avgLoss > 0 ? avgWin / avgLoss : (avgWin > 0 ? Infinity : 0);
+  const dayKeys = Object.keys(dayTotals);
+  const greenRate = dayKeys.length ? dayKeys.filter(k=>dayTotals[k] >= 0).length / dayKeys.length : 0;
 
-  let streak = 0, streakIsWin = null;
-  const dayKeys = Object.keys(dayTotals).sort().reverse();
-  for(const k of dayKeys){
-    const isWin = dayTotals[k] >= 0;
-    if(streakIsWin === null) streakIsWin = isWin;
-    if(isWin !== streakIsWin) break;
-    streak++;
-  }
-  const streakText = streak ? `${streak} ${streakIsWin ? 'winning' : 'losing'} day${streak>1?'s':''}` : '—';
-  const streakClass = streak ? (streakIsWin ? 'is-pos' : 'is-neg') : '';
+  const series = computeEquitySeries(from, to);
+  let peak = -Infinity, maxDD = 0;
+  series.forEach(p=>{ if(p.pct > peak) peak = p.pct; const dd = peak - p.pct; if(dd > maxDD) maxDD = dd; });
+  const netPct = series.length ? series[series.length-1].pct : 0;
+  const recovery = maxDD > 0.05 ? netPct / maxDD : (netPct > 0 ? 5 : 0);
 
-  const keyRow = (label, value, cls)=>`<div class="insight-row"><span style="min-width:0;">${label}</span><span class="insight-mid"></span><span class="${cls||''}">${value}</span></div>`;
-  document.getElementById('insightsKeyStats').innerHTML =
-    keyRow('Profit factor', pfText, pfClass) +
-    keyRow('Avg win', winCount ? '+' + (grossWin/winCount).toFixed(2) : '—', winCount ? 'is-pos' : '') +
-    keyRow('Avg loss', lossCount ? '-' + (grossLoss/lossCount).toFixed(2) : '—', lossCount ? 'is-neg' : '') +
-    keyRow('Streak', streakText, streakClass);
+  const fWin  = tlsClamp((winRate - 0.35) / (0.60 - 0.35) * 100);
+  const fPF   = profitFactor === Infinity ? 100 : tlsClamp((profitFactor - 1.0) / (2.5 - 1.0) * 100);
+  const fPay  = payoff === Infinity ? 100 : tlsClamp((payoff - 0.5) / (2.0 - 0.5) * 100);
+  const fCons = tlsClamp((greenRate - 0.30) / (0.70 - 0.30) * 100);
+  const fDD   = tlsClamp(100 - maxDD / 20 * 100);
+  const fRec  = tlsClamp(recovery / 3 * 100);
 
-  document.getElementById('insightsWeekdayList').innerHTML =
-    WEEKDAY_NAMES.map((name,i)=>insightRowHTML(name, weekdayStats[i])).join('');
+  const factors = [
+    { name:'Win rate',          v:fWin,  raw: Math.round(winRate*100) + '%' },
+    { name:'Profit factor',     v:fPF,   raw: profitFactor === Infinity ? '∞' : profitFactor.toFixed(2) },
+    { name:'Payoff (win/loss)', v:fPay,  raw: payoff === Infinity ? '∞' : payoff.toFixed(2) },
+    { name:'Consistency',       v:fCons, raw: Math.round(greenRate*100) + '%' },
+    { name:'Drawdown control',  v:fDD,   raw: '-' + maxDD.toFixed(1) + '%' },
+    { name:'Recovery factor',   v:fRec,  raw: maxDD > 0.05 ? recovery.toFixed(2) : '∞' },
+  ];
+  const weights = [0.15, 0.22, 0.15, 0.18, 0.15, 0.15];
+  let overall = 0;
+  factors.forEach((f,i)=> overall += f.v * weights[i]);
+  overall = Math.round(overall);
 
-  const tagEntries = Object.entries(tagStats).sort((a,b)=>b[1].count-a[1].count);
-  const tagList = document.getElementById('insightsTagList');
-  tagList.innerHTML = tagEntries.length
-    ? tagEntries.map(([tag, stat])=>insightRowHTML(tag, stat)).join('')
-    : `<div class="insights-empty">No tagged trades in this period — open a trade and add a tag to see a breakdown here.</div>`;
+  const band = tlsBand(overall);
+  const valEl = document.getElementById('scoreValue');
+  valEl.textContent = overall;
+  valEl.style.color = band.color;
+  const gradeEl = document.getElementById('scoreGrade');
+  gradeEl.textContent = band.grade;
+  gradeEl.style.color = band.color;
+
+  const arc = document.getElementById('scoreRingArc');
+  arc.style.stroke = band.color;
+  arc.style.strokeDashoffset = 327 * (1 - overall / 100);
+
+  document.getElementById('scoreFactors').innerHTML = factors.map(f=>{
+    const c = tlsBand(f.v).color;
+    return `<div class="score-factor">`
+      + `<div class="score-factor-top"><span class="score-factor-name">${f.name}</span>`
+      + `<span class="score-factor-val" style="color:${c};">${f.raw}</span></div>`
+      + `<div class="score-factor-track"><div class="score-factor-fill" style="width:${Math.round(f.v)}%; background:${c};"></div></div>`
+      + `</div>`;
+  }).join('');
 }
 
 function renderEquityChart(){
@@ -2304,8 +2489,8 @@ function renderEquityChart(){
   });
 }
 
-document.getElementById('chartFrom').addEventListener('change', ()=>{ renderEquityChart(); renderInsights(); updateChartRangePillsActive(); });
-document.getElementById('chartTo').addEventListener('change', ()=>{ renderEquityChart(); renderInsights(); updateChartRangePillsActive(); });
+document.getElementById('chartFrom').addEventListener('change', ()=>{ renderEquityChart(); renderInsights(); renderScore(); updateChartRangePillsActive(); });
+document.getElementById('chartTo').addEventListener('change', ()=>{ renderEquityChart(); renderInsights(); renderScore(); updateChartRangePillsActive(); });
 
 /* ---------- Equity chart range presets ----------
    "All" starts from the active account's created_at rather than some
@@ -2326,6 +2511,7 @@ function setChartRangePreset(days){
   document.getElementById('chartTo').value = fmtDateKey(today);
   renderEquityChart();
   renderInsights();
+  renderScore();
   updateChartRangePillsActive();
 }
 function updateChartRangePillsActive(){
