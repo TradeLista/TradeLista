@@ -482,6 +482,16 @@
   }
   .trade-modal-footer .save-note{flex:1; margin:0; text-align:left;}
   .trade-modal-footer .btn{width:auto; padding:11px 26px;}
+  /* The trade view is a full-screen overlay that covers the page footer, so the
+     legally-required risk disclaimer + imprint links are repeated here, pinned
+     to the end of the scrollable body like a normal page footer. */
+  .trade-legal{
+    max-width:1180px; margin:40px auto 0; padding-top:20px; border-top:1px solid var(--border-soft);
+    font-size:11px; color:var(--text-faint); line-height:1.6;
+  }
+  .trade-legal .links{display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; margin-top:10px;}
+  .trade-legal .links a{color:var(--text-dim); text-decoration:none;}
+  .trade-legal .links a:hover{color:var(--text);}
 
   /* 12-col grid: row 1 is the trade's "context" (symbol · time · side), row 2
      the numbers (entry · exit · lot · profit) — balanced, no dead cells like
@@ -1289,11 +1299,21 @@
             </div>
           </div>
           <div>
-            <div class="section-label" style="margin-top:0;">🧠 Reflection questions</div>
+            <div class="section-label" style="margin-top:0;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.1 14c.2-.8.7-1.4 1.3-2A4.5 4.5 0 1 0 7.6 12c.6.6 1.1 1.2 1.3 2"/></svg>Reflection questions</div>
             <div class="trade-sidebar-card">
               <div id="questionsList"></div>
             </div>
           </div>
+        </div>
+      </div>
+      <div class="trade-legal">
+        <p>TradeLista is a trade-journaling tool for reviewing your own past trades — not investment advice, trade signals, or a broker. Trading in futures, currencies and options involves substantial risk and is not appropriate for everyone; only risk capital should be used for trading. Any testimonials appearing on this website may not be representative of other clients and are not a guarantee of future performance or success.</p>
+        <div class="links">
+          <a href="impressum.html">Imprint</a>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms</a>
+          <a href="withdrawal-policy.html">Withdrawal Policy</a>
+          <span>© 2026 TradeLista</span>
         </div>
       </div>
     </div>
