@@ -51,11 +51,11 @@
        trading green (bottom-right) and red (bottom-left) plus a faint gold
        centre — so the calendar shares that colourful backdrop. */
     background:
-      radial-gradient(ellipse 1300px 720px at 6% -14%, rgba(79,140,255,0.34), transparent 72%),
-      radial-gradient(ellipse 1150px 660px at 106% -8%, rgba(139,108,255,0.32), transparent 72%),
-      radial-gradient(ellipse 1150px 640px at 100% 104%, rgba(31,209,138,0.24), transparent 72%),
-      radial-gradient(ellipse 1050px 600px at -8% 104%, rgba(240,71,90,0.18), transparent 72%),
-      radial-gradient(ellipse 1400px 820px at 50% 50%, rgba(245,196,81,0.07), transparent 78%),
+      radial-gradient(ellipse 1500px 880px at 3% -14%, rgba(79,140,255,0.40), transparent 66%),
+      radial-gradient(ellipse 1350px 800px at 110% -8%, rgba(139,108,255,0.38), transparent 66%),
+      radial-gradient(ellipse 1400px 820px at 100% 108%, rgba(31,209,138,0.32), transparent 66%),
+      radial-gradient(ellipse 1250px 720px at -10% 108%, rgba(240,71,90,0.24), transparent 66%),
+      radial-gradient(ellipse 1700px 1000px at 50% 48%, rgba(245,196,81,0.10), transparent 70%),
       var(--bg);
     background-attachment:fixed;
     color:var(--text);
@@ -244,7 +244,7 @@
   .sidebar{display:flex; flex-direction:column; gap:18px;}
 
   /* Calendar card */
-  .card{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:18px;}
+  .card{background:rgba(21,27,38,0.55); backdrop-filter:blur(8px); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:18px;}
   .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
   .cal-head h2{font-size:16px; font-weight:700;}
   .cal-legend{display:flex; align-items:center; gap:16px; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border-soft);}
