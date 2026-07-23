@@ -1006,7 +1006,7 @@
           document.querySelector('.tl-overlay')?.remove();
           const res = await TLAuth.deleteMyAccount();
           if(!res.ok){ overlay.querySelector('#tlAmStatus').textContent = res.error; return; }
-          location.href = 'index.html';
+          location.href = '/';
         }
       });
     });
@@ -1059,7 +1059,7 @@
       addBtn.style.display = 'none';
       limitNote.style.display = 'block';
       limitNote.innerHTML = limit === 1
-        ? `Free plan is limited to 1 account. <a href="index.html#pricing" style="color:var(--accent);">Upgrade to Pro</a> to connect up to 5.`
+        ? `Free plan is limited to 1 account. <a href="/#pricing" style="color:var(--accent);">Upgrade to Pro</a> to connect up to 5.`
         : `You've reached the maximum of ${limit} trading accounts.`;
     } else {
       addBtn.style.display = 'block';
@@ -1079,7 +1079,7 @@
           <button type="button" class="tl-am-acct-key" data-key="${escapeHtml(a.api_key)}" title="Copy this account's API key">🔑 Copy key</button>
           <button type="button" class="tl-am-acct-regen" data-id="${escapeHtml(a.id)}" data-label="${escapeHtml(a.label)}" title="Invalidate the old key and generate a new one">🔄</button>
           ` : `
-          <a href="index.html#pricing" class="tl-am-acct-key" title="EA auto-sync and the API key are a Pro feature">🔒 Pro</a>
+          <a href="/#pricing" class="tl-am-acct-key" title="EA auto-sync and the API key are a Pro feature">🔒 Pro</a>
           `}
           ${accounts.length > 1 ? `<button type="button" class="tl-am-acct-delete" data-id="${escapeHtml(a.id)}" data-label="${escapeHtml(a.label)}" title="Delete account">🗑</button>` : ''}
         </div>
@@ -1146,7 +1146,7 @@
     const fmt = ts => new Date(ts).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
     if(info.plan !== 'pro'){
       box.innerHTML = `<strong style="color:var(--text);">Free plan</strong>`;
-      actionBox.innerHTML = `<a class="btn btn-primary" style="width:100%; display:block; text-align:center;" href="index.html#pricing">Upgrade to Pro</a>`;
+      actionBox.innerHTML = `<a class="btn btn-primary" style="width:100%; display:block; text-align:center;" href="/#pricing">Upgrade to Pro</a>`;
     } else if(info.cancelAtPeriodEnd){
       box.innerHTML = `<strong style="color:var(--text);">Pro plan</strong> — cancelled, active until <strong>${fmt(info.periodEnd)}</strong>`;
       actionBox.innerHTML = `
@@ -1307,7 +1307,7 @@
           <a href="#" id="tlNavManageAccountsLink"><span class="tl-nav-menu-ic">🔗</span>Manage accounts</a>
           ${opts.hideCalendarLink ? '' : '<a href="app.html"><span class="tl-nav-menu-ic">📅</span>Go to Calendar</a>'}
           <a href="#" id="tlNavAccountSettingsLink"><span class="tl-nav-menu-ic">⚙️</span>Account settings</a>
-          ${isPro ? '' : '<a href="index.html#pricing"><span class="tl-nav-menu-ic">⭐</span>Upgrade to Pro</a>'}
+          ${isPro ? '' : '<a href="/#pricing"><span class="tl-nav-menu-ic">⭐</span>Upgrade to Pro</a>'}
           <div class="tl-nav-menu-footer">
             <button type="button" id="tlNavLogoutBtn"><span class="tl-nav-menu-ic">↪</span>Log out</button>
           </div>
@@ -1371,7 +1371,7 @@
         title: 'Upgrade to Pro',
         message: `${featureLabel} is part of the Pro plan. Upgrade to unlock it — no card needed for this demo.`,
         primaryLabel: 'See Pro plan',
-        primaryHref: 'index.html#pricing'
+        primaryHref: '/#pricing'
       });
     },
     showModal
