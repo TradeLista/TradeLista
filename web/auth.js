@@ -305,6 +305,14 @@
   }
 
   // ---------- Trading accounts (Live/Demo, MT4/MT5) ----------
+  // Common broker account currencies, USD first (the default). Amounts are
+  // never converted — this is just the label/symbol shown next to the numbers.
+  const CURRENCIES = ['USD','EUR','GBP','JPY','CHF','AUD','CAD','NZD','SGD','HKD','SEK','NOK','ZAR','PLN'];
+  function currencyOptions(selected){
+    const sel = CURRENCIES.includes(selected) ? selected : 'USD';
+    return CURRENCIES.map(c => `<option value="${c}"${c === sel ? ' selected' : ''}>${c}</option>`).join('');
+  }
+
   async function getAccounts(){
     const { data: { session } } = await sb.auth.getSession();
     if(!session) return [];
@@ -777,6 +785,13 @@
         font-size:10.5px; font-weight:700; color:var(--text-dim); background:var(--bg-card);
         border:1px solid var(--border); border-radius:5px; padding:1px 5px;
       }
+      .tl-am-acct-cur{
+        background:var(--bg-card); border:1px solid var(--border); border-radius:5px;
+        color:var(--text-dim); font-family:inherit; font-size:11px; font-weight:600;
+        padding:1px 3px; cursor:pointer;
+      }
+      .tl-am-acct-cur:hover{border-color:var(--accent); color:var(--text);}
+      .tl-am-acct-cur:focus{outline:none; border-color:var(--accent);}
       .tl-am-acct-sub{font-size:12px; color:var(--text-faint); margin-top:2px;}
       .tl-am-acct-actions{display:flex; align-items:center; gap:4px; flex-shrink:0;}
       .tl-am-acct-actions button, .tl-am-acct-actions a{
@@ -932,7 +947,7 @@
           </div>
           <div class="tl-am-row">
             <label>Currency</label>
-            <input type="text" id="tlAmNewCurrency" placeholder="USD" value="USD">
+            <select id="tlAmNewCurrency"></select>
           </div>
           <div class="tl-am-error" id="tlAmAccountError"></div>
           <div style="display:flex; gap:10px;">
@@ -1046,6 +1061,9 @@
   // the latest state.
   async function renderAccountModalAccounts(overlay){
     const list = overlay.querySelector('#tlAmAccountsList');
+    // Fill the add-account form's currency dropdown once (default USD).
+    const newCurSel = overlay.querySelector('#tlAmNewCurrency');
+    if(newCurSel && !newCurSel.options.length) newCurSel.innerHTML = currencyOptions('USD');
     const accounts = await ensureDefaultAccount();
     const limit = await accountLimitFor();
     // The API key is only for EA auto-sync, which is Pro-only (the server
@@ -1071,7 +1089,7 @@
           <span class="tl-am-acct-dot ${a.account_type === 'live' ? 'is-live' : 'is-demo'}"></span>
           <div>
             <div class="tl-am-acct-label">${escapeHtml(a.label)} <span class="tl-am-acct-badge">${escapeHtml(a.platform)}</span></div>
-            <div class="tl-am-acct-sub">${a.account_type === 'live' ? 'Live' : 'Demo'} · ${escapeHtml(a.currency)} · Not connected — no EA linked yet</div>
+            <div class="tl-am-acct-sub">${a.account_type === 'live' ? 'Live' : 'Demo'} · <select class="tl-am-acct-cur" data-id="${escapeHtml(a.id)}" title="Account currency — only changes the label/symbol, amounts are never converted">${currencyOptions(a.currency)}</select> · Not connected — no EA linked yet</div>
           </div>
         </div>
         <div class="tl-am-acct-actions">
@@ -1092,6 +1110,21 @@
         const original = btn.textContent;
         btn.textContent = '✓ Copied';
         setTimeout(() => { btn.textContent = original; }, 1500);
+      });
+    });
+    // Change an account's currency (label only — no conversion). If it's the
+    // account currently shown on the calendar, reload so every render path
+    // (KPIs, header, day/week totals) picks up the new symbol — the same
+    // approach account-switching uses. Otherwise just sync state + nav.
+    list.querySelectorAll('.tl-am-acct-cur').forEach(sel => {
+      sel.addEventListener('change', async () => {
+        const res = await updateAccount(sel.dataset.id, { currency: sel.value });
+        if(!res.ok){ overlay.querySelector('#tlAmStatus').textContent = res.error; return; }
+        if(sel.dataset.id === getActiveAccountId()){
+          location.reload();
+        } else {
+          document.dispatchEvent(new CustomEvent('tl-accounts-changed'));
+        }
       });
     });
     list.querySelectorAll('.tl-am-acct-regen').forEach(btn => {
