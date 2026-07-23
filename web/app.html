@@ -1507,11 +1507,14 @@ async function deleteTradeById(id){
   // drop any saved note/images/reflection for this trade — and delete the
   // actual screenshot files from Storage too, otherwise they'd stay
   // orphaned there forever and keep counting against the storage quota.
+  // Delete the whole trade folder (one sweep) rather than just the image-slot
+  // URLs: images embedded inline in the note live in the same folder but not
+  // in meta.images, so a per-slot delete used to leave them behind.
   // Awaited (not fire-and-forget): a caller that navigates away right after
   // calling this would otherwise cancel the in-flight delete request.
+  await TLAuth.data.deleteTradeFolder(id);
   const meta = loadMeta();
   if(meta[id]){
-    await Promise.all((meta[id].images || []).map(url => TLAuth.data.deleteTradeImage(url)));
     delete meta[id];
     saveMeta(meta);
   }
@@ -3050,6 +3053,15 @@ async function openTrade(id){
   openModal('tradeOverlay');
 }
 
+// Pulls every trade-images Storage URL out of a note's HTML. Used to spot
+// which inline screenshots a note edit removed (deleted, or swapped out by the
+// draw editor) so their files can be deleted from Storage instead of orphaning
+// there and counting against the quota forever. See saveTradeNote.
+function noteImageUrls(html){
+  if(typeof html !== 'string') return [];
+  return html.match(/https?:\/\/[^\s"'()<>]+\/trade-images\/[^\s"'()<>]+/g) || [];
+}
+
 function saveTradeNote(){
   if(!currentTradeId) return;
   const noteEl = document.getElementById('tradeNote');
@@ -3078,6 +3090,17 @@ function saveTradeNote(){
   if(saveMeta(meta)){
     persistTradeDebounced(currentTradeId);
     flashSaved();
+    // Any inline screenshot that was in the note before but isn't now — deleted
+    // with ✕/Backspace, or replaced by the draw editor — is now orphaned in
+    // Storage. Delete the underlying file so it stops counting against the
+    // quota. Fire-and-forget: the note is already saved, and the storage view's
+    // sweep (reconcileStorage) is a backstop if this cleanup ever fails.
+    if(prevNote && prevNote.indexOf('/trade-images/') !== -1){
+      const after = new Set(noteImageUrls(clean));
+      noteImageUrls(prevNote).forEach(url=>{
+        if(!after.has(url)) TLAuth.data.deleteTradeImage(url);
+      });
+    }
   } else {
     meta[currentTradeId].note = prevNote; // don't leave in-memory state claiming an unsaved write
     flashSaved('Storage is full — try removing an image from this note.', true);

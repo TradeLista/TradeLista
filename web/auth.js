@@ -206,6 +206,86 @@
     return { ok:true };
   }
 
+  // Deletes every Storage object under one trade's folder
+  // (`{userId}/{tradeId}/…`) in a single sweep. A trade's screenshots live
+  // there in two shapes — the image-slot pictures and any embedded inline in
+  // the note — and both go in the same folder, so deleting the folder frees
+  // all of them at once. deleteTradeById relies on this: dropping just the
+  // slot URLs (as it used to) left every inline note image orphaned in
+  // Storage, still counting against the quota.
+  async function deleteTradeFolder(tradeId){
+    const { data: { session } } = await sb.auth.getSession();
+    if(!session) return { ok:false, error:'Not logged in.' };
+    const prefix = `${session.user.id}/${tradeId}`;
+    const { data, error } = await sb.storage.from('trade-images').list(prefix, { limit: 1000 });
+    if(error) return { ok:false, error: error.message };
+    const paths = (data || []).filter(e=>e.id !== null).map(e=>`${prefix}/${e.name}`);
+    if(!paths.length) return { ok:true };
+    const { error: rmErr } = await sb.storage.from('trade-images').remove(paths);
+    if(rmErr) return { ok:false, error: rmErr.message };
+    return { ok:true };
+  }
+
+  // Garbage-collects orphaned screenshots — Storage files that no live trade
+  // points at any more. Inline note images live embedded in the note HTML
+  // (not in the images array), so removing one from a note, swapping it out
+  // via the draw editor, or deleting the trade used to drop only the
+  // reference and leave the file behind, counting against the quota forever.
+  // This reconciles the bucket against everything the account references now,
+  // which both keeps the usage number honest and heals files orphaned before
+  // the delete paths were fixed. `keepUrls` is an extra allow-list (raw note
+  // HTML strings and/or plain URLs) the caller passes so an image inserted a
+  // moment ago but not yet synced to the trades table is never swept.
+  async function reconcileStorage(keepUrls){
+    const { data: { session } } = await sb.auth.getSession();
+    if(!session) return { removed: 0 };
+    const userId = session.user.id;
+
+    const marker = '/trade-images/';
+    const referenced = new Set();
+    const addPath = (url)=>{
+      if(typeof url !== 'string') return;
+      const i = url.indexOf(marker);
+      if(i === -1) return;
+      referenced.add(decodeURIComponent(url.slice(i + marker.length)));
+    };
+    const addFromHtml = (html)=>{
+      if(typeof html !== 'string' || html.indexOf(marker) === -1) return;
+      const m = html.match(/[^\s"'()<>]+\/trade-images\/[^\s"'()<>]+/g);
+      if(m) m.forEach(addPath);
+    };
+
+    // What the server currently knows about — live trades only. A deleted
+    // trade's images must NOT be kept: they're exactly what we want to sweep.
+    const trades = await getUserTrades();
+    for(const row of trades){
+      if(row.is_deleted) continue;
+      if(Array.isArray(row.images)) row.images.forEach(addPath);
+      addFromHtml(row.note);
+    }
+    // Plus the client's own not-yet-synced copy (notes persist on an 800ms
+    // debounce), so a just-inserted screenshot is never swept mid-edit.
+    if(Array.isArray(keepUrls)) keepUrls.forEach(u=>{ addPath(u); addFromHtml(u); });
+
+    const toDelete = [];
+    async function scan(path){
+      const { data, error } = await sb.storage.from('trade-images').list(path, { limit: 1000 });
+      if(error || !data) return;
+      for(const entry of data){
+        const full = `${path}/${entry.name}`;
+        if(entry.id === null) await scan(full);             // a "folder" — recurse
+        else if(!referenced.has(full)) toDelete.push(full); // real object, unreferenced
+      }
+    }
+    await scan(userId);
+
+    // remove() caps at ~1000 paths per call; chunk to stay well under it.
+    for(let i = 0; i < toDelete.length; i += 100){
+      await sb.storage.from('trade-images').remove(toDelete.slice(i, i + 100));
+    }
+    return { removed: toDelete.length };
+  }
+
   async function uploadTradeImage(tradeId, file){
     const { data: { session } } = await sb.auth.getSession();
     if(!session) return { ok:false, error:'Not logged in.' };
@@ -1099,6 +1179,23 @@
     section.style.display = 'block';
     const box = overlay.querySelector('#tlAmStorageStatus');
     box.innerHTML = `<div class="tl-am-storage-box">Checking usage…</div>`;
+    // Sweep any screenshot no live trade references any more before measuring,
+    // so the number reflects what's actually stored. (Removed inline note
+    // images used to orphan in Storage and never stop counting.) Pass the
+    // client's local note cache as a safety allow-list for not-yet-synced
+    // edits, and never let a sweep failure block showing the usage.
+    try{
+      let keep = [];
+      try{
+        const meta = JSON.parse(localStorage.getItem('tradelista_trade_meta')) || {};
+        for(const id in meta){
+          const m = meta[id];
+          if(m && typeof m.note === 'string') keep.push(m.note);
+          if(m && Array.isArray(m.images)) keep = keep.concat(m.images);
+        }
+      }catch(e){}
+      await reconcileStorage(keep);
+    }catch(e){ /* non-fatal — show usage even if the sweep couldn't run */ }
     const { used, limit } = await getStorageUsage();
     const usedMb = (used / (1024*1024)).toFixed(used < 10*1024*1024 ? 1 : 0);
     const limitMb = Math.round(limit / (1024*1024));
@@ -1371,6 +1468,8 @@
     upsertTrade,
     uploadTradeImage,
     deleteTradeImage,
+    deleteTradeFolder,
+    reconcileStorage,
     getStorageUsage,
     getAccounts,
     createAccount,
