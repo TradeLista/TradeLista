@@ -549,7 +549,7 @@
   .feat-row.in .feat-num{opacity:1; transform:none;}
   .feat-row:nth-child(odd) .feat-num{right:18px;}
   .feat-row:nth-child(even) .feat-num{left:18px;}
-  .feat-text{position:relative; z-index:1; display:flex; flex-direction:column; align-items:flex-start;}
+  .feat-text{position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; text-align:center;}
   .feat-kicker{
     display:inline-flex; align-items:center; gap:7px; margin-bottom:14px;
     font-size:11px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; color:var(--accent);
@@ -557,7 +557,7 @@
   }
   .feat-kicker .ic{font-size:13px;}
   .feat-text h3{font-size:clamp(20px,2.2vw,25px); font-weight:800; letter-spacing:-0.015em; margin-bottom:10px; color:var(--text);}
-  .feat-text p{font-size:14.5px; color:var(--text-dim); line-height:1.7; max-width:440px;}
+  .feat-text p{font-size:14.5px; color:var(--text-dim); line-height:1.7; max-width:440px; margin-left:auto; margin-right:auto;}
   .feat-points{margin-top:18px; display:flex; flex-direction:column; gap:9px;}
   .feat-point{display:flex; align-items:flex-start; gap:9px; font-size:13px; color:var(--text-dim); line-height:1.5;}
   .feat-point .chk{
@@ -981,10 +981,6 @@
     .feat-row:nth-child(even) .feat-text{order:1;}
     .feat-row:nth-child(even) .feat-visual{order:2;}
     .feat-num{display:none;}
-    /* once the columns stack, the feature text reads better centred than
-       left-aligned against a full-width card (badge, title, copy, checklist). */
-    .feat-text{align-items:center; text-align:center;}
-    .feat-text p{margin-left:auto; margin-right:auto;}
   }
 
   /* Pre-checkout consent (right of withdrawal, EU digital-goods rule) */
