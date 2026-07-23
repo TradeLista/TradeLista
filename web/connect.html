@@ -407,7 +407,7 @@
   <div class="ea-only-content">
   <div class="callout" style="margin-bottom:32px;">
     <span class="ic">ℹ️</span>
-    <div><strong>The EA can only send a trade while it's actually running</strong> — attached to a chart in an open MetaTrader terminal on that computer. MetaTrader's mobile apps can't run Expert Advisors themselves, but a trade you place from your phone still syncs automatically <strong>as long as your desktop terminal with the EA is running at the time</strong> — the desktop sees the trade on your account and reports it. If your desktop is closed when the trade happens, it won't sync on its own — add it manually. On startup the EA also does a best-effort catch-up, re-sending closed trades from the past 30 days it finds in the terminal's history (adjustable via the <strong>CatchUpDays</strong> input), which helps after a restart but isn't guaranteed.</div>
+    <div><strong>The EA only sends trades while your desktop terminal is running</strong>, with the EA attached to a chart. A trade you place from your phone still syncs automatically <em>as long as your desktop is running at the time</em>; if your desktop is closed when the trade happens, add that trade to TradeLista manually. <span style="color:var(--text-faint);">(On startup it also re-sends recent closed trades as a best-effort catch-up — see the CatchUpDays note in step 8.)</span></div>
   </div>
   <div class="guide">
     <div class="gstep">
@@ -475,7 +475,6 @@
       </div>
       <p>Copy the <code class="mt5-only">TradeListaSync.mq5</code><code class="mt4-only">TradeListaSync.mq4</code> file you downloaded in step 5 into this <strong>Experts</strong> folder (drag and drop, or copy-paste).</p>
       <figure class="gstep-shot mt5-only"><img src="images/guide/mt5-06-experts-folder.png" alt="The MQL5\Experts folder with TradeListaSync.mq5 copied in" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the file placed in the MQL5\Experts folder</div></figure>
-      <figure class="gstep-shot mt4-only"><img src="images/guide/mt4-06-experts-folder.png" alt="The MQL4\Experts folder with TradeListaSync.mq4 copied in" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: the file placed in the MQL4\Experts folder</div></figure>
     </div>
 
     <div class="gstep">
@@ -505,14 +504,14 @@
         <figure class="gstep-shot"><img src="images/guide/mt4-08-common.png" alt="The MT4 Common tab with Allow live trading and Allow import of external experts ticked" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: Common tab — allow live trading</div></figure>
         <figure class="gstep-shot"><img src="images/guide/mt4-08-inputs.png" alt="The MT4 Inputs tab with the API key field filled and the OK button" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: Inputs tab — paste key, then OK</div></figure>
       </div>
+      <p>Click the <strong>"Common"</strong> tab and make sure <strong class="mt5-only">"Allow algorithmic trading"</strong><strong class="mt4-only">"Allow live trading"</strong> is checked. Then click <strong>OK</strong> to attach the EA. <em>(Ignore the "Save" button — that only exports your settings as a file and isn't needed; if a "Save as" dialog pops up, just cancel it.)</em></p>
       <p>There's also a <strong>CatchUpDays</strong> field (defaults to 30) — on startup the EA re-sends closed trades from the past that many days that are already in this terminal's history, a best-effort catch-up after a restart. It's not a guarantee: a trade you placed from your phone while your desktop was closed may not sync on its own, so add those to TradeLista manually.</p>
-      <p>Click the <strong>"Common"</strong> tab and make sure <strong>"Allow algorithmic trading"</strong> (or "Allow live trading") is checked. Then click <strong>OK</strong> to attach the EA. <em>(Ignore the "Save" button — that only exports your settings as a file and isn't needed; if a "Save as" dialog pops up, just cancel it.)</em></p>
     </div>
 
     <div class="gstep">
       <div class="gnum">9</div>
-      <h3>Turn on Algo Trading (the master switch)</h3>
-      <p>The checkbox in step 8 only gave <em>this one EA</em> permission. There's also a terminal-wide switch that has to be on: near the top of the MetaTrader window, find the button labeled <strong>"Algo Trading"</strong> (or "AutoTrading") and click it so it's turned on. <strong>Both</strong> have to be on for the EA to run.</p>
+      <h3>Turn on <span class="mt5-only">Algo Trading</span><span class="mt4-only">AutoTrading</span> (the master switch)</h3>
+      <p>The checkbox in step 8 only gave <em>this one EA</em> permission. There's also a terminal-wide switch that has to be on: near the top of the MetaTrader window, find the button labeled <strong class="mt5-only">"Algo Trading"</strong><strong class="mt4-only">"AutoTrading"</strong> and click it so it's turned on. <strong>Both</strong> have to be on for the EA to run.</p>
       <div class="gstep-shot-row">
         <figure class="gstep-shot"><img src="images/guide/mt-09-algo-off.png" alt="The Algo Trading button showing a red square icon — turned off" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: Algo Trading off (red)</div></figure>
         <figure class="gstep-shot"><img src="images/guide/mt-09-algo-on.png" alt="The Algo Trading button showing a green play icon — turned on" onerror="this.closest('figure').classList.add('missing')"><div class="gstep-shot-fallback">📷 Screenshot: Algo Trading on (green)</div></figure>
