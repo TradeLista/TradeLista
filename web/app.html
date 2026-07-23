@@ -46,6 +46,9 @@
     --font-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
+  /* clip (not hidden) horizontal overflow at the root so the page can't be
+     panned sideways on mobile, without breaking the sticky nav. */
+  html{overflow-x:clip;}
   body{
     background: var(--bg);
     color:var(--text);

@@ -45,7 +45,11 @@
     --font-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  html{scroll-behavior:smooth;}
+  /* overflow-x:clip on the root stops the page from being panned sideways on
+     mobile (the wide marquee ticker/decorative glows leak a few px past the
+     viewport; overflow-x:hidden on the body alone doesn't catch it). clip —
+     not hidden — so position:sticky (the nav) keeps working. */
+  html{scroll-behavior:smooth; overflow-x:clip;}
   body{
     background: var(--bg);
     color:var(--text);
