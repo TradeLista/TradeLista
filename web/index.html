@@ -981,6 +981,10 @@
     .feat-row:nth-child(even) .feat-text{order:1;}
     .feat-row:nth-child(even) .feat-visual{order:2;}
     .feat-num{display:none;}
+    /* once the columns stack, the feature text reads better centred than
+       left-aligned against a full-width card (badge, title, copy, checklist). */
+    .feat-text{align-items:center; text-align:center;}
+    .feat-text p{margin-left:auto; margin-right:auto;}
   }
 
   /* Pre-checkout consent (right of withdrawal, EU digital-goods rule) */
