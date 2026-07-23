@@ -101,6 +101,7 @@ void ProcessDeal(ulong dealTicket)
    // Walk the same position's deal history to find its opening price.
    ulong positionId = HistoryDealGetInteger(dealTicket, DEAL_POSITION_ID);
    double openPrice = 0;
+   string side = "";
    HistorySelectByPosition(positionId);
    int total = HistoryDealsTotal();
    for(int i = 0; i < total; i++)
@@ -109,6 +110,10 @@ void ProcessDeal(ulong dealTicket)
       if((ENUM_DEAL_ENTRY)HistoryDealGetInteger(t, DEAL_ENTRY) == DEAL_ENTRY_IN)
       {
          openPrice = HistoryDealGetDouble(t, DEAL_PRICE);
+         // The opening deal's type is the trade's real direction: a long is
+         // opened with a buy deal, a short with a sell deal. (The closing
+         // deal has the opposite type, so we must read the opening one.)
+         side = (HistoryDealGetInteger(t, DEAL_TYPE) == DEAL_TYPE_BUY) ? "buy" : "sell";
          break;
       }
    }
@@ -130,8 +135,8 @@ void ProcessDeal(ulong dealTicket)
    int tzOffsetMinutes = (int)((TimeLocal() - TimeGMT()) / 60);
 
    string json = StringFormat(
-      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\",\"time\":\"%s\",\"tz_offset_minutes\":%d,\"deal_ticket\":\"%s\"}",
-      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr, timeStr, tzOffsetMinutes, dealTicketStr
+      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\",\"time\":\"%s\",\"tz_offset_minutes\":%d,\"deal_ticket\":\"%s\",\"side\":\"%s\"}",
+      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr, timeStr, tzOffsetMinutes, dealTicketStr, side
    );
 
    // StringToCharArray's exact return count (with or without a trailing \0)

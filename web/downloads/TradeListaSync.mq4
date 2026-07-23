@@ -97,6 +97,7 @@ void sendClosedOrder(int ticket)
    double openPrice = OrderOpenPrice();
    double closePrice = OrderClosePrice();
    double profit = OrderProfit() + OrderSwap() + OrderCommission();
+   string side = (OrderType() == OP_BUY) ? "buy" : "sell"; // long vs short
 
    // OrderCloseTime() is in the broker's server time, which is usually not
    // the trader's own timezone (often off by 1-3 hours) — convert to the
@@ -115,8 +116,8 @@ void sendClosedOrder(int ticket)
    int tzOffsetMinutes = (int)((TimeLocal() - TimeGMT()) / 60);
 
    string json = StringFormat(
-      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\",\"time\":\"%s\",\"tz_offset_minutes\":%d,\"deal_ticket\":\"%s\"}",
-      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr, timeStr, tzOffsetMinutes, ticketStr
+      "{\"api_key\":\"%s\",\"symbol\":\"%s\",\"lot\":%.2f,\"entry\":%.5f,\"exit\":%.5f,\"profit\":%.2f,\"date\":\"%s\",\"time\":\"%s\",\"tz_offset_minutes\":%d,\"deal_ticket\":\"%s\",\"side\":\"%s\"}",
+      ApiKey, symbol, volume, openPrice, closePrice, profit, dateStr, timeStr, tzOffsetMinutes, ticketStr, side
    );
 
    // Deliberately not passing a codepage here (MQL4's StringToCharArray
