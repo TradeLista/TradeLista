@@ -497,7 +497,7 @@
      rather than per-cell frames. Matches the at-a-glance strip above. */
   .trade-stats-row{
     display:grid; grid-template-columns:repeat(12,1fr); gap:0; margin:0 auto 28px; max-width:1180px;
-    background:rgba(21,27,38,0.72); backdrop-filter:blur(6px); border:1px solid var(--border-soft);
+    background:rgba(21,27,38,0.72); backdrop-filter:blur(6px); border:1px solid var(--border);
     border-radius:var(--radius); overflow:hidden; position:relative;
   }
   .trade-stats-row::after{
@@ -513,7 +513,7 @@
   .trade-stat:nth-child(7){grid-column:span 3;}
   .trade-stat{
     padding:16px 20px; margin:-1px 0 0 -1px;
-    border-left:1px solid var(--border-soft); border-top:1px solid var(--border-soft);
+    border-left:1px solid var(--border); border-top:1px solid var(--border);
     transition:background .15s;
   }
   .trade-stat:focus-within{background:rgba(79,140,255,0.06);}
