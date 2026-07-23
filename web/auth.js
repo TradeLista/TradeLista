@@ -779,11 +779,13 @@
       }
       .tl-am-acct-sub{font-size:12px; color:var(--text-faint); margin-top:2px;}
       .tl-am-acct-actions{display:flex; align-items:center; gap:4px; flex-shrink:0;}
-      .tl-am-acct-actions button{
+      .tl-am-acct-actions button, .tl-am-acct-actions a{
+        display:inline-flex; align-items:center;
         background:transparent; border:none; color:var(--text-faint); font-size:12.5px; font-family:inherit;
-        padding:6px 8px; border-radius:7px; cursor:pointer; white-space:nowrap;
+        padding:6px 8px; border-radius:7px; cursor:pointer; white-space:nowrap; text-decoration:none;
       }
-      .tl-am-acct-actions button:hover{background:var(--bg-hover); color:var(--text);}
+      .tl-am-acct-actions button:hover, .tl-am-acct-actions a:hover{background:var(--bg-hover); color:var(--text);}
+      .tl-am-acct-actions a.tl-am-acct-key{color:var(--accent);} /* Pro upgrade chip (Free users) */
       .tl-am-acct-actions .tl-am-acct-delete:hover{color:var(--red);}
       .tl-am-add-account-form{
         background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:var(--radius-sm);
@@ -1046,6 +1048,11 @@
     const list = overlay.querySelector('#tlAmAccountsList');
     const accounts = await ensureDefaultAccount();
     const limit = await accountLimitFor();
+    // The API key is only for EA auto-sync, which is Pro-only (the server
+    // rejects a non-Pro key with 402). Showing a Free user "Copy key" just
+    // hands them a key that can't work — gate it behind Pro and point to
+    // pricing instead.
+    const isPro = await TLAuth.isPro();
     const addBtn = overlay.querySelector('#tlAmAddAccountBtn');
     const limitNote = overlay.querySelector('#tlAmAccountLimitNote');
     if(accounts.length >= limit){
@@ -1068,14 +1075,18 @@
           </div>
         </div>
         <div class="tl-am-acct-actions">
+          ${isPro ? `
           <button type="button" class="tl-am-acct-key" data-key="${escapeHtml(a.api_key)}" title="Copy this account's API key">🔑 Copy key</button>
           <button type="button" class="tl-am-acct-regen" data-id="${escapeHtml(a.id)}" data-label="${escapeHtml(a.label)}" title="Invalidate the old key and generate a new one">🔄</button>
+          ` : `
+          <a href="index.html#pricing" class="tl-am-acct-key" title="EA auto-sync and the API key are a Pro feature">🔒 Pro</a>
+          `}
           ${accounts.length > 1 ? `<button type="button" class="tl-am-acct-delete" data-id="${escapeHtml(a.id)}" data-label="${escapeHtml(a.label)}" title="Delete account">🗑</button>` : ''}
         </div>
       </div>
     `).join('');
 
-    list.querySelectorAll('.tl-am-acct-key').forEach(btn => {
+    list.querySelectorAll('button.tl-am-acct-key').forEach(btn => {
       btn.addEventListener('click', async () => {
         await navigator.clipboard.writeText(btn.dataset.key);
         const original = btn.textContent;
