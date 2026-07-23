@@ -464,7 +464,7 @@
   }
   .trade-result-badge.win{background:var(--green-dim); color:var(--green); border:1px solid var(--green-border); box-shadow:0 0 16px -5px rgba(31,209,138,0.7);}
   .trade-result-badge.loss{background:var(--red-dim); color:var(--red); border:1px solid var(--red-border); box-shadow:0 0 16px -5px rgba(240,71,90,0.7);}
-  .trade-head-pnl{font-family:var(--font-mono); font-size:21px; font-weight:800; flex-shrink:0;}
+  .trade-head-pnl{font-family:var(--font-mono); font-size:29px; font-weight:800; flex-shrink:0; letter-spacing:-0.01em;}
   .trade-head-pnl.pos{color:var(--green); text-shadow:0 0 20px rgba(31,209,138,0.45);}
   .trade-head-pnl.neg{color:var(--red); text-shadow:0 0 20px rgba(240,71,90,0.45);}
   .trade-head-spacer{flex:1;}
@@ -502,6 +502,42 @@
   .trade-stat.is-neg{border-color:var(--red-border); box-shadow:0 0 24px -8px rgba(240,71,90,0.45);}
   .trade-stat.is-pos::before{background:var(--green); opacity:.8;}
   .trade-stat.is-neg::before{background:var(--red); opacity:.8;}
+  .trade-stat .l svg{width:14px; height:14px; flex-shrink:0; color:var(--text-dim); opacity:.9;}
+  /* The profit card is the point of the whole screen — let it read a touch
+     bigger and bolder than the rest so the grid isn't seven equal cells. */
+  #profitStat .cell-input{font-size:18px; font-weight:800;}
+
+  /* At-a-glance strip — the hero read of the trade, above the editable grid.
+     One panel split into segments so it reads as a summary, not more cards.
+     Populated + kept live by renderGlance(). */
+  .trade-glance{
+    display:flex; flex-wrap:wrap; max-width:1180px; margin:0 auto 20px;
+    background:rgba(21,27,38,0.55); backdrop-filter:blur(6px);
+    border:1px solid var(--border-soft); border-radius:var(--radius); overflow:hidden;
+    animation:tradeFadeUp .3s ease both;
+  }
+  .trade-glance .g-seg{flex:1 1 180px; min-width:0; padding:14px 20px;}
+  .trade-glance .g-seg + .g-seg{border-left:1px solid var(--border-soft);}
+  .trade-glance .g-l{font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-faint); margin-bottom:6px;}
+  .trade-glance .g-v{font-size:17px; font-weight:700; display:flex; align-items:center; gap:8px; min-width:0;}
+  .trade-glance .g-v.mono{font-family:var(--font-mono);}
+  .trade-glance .g-v.pos{color:var(--green);}
+  .trade-glance .g-v.neg{color:var(--red);}
+  .trade-glance .g-v.muted{color:var(--text-faint);}
+  .trade-glance .g-arr{color:var(--text-faint); font-weight:400; flex-shrink:0;}
+  @media (max-width:640px){
+    .trade-glance .g-seg{flex-basis:100%;}
+    .trade-glance .g-seg + .g-seg{border-left:none; border-top:1px solid var(--border-soft);}
+  }
+
+  /* Result ambiance — carry the win/loss colour through the whole header, not
+     just the little badge, so the emotion of the trade lands immediately. */
+  .modal-full[data-result="win"] .trade-modal-header{
+    background:linear-gradient(180deg, rgba(31,209,138,0.12), rgba(10,14,20,0.35)); border-bottom-color:rgba(31,209,138,0.28);
+  }
+  .modal-full[data-result="loss"] .trade-modal-header{
+    background:linear-gradient(180deg, rgba(240,71,90,0.12), rgba(10,14,20,0.35)); border-bottom-color:rgba(240,71,90,0.28);
+  }
 
   .trade-layout{display:grid; grid-template-columns:1fr 360px; gap:28px; align-items:start; max-width:1180px; margin:0 auto;}
   .trade-main .rte{border-radius:14px;}
@@ -573,7 +609,8 @@
   .cell-input:hover{border-bottom-color:var(--border);}
   .cell-input:focus{color:var(--accent); border-bottom-color:var(--accent);}
 
-  .section-label{font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.05em; margin:16px 0 8px;}
+  .section-label{font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.05em; margin:16px 0 8px; display:flex; align-items:center; gap:7px;}
+  .section-label svg{width:15px; height:15px; flex-shrink:0; color:var(--accent);}
   textarea{
     width:100%; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm);
     color:var(--text); font-family:inherit; font-size:13.5px; padding:10px 12px; resize:vertical; min-height:64px; outline:none;
@@ -747,10 +784,11 @@
   .qhead input.qtext:disabled{color:var(--text-faint); cursor:default;}
   .yn{display:flex; gap:6px;}
   .yn button{
-    font-size:12px; padding:5px 12px; border-radius:99px; border:1px solid var(--border); background:transparent; color:var(--text-dim); font-weight:600;
+    font-size:12px; padding:5px 12px; border-radius:99px; border:1px solid var(--border); background:transparent; color:var(--text-faint); font-weight:600; transition:.15s;
   }
-  .yn button.active.yes, .yn button.active.buy{background:var(--green-dim); border-color:var(--green-border); color:var(--green);}
-  .yn button.active.no, .yn button.active.sell{background:var(--red-dim); border-color:var(--red-border); color:var(--red);}
+  .yn button:hover{color:var(--text-dim); border-color:var(--border-soft);}
+  .yn button.active.yes, .yn button.active.buy{background:var(--green-dim); border-color:var(--green); color:var(--green); font-weight:700; box-shadow:0 0 14px -4px rgba(31,209,138,0.6);}
+  .yn button.active.no, .yn button.active.sell{background:var(--red-dim); border-color:var(--red); color:var(--red); font-weight:700; box-shadow:0 0 14px -4px rgba(240,71,90,0.6);}
   .qexplain{display:none; padding:10px 13px; background:var(--bg-card);}
   .qexplain.open{display:block;}
   .qexplain textarea{min-height:44px; font-size:12.5px;}
@@ -1167,11 +1205,12 @@
     </div>
 
     <div class="trade-modal-body">
+      <div class="trade-glance" id="tradeGlance"></div>
       <div class="trade-stats-row" id="tradeDetailGrid"></div>
 
       <div class="trade-layout">
         <div class="trade-main">
-          <div class="section-label" style="margin-top:0;">📝 Note</div>
+          <div class="section-label" style="margin-top:0;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Note</div>
           <div class="rte">
             <div class="rte-toolbar" id="rteToolbar">
               <select id="rteBlock" title="Text style">
@@ -1221,14 +1260,14 @@
 
         <div class="trade-sidebar">
           <div>
-            <div class="section-label" style="margin-top:0;">🏷️ Tags</div>
+            <div class="section-label" style="margin-top:0;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H4a1 1 0 0 0-1 1v5a2 2 0 0 0 .6 1.4l9 9a2 2 0 0 0 2.8 0l5-5a2 2 0 0 0 0-2.8l-9-9A2 2 0 0 0 9 3Z"/><path d="M7.5 7.5h.01"/></svg>Tags</div>
             <div class="trade-sidebar-card">
               <div class="tag-chips" id="tagChips"></div>
               <input type="text" class="tag-input" id="tagInput" placeholder="Add a tag and press Enter (e.g. Breakout)">
             </div>
           </div>
           <div>
-            <div class="section-label" style="margin-top:0;">🖼️ Images</div>
+            <div class="section-label" style="margin-top:0;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.8"/><path d="m21 15-4.5-4.5L5 21"/></svg>Images</div>
             <div class="trade-sidebar-card">
               <div class="img-slots" id="imgSlots"></div>
             </div>
@@ -2847,16 +2886,16 @@ async function openTrade(id){
   document.getElementById('tradeModalTitle').textContent = t.symbol;
   document.getElementById('tradeModalDate').textContent = new Date(t.date + 'T00:00:00').toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric', year:'numeric'});
   document.getElementById('tradeDetailGrid').innerHTML = `
-    <div class="trade-stat"><div class="l">🏷️ Symbol / pair</div><input class="cell-input" id="editSymbol" type="text" value="${escapeHtml(t.symbol)}"></div>
-    <div class="trade-stat"><div class="l">🕐 Time</div><input class="cell-input" id="editTime" type="time" value="${localTimeHHMM(t)}"></div>
-    <div class="trade-stat"><div class="l">↔️ Side</div><div class="yn" id="editSideToggle">
+    <div class="trade-stat"><div class="l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></svg>Symbol / pair</div><input class="cell-input" id="editSymbol" type="text" value="${escapeHtml(t.symbol)}"></div>
+    <div class="trade-stat"><div class="l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>Time</div><input class="cell-input" id="editTime" type="time" value="${localTimeHHMM(t)}"></div>
+    <div class="trade-stat"><div class="l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20V5m0 0L4 8m3-3 3 3"/><path d="M17 4v15m0 0 3-3m-3 3-3-3"/></svg>Side</div><div class="yn" id="editSideToggle">
       <button type="button" data-v="buy" class="${t.side==='buy'?'active buy':''}">Buy</button>
       <button type="button" data-v="sell" class="${t.side==='sell'?'active sell':''}">Sell</button>
     </div></div>
-    <div class="trade-stat"><div class="l">↗️ Entry</div><input class="cell-input" id="editEntry" type="number" step="0.00001" value="${t.entry ?? ''}"></div>
-    <div class="trade-stat"><div class="l">↘️ Exit</div><input class="cell-input" id="editExit" type="number" step="0.00001" value="${t.exit ?? ''}"></div>
-    <div class="trade-stat"><div class="l">📦 Lot size</div><input class="cell-input" id="editLot" type="number" step="0.01" min="0" value="${t.lot}"></div>
-    <div class="trade-stat" id="profitStat"><div class="l">💰 Profit (${CURRENCY})</div><input class="cell-input" id="editProfit" type="number" step="0.01" value="${t.profit}"></div>
+    <div class="trade-stat"><div class="l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>Entry</div><input class="cell-input" id="editEntry" type="number" step="0.00001" value="${t.entry ?? ''}"></div>
+    <div class="trade-stat"><div class="l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>Exit</div><input class="cell-input" id="editExit" type="number" step="0.00001" value="${t.exit ?? ''}"></div>
+    <div class="trade-stat"><div class="l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg>Lot size</div><input class="cell-input" id="editLot" type="number" step="0.01" min="0" value="${t.lot}"></div>
+    <div class="trade-stat" id="profitStat"><div class="l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M14.6 9.4c-.6-.6-1.6-1-2.6-1-1.7 0-3 .9-3 2.1s1.3 2 3 2.1 3 .9 3 2.1-1.3 2.1-3 2.1c-1 0-2-.4-2.6-1"/></svg>Profit (${CURRENCY})</div><input class="cell-input" id="editProfit" type="number" step="0.01" value="${t.profit}"></div>
   `;
   const sideToggle = document.getElementById('editSideToggle');
   sideToggle.dataset.value = t.side || '';
@@ -2869,6 +2908,7 @@ async function openTrade(id){
         b.classList.toggle('active', active);
         b.classList.toggle(b.dataset.v, active);
       });
+      renderGlance();
     };
   });
   const profitInput = document.getElementById('editProfit');
@@ -2886,9 +2926,50 @@ async function openTrade(id){
     const headPnl = document.getElementById('tradeHeadPnl');
     headPnl.textContent = (isPos ? '+' : '') + v.toLocaleString('en-US',{style:'currency',currency:CURRENCY});
     headPnl.className = 'trade-head-pnl ' + (isPos ? 'pos' : 'neg');
+    // carry the win/loss colour through the whole header, not just the badge
+    const modalFull = document.querySelector('#tradeOverlay .modal-full');
+    if(modalFull) modalFull.dataset.result = isPos ? 'win' : 'loss';
   };
   updateProfitColor();
   profitInput.addEventListener('input', updateProfitColor);
+
+  // "At a glance" strip: direction, entry→exit and the favourable pip result,
+  // derived live from the editable fields so it always matches what's above.
+  // Pip size is 0.01 for JPY pairs, 0.0001 otherwise — a fair default for the
+  // forex pairs this tool targets; exotic instruments may read differently.
+  function renderGlance(){
+    const g = document.getElementById('tradeGlance');
+    if(!g) return;
+    const symbol = (document.getElementById('editSymbol').value || '').toUpperCase();
+    const entry = parseFloat(document.getElementById('editEntry').value);
+    const exit  = parseFloat(document.getElementById('editExit').value);
+    const side  = document.getElementById('editSideToggle').dataset.value || '';
+    const hasPx = isFinite(entry) && isFinite(exit);
+    if(!side && !hasPx){ g.style.display = 'none'; return; }
+    g.style.display = 'flex';
+
+    const dirLabel = side==='buy' ? 'Long' : side==='sell' ? 'Short' : '—';
+    const dirArrow = side==='buy' ? '↑' : side==='sell' ? '↓' : '·';
+    const dirClass = side==='buy' ? 'pos' : side==='sell' ? 'neg' : 'muted';
+    const fmtPx = (n)=> isFinite(n) ? n.toLocaleString('en-US',{maximumFractionDigits:5}) : '—';
+
+    let pipStr = '—', pipClass = 'muted';
+    if(hasPx){
+      const pipSize = symbol.includes('JPY') ? 0.01 : 0.0001;
+      const pips = ((side==='sell' ? -1 : 1) * (exit - entry)) / pipSize;
+      pipStr = (pips>=0?'+':'') + pips.toLocaleString('en-US',{maximumFractionDigits:1}) + ' pips';
+      pipClass = side ? (pips>=0 ? 'pos' : 'neg') : 'muted'; // "favourable" only means something once a side is set
+    }
+    g.innerHTML = `
+      <div class="g-seg"><div class="g-l">Direction</div><div class="g-v ${dirClass}">${dirArrow} ${dirLabel}</div></div>
+      <div class="g-seg"><div class="g-l">Entry &rarr; Exit</div><div class="g-v mono">${fmtPx(entry)} <span class="g-arr">&rarr;</span> ${fmtPx(exit)}</div></div>
+      <div class="g-seg"><div class="g-l">Pips</div><div class="g-v mono ${pipClass}">${pipStr}</div></div>
+    `;
+  }
+  renderGlance();
+  document.getElementById('editEntry').addEventListener('input', renderGlance);
+  document.getElementById('editExit').addEventListener('input', renderGlance);
+  document.getElementById('editSymbol').addEventListener('input', renderGlance);
 
   const meta = loadMeta();
   const m = meta[id] || { note:'', images:[], answers:{}, tags:[] };
