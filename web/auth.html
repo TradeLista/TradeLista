@@ -157,6 +157,7 @@
           <label for="loginPassword">Password</label>
           <input type="password" id="loginPassword" autocomplete="current-password" required>
         </div>
+        <div class="form-success" id="loginSuccess"></div>
         <div class="form-error" id="loginError"></div>
         <button type="submit" class="btn btn-primary" id="loginSubmit">Log in</button>
         <p class="fine" style="margin-top:14px;"><a href="#" id="forgotPasswordLink" style="text-decoration:underline;">Forgot your password?</a></p>
@@ -281,10 +282,26 @@
   const isResetLanding = params.get('mode') === 'reset';
   if(isResetLanding) showPanel('reset');
 
+  // Arriving from the "Confirm your email" link. Supabase has already turned
+  // the tokens in that URL into a live session, so without this the person is
+  // dropped straight into the calendar with no word on whether the click
+  // worked. Sign that session back out, drop the tokens from the address bar,
+  // and say so in writing — they then log in deliberately themselves.
+  const isConfirmedLanding = params.get('confirmed') === '1';
+  if(isConfirmedLanding){
+    showTab('login');
+    history.replaceState({}, '', location.pathname);
+    (async ()=>{
+      await TLAuth.logout();
+      document.getElementById('loginSuccess').textContent =
+        'Your email address is confirmed. Please log in to open your calendar.';
+    })();
+  }
+
   TLAuth.onPasswordRecovery(() => showPanel('reset'));
 
   (async function redirectIfLoggedIn(){
-    if(isResetLanding) return;
+    if(isResetLanding || isConfirmedLanding) return;
     if(await TLAuth.isLoggedIn()){
       location.replace(redirect);
     }

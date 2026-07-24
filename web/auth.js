@@ -473,7 +473,11 @@
           // static "Site URL" dashboard setting regardless of where the
           // signup actually happened — explicit here so it always matches
           // whatever domain the person is really signing up from.
-          emailRedirectTo: `${location.origin}/app.html`
+          // Land on the login page rather than straight in the app: auth.html
+          // signs the freshly-created session back out and states in writing
+          // that the address is verified, instead of silently dropping the
+          // person into the calendar with no idea the click did anything.
+          emailRedirectTo: `${location.origin}/auth.html?confirmed=1`
         }
       });
       if(error) return { ok:false, error: error.message };
