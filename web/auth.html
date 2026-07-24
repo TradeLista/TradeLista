@@ -96,6 +96,19 @@
   .form-error{color:var(--red); font-size:12.5px; margin:-4px 0 14px; min-height:14px;}
   .form-success{color:var(--green); font-size:12.5px; margin:-4px 0 14px; min-height:14px;}
 
+  /* Way out for an account that exists but was never confirmed, shown only
+     once we know that is the actual situation — offering it unprompted would
+     just be one more thing to read on a form that is already asking for five. */
+  .resend-box{
+    border:1px solid var(--border); border-radius:var(--radius-sm);
+    background:var(--bg-elevated); padding:13px 15px; margin:-4px 0 14px;
+  }
+  .resend-box p{font-size:12.5px; color:var(--text-dim); line-height:1.55; margin:0 0 11px;}
+  .resend-box .btn{width:100%; padding:9px 14px; font-size:13px;}
+  .resend-msg{font-size:12.5px; line-height:1.5; margin:11px 0 0;}
+  .resend-msg.ok{color:var(--green);}
+  .resend-msg.bad{color:var(--red);}
+
   .btn{
     display:inline-flex; align-items:center; justify-content:center; gap:8px;
     padding:11px 18px; border-radius:99px; font-size:14px; font-weight:600; border:1px solid transparent;
@@ -159,8 +172,18 @@
         </div>
         <div class="form-success" id="loginSuccess"></div>
         <div class="form-error" id="loginError"></div>
+        <div class="resend-box" id="loginResend" hidden>
+          <p>If you never confirmed your email address, log in will keep failing no matter which password you use &mdash; and a password reset won't help. Send yourself a fresh confirmation link instead.</p>
+          <button type="button" class="btn btn-ghost" id="loginResendBtn">Send the confirmation link again</button>
+          <p class="resend-msg" id="loginResendMsg" hidden></p>
+        </div>
         <button type="submit" class="btn btn-primary" id="loginSubmit">Log in</button>
         <p class="fine" style="margin-top:14px;"><a href="#" id="forgotPasswordLink" style="text-decoration:underline;">Forgot your password?</a></p>
+        <!-- Offered up front rather than after a failed attempt: an
+             unconfirmed address is rejected as "Invalid login credentials",
+             exactly like a wrong password, so there is no moment at which we
+             could detect this person and offer it to them specifically. -->
+        <p class="fine" style="margin-top:6px;"><a href="#" id="needConfirmLink" style="text-decoration:underline;">Never got the confirmation email?</a></p>
       </form>
     </div>
 
@@ -217,6 +240,11 @@
         </div>
         <div class="form-error" id="signupError"></div>
         <div class="form-success" id="signupSuccess"></div>
+        <div class="resend-box" id="signupResend" hidden>
+          <p>Your details are still filled in below. Try sending the link again in a moment &mdash; and if nothing arrives, just press &ldquo;Create free account&rdquo; once more.</p>
+          <button type="button" class="btn btn-ghost" id="signupResendBtn">Send the confirmation email again</button>
+          <p class="resend-msg" id="signupResendMsg" hidden></p>
+        </div>
         <button type="submit" class="btn btn-primary" id="signupSubmit">Create free account</button>
       </form>
     </div>
@@ -336,11 +364,50 @@
     setTimeout(() => location.href = redirect, 1200);
   });
 
+  // One resend flow surfacing in two places: after a signup whose confirmation
+  // mail failed to go out, and after a login blocked because the address was
+  // never confirmed. Same remedy either way, so they share the same wiring.
+  function wireResend(prefix, readEmail){
+    const box = document.getElementById(prefix + 'Resend');
+    const btn = document.getElementById(prefix + 'ResendBtn');
+    const msg = document.getElementById(prefix + 'ResendMsg');
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      msg.hidden = true;
+      let res;
+      try {
+        res = await TLAuth.resendConfirmation(readEmail());
+      } catch(err){
+        res = { ok:false, error:'Could not reach the server. Please check your connection and try again.' };
+      }
+      btn.disabled = false;
+      msg.hidden = false;
+      msg.className = 'resend-msg ' + (res.ok ? 'ok' : 'bad');
+      msg.textContent = res.ok
+        ? 'Sent. Check your inbox — and your spam folder, just in case.'
+        : res.error;
+    });
+    return {
+      show(){ box.hidden = false; msg.hidden = true; },
+      hide(){ box.hidden = true; msg.hidden = true; }
+    };
+  }
+
+  const loginResend  = wireResend('login',  () => document.getElementById('loginEmail').value);
+  const signupResend = wireResend('signup', () => document.getElementById('suEmail').value);
+
+  document.getElementById('needConfirmLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    loginResend.show();
+    document.getElementById('loginEmail').focus();
+  });
+
   document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const errEl = document.getElementById('loginError');
     const btn = document.getElementById('loginSubmit');
     errEl.textContent = '';
+    loginResend.hide();
     btn.disabled = true;
     let res;
     try {
@@ -352,7 +419,13 @@
       res = { ok:false, error: 'Could not reach the server. Please check your connection and try again.' };
     }
     btn.disabled = false;
-    if(!res.ok){ errEl.textContent = res.error; return; }
+    if(!res.ok){
+      errEl.textContent = res.error;
+      // Their password was never the problem — "Forgot your password?" would
+      // send them round in a circle. Offer the mail they actually need.
+      if(res.needsConfirmation) loginResend.show();
+      return;
+    }
     location.href = redirect;
   });
 
@@ -363,6 +436,7 @@
     const btn = document.getElementById('signupSubmit');
     errEl.textContent = '';
     successEl.textContent = '';
+    signupResend.hide();
     btn.disabled = true;
     let res;
     try {
@@ -380,7 +454,13 @@
       res = { ok:false, error: 'Could not create your account right now (' + ((err && err.message) || 'connection problem') + '). Please try again in a moment.' };
     }
     btn.disabled = false;
-    if(!res.ok){ errEl.textContent = res.error; return; }
+    if(!res.ok){
+      errEl.textContent = res.error;
+      // The account was created before the mail failed, so signing up again
+      // only answers "already exists" — the resend is the one way forward.
+      if(res.emailSendFailed) signupResend.show();
+      return;
+    }
     if(res.needsConfirmation){
       successEl.textContent = 'Check your inbox — click the confirmation link to finish creating your account.';
       document.getElementById('signupForm').reset();

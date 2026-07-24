@@ -528,7 +528,38 @@
           emailRedirectTo: `${location.origin}/auth.html?confirmed=1`
         }
       });
-      if(error) return { ok:false, error: error.message };
+      if(error){
+        // Match on the error's shape, not its wording: this client collapses
+        // a server-side 5xx into `name: "AuthRetryableFetchError"` and the
+        // literal string "{}" as its message, so the text Supabase actually
+        // sent ("Error sending confirmation email") never reaches us — and
+        // "{}" is what the customer used to be shown.
+        //
+        // Worth catching properly, because this is the mail step failing — and
+        // the mail server is exactly what gives out under load (IONOS throttles
+        // bursts of about five messages in two seconds, precisely what a launch
+        // day looks like). Whether the half-finished account was kept or rolled
+        // back is deliberately not observable: Supabase answers both "resend to
+        // an existing address" and "resend to an address that never existed"
+        // with an identical 200 so nobody can probe which emails have accounts.
+        // So the wording below must hold either way — it promises no account,
+        // and the recovery box offers both re-sending the link and simply
+        // signing up again.
+        if(error.status >= 500){
+          return {
+            ok: false,
+            emailSendFailed: true,
+            email,
+            error: 'We could not send the confirmation email just now. This is usually temporary.'
+          };
+        }
+        // Same error class, but no response at all — the request never
+        // arrived, so no account exists and promising one would be a lie.
+        if(error.name === 'AuthRetryableFetchError'){
+          return { ok:false, error:'Could not reach the server. Please check your connection and try again.' };
+        }
+        return { ok:false, error: error.message || 'Something went wrong. Please try again in a moment.' };
+      }
       // Supabase's email-enumeration protection answers a signup for an address
       // that already has an account with a *fake* success: no error, but the
       // returned user carries an empty `identities` array. Without this check
@@ -544,7 +575,51 @@
     async login({ email, password }){
       email = (email || '').trim().toLowerCase();
       const { error } = await sb.auth.signInWithPassword({ email, password });
+      // Dormant while Supabase's email-enumeration protection is on, which is
+      // the current setting: it answers an unconfirmed address with the same
+      // "Invalid login credentials" as a wrong password, so this branch cannot
+      // fire and the login form instead offers the confirmation resend to
+      // everyone. Kept because turning that protection off is a dashboard
+      // toggle, and this is what should happen the moment it is.
+      if(error && /not confirmed|email_not_confirmed/i.test(error.message || error.code || '')){
+        return {
+          ok: false,
+          needsConfirmation: true,
+          email,
+          error: 'This email address has not been confirmed yet.'
+        };
+      }
       if(error) return { ok:false, error: 'Incorrect email or password.' };
+      return { ok:true };
+    },
+
+    // Sends the signup confirmation email again. The only way out for someone
+    // whose account exists but whose confirmation mail never arrived — a
+    // password reset does not help them, because the account is not unusable,
+    // it is unverified.
+    async resendConfirmation(email){
+      email = (email || '').trim().toLowerCase();
+      if(!EMAIL_RE.test(email)) return { ok:false, error:'Please enter a valid email address.' };
+      const { error } = await sb.auth.resend({
+        type: 'signup',
+        email,
+        options: { emailRedirectTo: `${location.origin}/auth.html?confirmed=1` }
+      });
+      if(error){
+        const msg = error.message || '';
+        // These two are worth stating plainly: both mean "try again shortly",
+        // and staying vague would have people retrying immediately and
+        // digging themselves deeper into the rate limit.
+        if(/confirmation email|error sending|smtp/i.test(msg)){
+          return { ok:false, error:'Our mail server is busy right now. Please wait a minute and try again.' };
+        }
+        if(/rate|limit|too many|seconds/i.test(msg)){
+          return { ok:false, error:'Too many requests. Please wait a minute before asking for another email.' };
+        }
+        // Anything else — including "no such user" — is reported as success,
+        // so this endpoint can't be used to test which addresses exist.
+        return { ok:true };
+      }
       return { ok:true };
     },
 
