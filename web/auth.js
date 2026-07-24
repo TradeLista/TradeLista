@@ -477,6 +477,14 @@
         }
       });
       if(error) return { ok:false, error: error.message };
+      // Supabase's email-enumeration protection answers a signup for an address
+      // that already has an account with a *fake* success: no error, but the
+      // returned user carries an empty `identities` array. Without this check
+      // the person is told to "check their inbox" for a confirmation mail that
+      // is never sent, and they're stuck with no way forward.
+      if(data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0){
+        return { ok:false, error:'An account with this email already exists. Please log in instead, or use "Forgot your password?" to regain access.' };
+      }
       if(!data.session) return { ok:true, needsConfirmation:true };
       return { ok:true };
     },
