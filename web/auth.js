@@ -1486,6 +1486,22 @@
   }
   initCookieBanner();
 
+  // Safety net for the header. Every page ships its nav as
+  // `visibility:hidden` and only reveals it after an awaited session check, so
+  // the wrong header never flashes. But nothing reveals it if that check
+  // throws or hangs — a flaky network or a slow Supabase response then leaves
+  // the visitor on a page with no way to log in or sign up at all, and no
+  // error to explain it. Reveal unconditionally once the grace period is up:
+  // a header that is briefly wrong beats one that is permanently missing.
+  // Runs long after the normal path (<0.5s), and skips anything already
+  // revealed, so it never fights the page's own logic.
+  setTimeout(function revealNavFallback(){
+    ['navRight', 'navLinks'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el && el.style.visibility === 'hidden') el.style.visibility = 'visible';
+    });
+  }, 3000);
+
   TLAuth.data = {
     getUserTrades,
     upsertTrade,
