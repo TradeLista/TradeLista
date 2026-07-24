@@ -2,46 +2,46 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>TradeLista — Stripe product image</title>
+<title>TradeLista — logo image</title>
 <!--
   Local tool, deliberately NOT inside web/ so it never ships with the site.
   Open this file directly in a browser and click a download button; upload the
-  resulting PNG to the Stripe product (Produktkatalog -> TradeLista Pro -> Bild).
+  resulting PNG to Stripe (Produktkatalog -> TradeLista Pro -> Bild) or use it
+  anywhere else an app icon is needed.
 
   The mark is redrawn with the Canvas API rather than rasterising the SVG,
   because drawing an SVG onto a canvas taints it in some browsers and
   toDataURL() then throws — this way the download always works.
 -->
 <style>
-  body{background:#0f1219; color:#e7edf5; font-family:system-ui,-apple-system,sans-serif; margin:0; padding:36px 20px; text-align:center;}
+  body{background:#0f1219; color:#e7edf5; font-family:system-ui,-apple-system,sans-serif;
+       margin:0; padding:40px 20px; text-align:center;}
   h1{font-size:19px; font-weight:600; margin:0 0 6px;}
-  .sub{color:#8b96a8; font-size:13px; margin:0 0 30px;}
-  .row{display:flex; gap:28px; justify-content:center; flex-wrap:wrap;}
-  .item{background:#171b24; border:1px solid #262c38; border-radius:14px; padding:20px;}
-  canvas{width:220px; height:220px; border-radius:12px; display:block;}
-  .lbl{font-size:12.5px; color:#8b96a8; margin:12px 0 0;}
-  button{margin-top:12px; width:100%; padding:10px 18px; border:0; border-radius:999px;
+  .sub{color:#8b96a8; font-size:13px; margin:0 0 32px;}
+  .card{display:inline-block; background:#171b24; border:1px solid #262c38;
+        border-radius:16px; padding:24px;}
+  canvas{width:280px; height:280px; border-radius:14px; display:block;}
+  .buttons{display:flex; gap:10px; margin-top:18px;}
+  button{flex:1; padding:11px 18px; border:0; border-radius:999px;
          background:#6366f1; color:#fff; font-size:14px; font-weight:600; cursor:pointer;}
+  button.alt{background:transparent; border:1px solid #3a4152; color:#c7cddb;}
 </style>
 </head>
 <body>
-  <h1>TradeLista &mdash; Stripe product image</h1>
-  <p class="sub">512 &times; 512 PNG. Click a button to download, then upload it to the Stripe product.</p>
-  <div class="row">
-    <div class="item">
-      <canvas id="plain" width="512" height="512"></canvas>
-      <p class="lbl">Logo only &mdash; recommended</p>
-      <button data-canvas="plain" data-name="tradelista-pro.png">Download PNG</button>
-    </div>
-    <div class="item">
-      <canvas id="pro" width="512" height="512"></canvas>
-      <p class="lbl">Logo with PRO badge</p>
-      <button data-canvas="pro" data-name="tradelista-pro-badge.png">Download PNG</button>
+  <h1>TradeLista logo</h1>
+  <p class="sub">Your calendar mark &mdash; no badge, no text. Transparent-free square PNG.</p>
+
+  <div class="card">
+    <canvas id="logo" width="1024" height="1024"></canvas>
+    <div class="buttons">
+      <button data-size="512">Download 512 &times; 512</button>
+      <button data-size="1024" class="alt">Download 1024 &times; 1024</button>
     </div>
   </div>
 
 <script>
-  const SIZE = 512, K = SIZE / 112;           // original mark is drawn on a 112 grid
+  // The mark is authored on a 112-unit grid (same as the SVG in the site header),
+  // so every coordinate below is that original value scaled by K.
   const WHITE = 'rgba(255,255,255,0.28)', GREEN = '#22c55e', RED = '#ef4444';
   const GRID = [[WHITE, GREEN, WHITE], [RED, WHITE, GREEN], [WHITE, GREEN, RED]];
   const OFFSETS = [16, 44, 72];
@@ -56,13 +56,14 @@
     ctx.closePath();
   }
 
-  function draw(id, withBadge){
-    const ctx = document.getElementById(id).getContext('2d');
-    const grad = ctx.createLinearGradient(0, 0, SIZE, SIZE);
+  function drawLogo(ctx, size){
+    const K = size / 112;
+    ctx.clearRect(0, 0, size, size);
+    const grad = ctx.createLinearGradient(0, 0, size, size);
     grad.addColorStop(0, '#000000');
     grad.addColorStop(1, '#8081F8');
     ctx.fillStyle = grad;
-    roundedRect(ctx, 0, 0, SIZE, SIZE, 28 * K);
+    roundedRect(ctx, 0, 0, size, size, 28 * K);
     ctx.fill();
 
     for(let row = 0; row < 3; row++){
@@ -72,28 +73,20 @@
         ctx.fill();
       }
     }
-
-    if(withBadge){
-      const bw = 196, bh = 78, bx = (SIZE - bw) / 2, by = SIZE - bh - 30;
-      ctx.fillStyle = 'rgba(0,0,0,0.58)';
-      roundedRect(ctx, bx, by, bw, bh, bh / 2);
-      ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '700 46px system-ui, -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('PRO', SIZE / 2, by + bh / 2 + 2);
-    }
   }
 
-  draw('plain', false);
-  draw('pro', true);
+  // Preview canvas is 1024 so it stays crisp when scaled down by CSS.
+  drawLogo(document.getElementById('logo').getContext('2d'), 1024);
 
   document.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => {
+      const size = Number(btn.dataset.size);
+      const out = document.createElement('canvas');
+      out.width = out.height = size;
+      drawLogo(out.getContext('2d'), size);
       const link = document.createElement('a');
-      link.href = document.getElementById(btn.dataset.canvas).toDataURL('image/png');
-      link.download = btn.dataset.name;
+      link.href = out.toDataURL('image/png');
+      link.download = 'tradelista-logo-' + size + '.png';
       link.click();
     });
   });
