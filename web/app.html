@@ -139,6 +139,16 @@
   .btn-danger:hover{background:var(--red); color:#fff; border-color:var(--red);}
 
   .page{max-width:1220px; margin:0 auto; padding:28px 24px 80px;}
+  /* The calendar is a data grid, so unlike the marketing pages it has real
+     use for extra width on a big monitor — larger day cells, more of each
+     day's P&L legible at a glance. Only the calendar dashboard grows into it;
+     the trade-detail views inside .page keep their own 1180px cap and simply
+     centre in the roomier page. Gated at 1600px so it fires only on genuinely
+     large screens (2K and up), and held to 1440 so there is always a
+     comfortable side margin at the trigger width rather than edge-to-edge. */
+  @media (min-width:1600px){
+    .page{max-width:1440px;}
+  }
 
   .page-eyebrow{
     display:inline-flex; align-items:center; gap:8px; font-size:11.5px; font-weight:700; color:var(--accent);
