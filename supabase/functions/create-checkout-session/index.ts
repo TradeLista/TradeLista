@@ -15,11 +15,11 @@
 //     jurisdictions you're charging in first (Stripe Dashboard -> Tax ->
 //     Registrations). Flipping this on before that's set up won't produce
 //     correct tax, so don't set it to "true" until that's actually done.
-//   STRIPE_TAX_RATE_ID — a manual Stripe tax rate id (txr_...) applied to
-//     every subscription while TAX_ENABLED is off. This is the free way to
-//     charge a fixed VAT (e.g. German 19%) without Stripe Tax's per-
-//     transaction fee. Defaults to the live German 19% rate; set to an empty
-//     string to charge no tax. Ignored when TAX_ENABLED is "true".
+//   STRIPE_TAX_RATE_ID — an OPTIONAL manual Stripe tax rate id (txr_...)
+//     applied to every subscription while TAX_ENABLED is off. Unset by
+//     default, because the seller is a Kleinunternehmer (§ 19 UStG) and
+//     charges no VAT at all. Only set this if that status ever changes.
+//     Ignored when TAX_ENABLED is "true".
 //   STRIPE_PRICE_ID    — overrides the price below. Use this once you've
 //     created a tax-inclusive $10/mo price in Stripe (Products -> Pro ->
 //     Add another price -> tick "Tax behavior: inclusive") — the $10 stays
@@ -40,13 +40,14 @@ const supabaseAdmin = createClient(
 const PRICE_ID = Deno.env.get('STRIPE_PRICE_ID') ?? 'price_1TuWtiK3hVexCjbWUSCD5xnb';
 const SITE_URL = Deno.env.get('SITE_URL') ?? 'http://localhost:5173';
 const TAX_ENABLED = Deno.env.get('TAX_ENABLED') === 'true';
-// Manual VAT: a fixed Stripe tax rate (txr_...) applied to every subscription
-// and its recurring invoices while Stripe Tax's automatic_tax stays off
-// (TAX_ENABLED=false, the default). This is the free alternative to Stripe Tax
-// — no per-transaction Tax fee. Override with STRIPE_TAX_RATE_ID; falls back to
-// the live German 19% rate created in the Stripe Dashboard. Set the secret to
-// an empty string to charge no tax at all.
-const TAX_RATE_ID = Deno.env.get('STRIPE_TAX_RATE_ID') ?? 'txr_1TwNzMK3hVexCjbWIVso5YD6';
+// Manual VAT: an optional fixed Stripe tax rate (txr_...) applied to every
+// subscription and its recurring invoices while Stripe Tax's automatic_tax
+// stays off. Deliberately EMPTY by default: the seller is a Kleinunternehmer
+// under § 19 UStG (confirmed with the Finanzamt on 2026-07-24), so no VAT is
+// charged and every customer pays the flat price worldwide. Only set
+// STRIPE_TAX_RATE_ID if that status ever changes — leaving it unset keeps
+// checkout tax-free, including on any future redeploy.
+const TAX_RATE_ID = Deno.env.get('STRIPE_TAX_RATE_ID') ?? '';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': Deno.env.get('SITE_URL') ?? '*',
@@ -79,6 +80,10 @@ Deno.serve(async (req) => {
     const customer = await stripe.customers.create({
       email: user.email,
       metadata: { supabase_user_id: user.id },
+      // The whole product is English, so pin the customer's locale instead of
+      // letting Stripe guess from the buyer's browser: this is what Stripe
+      // uses to localize invoices, receipts and billing emails.
+      preferred_locales: ['en'],
     });
     customerId = customer.id;
     await supabaseAdmin.from('profiles').update({ stripe_customer_id: customerId }).eq('id', user.id);
@@ -87,6 +92,9 @@ Deno.serve(async (req) => {
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     customer: customerId,
+    // Keep the hosted checkout page in English like the rest of the site,
+    // rather than following the buyer's browser language.
+    locale: 'en',
     line_items: [{ price: PRICE_ID, quantity: 1 }],
     success_url: `${SITE_URL}/app.html?upgraded=1`,
     cancel_url: `${SITE_URL}/app.html`,
