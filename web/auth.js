@@ -27,13 +27,24 @@
   async function callFunction(name){
     const { data: { session } } = await sb.auth.getSession();
     if(!session) return { ok:false, error:'Not logged in.' };
-    const res = await fetch(`${FUNCTIONS_URL}/${name}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json'
-      }
-    });
+    let res;
+    try {
+      res = await fetch(`${FUNCTIONS_URL}/${name}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch(err){
+      // A network-level failure throws from fetch() itself, before there is
+      // any response to check .ok on: offline, DNS, an ad-blocker eating the
+      // request, or a CORS mismatch (e.g. the visitor is on the apex domain
+      // while the function only allows the www one). Unhandled, that throw
+      // escapes the caller's click handler and the button appears to do
+      // nothing at all — no spinner, no error, no redirect.
+      return { ok:false, error:'Could not reach the payment server. Please check your connection and try again.' };
+    }
     const body = await res.json().catch(() => ({}));
     if(!res.ok || !body.url) return { ok:false, error: body.error || 'Something went wrong. Please try again.' };
     return { ok:true, url: body.url };
@@ -390,11 +401,14 @@
   // predate this feature and have a null account_id) are treated by the
   // client as belonging to whichever account has that flag, so nothing a
   // user already logged disappears the day this shipped.
+  // Returns the user's trading accounts — an empty list for someone who has
+  // never created one. It deliberately no longer invents a placeholder: a
+  // brand-new user used to land on a calendar labelled "FTMO 100k", an account
+  // they never opened, which reads as broken data. app.html asks for the real
+  // one on first run instead. Existing users are unaffected — they already
+  // have accounts, including the is_default one legacy trades hang off.
   async function ensureDefaultAccount(){
-    const accounts = await getAccounts();
-    if(accounts.length) return accounts;
-    const res = await createAccount({ label:'FTMO 100k', account_type:'live', platform:'MT4', currency:'USD', is_default:true });
-    return res.ok ? [res.account] : [];
+    return getAccounts();
   }
 
   // A session sitting in localStorage is not proof the account still exists.

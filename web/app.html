@@ -1219,6 +1219,55 @@
   </div>
 </div>
 
+<!-- First-run overlay: a brand-new user has no trading account yet. It has no
+     close button on purpose — every trade has to belong to an account, so this
+     is the one thing that must happen before the calendar is of any use. -->
+<style>
+  #firstAccountOverlay .modal{max-width:440px;}
+  #firstAccountOverlay .fa-intro{font-size:13.5px; line-height:1.6; color:var(--text-dim); margin:0 0 18px;}
+  #firstAccountOverlay .form-row select{
+    width:100%; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm);
+    color:var(--text); font-family:inherit; font-size:13.5px; padding:10px 12px; outline:none;
+  }
+  #firstAccountOverlay .form-row select:focus{border-color:var(--accent);}
+</style>
+<div class="overlay" id="firstAccountOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Add your trading account</h3>
+    </div>
+    <p class="fa-intro">Every trade belongs to an account, so let's set yours up first. Use the broker or prop-firm account you actually trade — you can rename it or add more later.</p>
+    <form id="firstAccountForm">
+      <div class="form-row">
+        <label>Account name</label>
+        <input type="text" id="faLabel" placeholder="e.g. FTMO 100k or IC Markets Live" maxlength="60" required>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>Type</label>
+          <select id="faType">
+            <option value="live">Live</option>
+            <option value="demo">Demo</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Platform</label>
+          <select id="faPlatform">
+            <option value="MT4">MT4</option>
+            <option value="MT5">MT5</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Currency</label>
+        <input type="text" id="faCurrency" value="USD" maxlength="8" required>
+      </div>
+      <div class="form-error" id="faError"></div>
+      <button type="submit" class="btn btn-primary" id="faSubmit" style="width:100%; margin-top:6px;">Create account</button>
+    </form>
+  </div>
+</div>
+
 <!-- Add trade manually overlay -->
 <div class="overlay" id="addTradeOverlay">
   <div class="modal">
@@ -1651,7 +1700,43 @@ async function loadAccountsAndResolveActive(){
   resolveActiveAccount();
   populateAccountSelect();
   updateEyebrow();
+  // Nobody has an account on their very first visit, and a trade cannot exist
+  // without one — so ask for the real account up front instead of inventing a
+  // placeholder the person never opened.
+  if(!accountsList.length) openFirstAccountPrompt();
 }
+
+function openFirstAccountPrompt(){
+  const overlay = document.getElementById('firstAccountOverlay');
+  if(!overlay || overlay.classList.contains('open')) return;
+  overlay.classList.add('open');
+  document.getElementById('faLabel').focus();
+}
+
+document.getElementById('firstAccountForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = document.getElementById('faError');
+  const btn = document.getElementById('faSubmit');
+  err.textContent = '';
+  btn.disabled = true;
+  let res;
+  try {
+    res = await TLAuth.data.createAccount({
+      label: document.getElementById('faLabel').value,
+      account_type: document.getElementById('faType').value,
+      platform: document.getElementById('faPlatform').value,
+      currency: document.getElementById('faCurrency').value,
+      is_default: true
+    });
+  } catch(err2){
+    res = { ok:false, error:'Could not reach the server. Please try again.' };
+  }
+  btn.disabled = false;
+  if(!res.ok){ err.textContent = res.error || 'Could not create the account.'; return; }
+  // Reload rather than patching every render path — same reasoning as
+  // switching accounts: the calendar, KPIs and chart all key off this.
+  location.reload();
+});
 
 // Switching accounts changes which rows hydrateFromSupabase pulls in, so the
 // simplest correct way to reflect it everywhere (calendar, KPIs, chart, open
