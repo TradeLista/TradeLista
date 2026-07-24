@@ -1451,7 +1451,19 @@
     }catch(e){}
   }
 
+  function readCookieConsent(){
+    try{
+      const raw = localStorage.getItem(COOKIE_CONSENT_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  }
+
   function openCookiePrefs(onDone){
+    // Reflect the choice already on file. On a first visit there is none, so
+    // both optional categories stay off — consent has to be opted into, never
+    // pre-ticked. Reopened later from the footer, the boxes instead show what
+    // the visitor actually chose, so they can see it before changing it.
+    const current = readCookieConsent();
     ensureStyles();
     const overlay = document.createElement('div');
     overlay.className = 'tl-overlay';
@@ -1470,14 +1482,14 @@
             <div class="tl-cookie-cat-name">Analytics</div>
             <div class="tl-cookie-cat-desc">Not currently used — TradeLista sets no analytics cookies today.</div>
           </div>
-          <input type="checkbox" id="tlCookieAnalytics">
+          <input type="checkbox" id="tlCookieAnalytics"${current && current.analytics ? ' checked' : ''}>
         </div>
         <div class="tl-cookie-cat">
           <div>
             <div class="tl-cookie-cat-name">Marketing</div>
             <div class="tl-cookie-cat-desc">Not currently used — TradeLista sets no advertising cookies today.</div>
           </div>
-          <input type="checkbox" id="tlCookieMarketing">
+          <input type="checkbox" id="tlCookieMarketing"${current && current.marketing ? ' checked' : ''}>
         </div>
         <div class="tl-actions" style="margin-top:18px;">
           <button type="button" class="btn btn-primary" id="tlCookieSave">Save preferences</button>
@@ -1532,7 +1544,51 @@
       });
     });
   }
+
+  // Consent has to be as easy to withdraw as it was to give (Art. 7(3) GDPR),
+  // but the banner shows up exactly once and never returns — so without this
+  // there is no way back to that choice at all. Every page's footer already
+  // links the Privacy Policy from a .footer-col, so the control is grafted
+  // onto that instead of hand-editing thirteen copies of the same markup
+  // (app.html alone carries two footers) where one would inevitably drift.
+  function addCookieSettingsLink(){
+    document.querySelectorAll('.footer-col a[href$="privacy.html"]').forEach(privacyLink => {
+      const col = privacyLink.parentElement;
+      if(!col || col.querySelector('.tl-cookie-settings-link')) return;
+
+      const link = document.createElement('a');
+      link.href = '#';
+      link.className = 'tl-cookie-settings-link';
+      link.textContent = 'Cookie settings';
+      link.addEventListener('click', (e)=>{
+        e.preventDefault();
+        openCookiePrefs((analytics, marketing)=>{
+          saveCookieConsent(analytics, marketing);
+          // Reopened from the footer there is no banner left to disappear, so
+          // without this the modal would just close and leave the visitor
+          // unsure whether the change took. Borrows the banner's own styling
+          // and position, so the acknowledgement lands where the choice was
+          // originally made.
+          ensureStyles();
+          document.querySelectorAll('.tl-cookie-toast').forEach(t => t.remove());
+          const toast = document.createElement('div');
+          toast.className = 'tl-cookie-bar tl-cookie-toast';
+          toast.setAttribute('role', 'status');
+          toast.innerHTML = '<p>Your cookie preferences have been saved.</p>';
+          document.body.appendChild(toast);
+          setTimeout(()=> toast.remove(), 3200);
+        });
+      });
+      privacyLink.insertAdjacentElement('afterend', link);
+    });
+  }
+
   initCookieBanner();
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', addCookieSettingsLink);
+  } else {
+    addCookieSettingsLink();
+  }
 
   // Safety net for the header. Every page ships its nav as
   // `visibility:hidden` and only reveals it after an awaited session check, so
