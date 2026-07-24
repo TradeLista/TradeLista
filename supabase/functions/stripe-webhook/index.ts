@@ -1,22 +1,24 @@
 // Supabase Edge Function: stripe-webhook
 // Receives Stripe webhook events and keeps the `profiles` table in sync with
-// the real subscription state (plan, period end, cancellation flag), and
-// welcomes the customer by email the first time they subscribe.
+// the real subscription state (plan, period end, cancellation flag). It also
+// sends the two emails that would otherwise never reach the customer:
+//   * a welcome the first time they subscribe, and
+//   * the § 312k BGB cancellation confirmation when they cancel somewhere
+//     other than our own button — i.e. in Stripe's customer portal, which
+//     our cancel-subscription function never hears about.
 //
 // Required secrets (Project Settings -> Edge Functions -> Secrets):
 //   STRIPE_SECRET_KEY     — your Stripe secret key (sk_live_... in production)
-//   STRIPE_WEBHOOK_SECRET — signing secret shown when you create the webhook
-//                           endpoint in the Stripe Dashboard (whsec_...)
-//   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD — for the welcome email
-//   SITE_URL              — used for the "open my calendar" link
+//   STRIPE_WEBHOOK_SECRET — signing secret from the webhook endpoint (whsec_...)
+//   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD — for the emails
+//   SITE_URL              — used for links in the emails
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are provided automatically.
 //
 // This function must have "Verify JWT" turned OFF in the Supabase Dashboard —
 // Stripe calls it directly and has no Supabase session to present. It
 // authenticates the caller by verifying Stripe's signature instead.
 //
-// After deploying, copy this function's URL into Stripe Dashboard ->
-// Developers -> Webhooks -> Add endpoint, and select these events:
+// Webhook events to select in Stripe:
 //   checkout.session.completed, customer.subscription.updated,
 //   customer.subscription.deleted
 
@@ -32,8 +34,6 @@ const supabaseAdmin = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 );
 
-// Escape any user-supplied value before it goes into the HTML email body, so a
-// name can't inject markup or links into the message.
 function escapeHtml(s: string) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -60,6 +60,33 @@ function brandedEmail(greeting: string, bodyHtml: string) {
 }
 const P = 'margin:0 0 16px;font-size:15px;line-height:1.6;color:#3a4453;';
 
+function mailer() {
+  const smtpUser = Deno.env.get('SMTP_USER');
+  if (!smtpUser || !Deno.env.get('SMTP_HOST') || !Deno.env.get('SMTP_PASSWORD')) return null;
+  const port = Number(Deno.env.get('SMTP_PORT') || '587');
+  return {
+    from: smtpUser,
+    transporter: nodemailer.createTransport({
+      host: Deno.env.get('SMTP_HOST'),
+      port,
+      secure: port === 465,
+      auth: { user: smtpUser, pass: Deno.env.get('SMTP_PASSWORD') },
+    }),
+  };
+}
+
+// The profile as it looks *before* this event is applied. Reading it first is
+// what lets us tell a fresh cancellation apart from one we already handled.
+async function loadProfileFor(subscription: Stripe.Subscription) {
+  const userId = subscription.metadata?.supabase_user_id;
+  const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
+  const query = supabaseAdmin.from('profiles').select('id, first_name, cancel_at_period_end');
+  const { data } = userId
+    ? await query.eq('id', userId).maybeSingle()
+    : await query.eq('stripe_customer_id', customerId).maybeSingle();
+  return data;
+}
+
 async function updateProfileFromSubscription(subscription: Stripe.Subscription) {
   const userId = subscription.metadata?.supabase_user_id;
   const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
@@ -77,18 +104,14 @@ async function updateProfileFromSubscription(subscription: Stripe.Subscription) 
   if (error) console.error('Failed to update profile from subscription:', error);
 }
 
-// Sent once, when someone first subscribes — not on renewals, which arrive as
-// customer.subscription.updated. Deliberately swallows every failure: the
-// payment has already succeeded and the account is already Pro, so a flaky
-// SMTP server must never make this webhook report an error. A non-2xx reply
-// would make Stripe retry the whole event and re-send this mail repeatedly.
+// Sent once, on the first subscription. Swallows every failure on purpose:
+// the payment already succeeded and the account is already Pro, so a flaky
+// SMTP server must never make this webhook answer non-2xx — Stripe would
+// retry the whole event and re-send the mail repeatedly.
 async function sendProWelcomeEmail(subscription: Stripe.Subscription, session: Stripe.Checkout.Session) {
   try {
-    const smtpUser = Deno.env.get('SMTP_USER');
-    if (!smtpUser || !Deno.env.get('SMTP_HOST') || !Deno.env.get('SMTP_PASSWORD')) {
-      console.error('stripe-webhook: missing SMTP secrets, welcome email not sent.');
-      return;
-    }
+    const mail = mailer();
+    if (!mail) { console.error('stripe-webhook: missing SMTP secrets, welcome email not sent.'); return; }
 
     const userId = subscription.metadata?.supabase_user_id;
     let email = session.customer_details?.email ?? null;
@@ -96,17 +119,14 @@ async function sendProWelcomeEmail(subscription: Stripe.Subscription, session: S
 
     if (userId) {
       const { data: profile } = await supabaseAdmin
-        .from('profiles').select('first_name').eq('id', userId).single();
+        .from('profiles').select('first_name').eq('id', userId).maybeSingle();
       firstName = profile?.first_name ?? '';
       if (!email) {
         const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
         email = authUser?.user?.email ?? null;
       }
     }
-    if (!email) {
-      console.error('stripe-webhook: no email address for the new subscriber, welcome email not sent.');
-      return;
-    }
+    if (!email) { console.error('stripe-webhook: no email for the new subscriber.'); return; }
 
     const perks = [
       'MT4 / MT5 auto-sync',
@@ -117,15 +137,8 @@ async function sendProWelcomeEmail(subscription: Stripe.Subscription, session: S
       'Trade insights &amp; your TradeLista Score',
     ];
 
-    const transporter = nodemailer.createTransport({
-      host: Deno.env.get('SMTP_HOST'),
-      port: Number(Deno.env.get('SMTP_PORT') || '587'),
-      secure: Number(Deno.env.get('SMTP_PORT') || '587') === 465,
-      auth: { user: smtpUser, pass: Deno.env.get('SMTP_PASSWORD') },
-    });
-
-    await transporter.sendMail({
-      from: smtpUser,
+    await mail.transporter.sendMail({
+      from: mail.from,
       to: email,
       subject: 'Welcome to TradeLista Pro',
       text: `Hi ${firstName || 'there'},\n\nYour TradeLista Pro subscription is active — everything is unlocked in your calendar right away:\n\n- MT4 / MT5 auto-sync\n- Up to 5 connected accounts\n- Unlimited screenshots (1 GB)\n- Custom reflection questions\n- Golden trading rules\n- Trade insights & your TradeLista Score\n\nOpen your calendar: ${SITE_URL}/app.html\n\nYour plan renews automatically at $10/month. You can cancel anytime from Account settings — you keep all your trades, notes and screenshots either way.\n\nYour invoice arrives in a separate email from our payment provider, Stripe.\n\n— TradeLista`,
@@ -146,6 +159,46 @@ async function sendProWelcomeEmail(subscription: Stripe.Subscription, session: S
     });
   } catch (emailErr) {
     console.error('stripe-webhook: subscription activated but welcome email failed:', emailErr);
+  }
+}
+
+// § 312k BGB requires the cancellation to be confirmed immediately in a
+// durable medium, with its content, the time it was received and the date the
+// contract ends. Our own cancel-subscription function does that for the site's
+// "Cancel contract here" button — but a customer cancelling in Stripe's
+// customer portal never touches it, and used to get nothing at all.
+async function sendCancellationEmail(subscription: Stripe.Subscription, profile: { id: string; first_name?: string | null }) {
+  try {
+    const mail = mailer();
+    if (!mail) { console.error('stripe-webhook: missing SMTP secrets, cancellation email not sent.'); return; }
+
+    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(profile.id);
+    const email = authUser?.user?.email;
+    if (!email) { console.error('stripe-webhook: no email for the cancelling customer.'); return; }
+
+    const periodEnd = new Date(subscription.current_period_end * 1000);
+    const receivedAtStr = new Date().toLocaleString('en-GB', { timeZone: 'Europe/Berlin', dateStyle: 'long', timeStyle: 'short' }) + ' (Europe/Berlin)';
+    const periodEndStr = periodEnd.toLocaleDateString('en-GB', { timeZone: 'Europe/Berlin', dateStyle: 'long' });
+    const firstName = profile.first_name ?? '';
+
+    await mail.transporter.sendMail({
+      from: mail.from,
+      to: email,
+      subject: 'Your TradeLista Pro subscription cancellation — confirmed',
+      text: `Hi ${firstName || 'there'},\n\nThis confirms we received your cancellation declaration on ${receivedAtStr}.\n\nWhat you cancelled: TradeLista Pro subscription\nReceived: ${receivedAtStr}\nYour contract will end on: ${periodEndStr}\n\nYou'll keep full Pro access until then — no further charges after that date. You can undo this and keep your Pro plan anytime before ${periodEndStr} from Account settings.\n\n— TradeLista`,
+      html: brandedEmail(
+        firstName ? `Hi ${escapeHtml(firstName)},` : 'Hi there,',
+        `<p style="${P}">This confirms we received your cancellation declaration on <strong>${receivedAtStr}</strong>.</p>
+         <table cellpadding="0" cellspacing="0" style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#3a4453;">
+           <tr><td style="padding-right:12px;color:#8a93a3;">What you cancelled</td><td>TradeLista Pro subscription</td></tr>
+           <tr><td style="padding-right:12px;color:#8a93a3;">Received</td><td>${receivedAtStr}</td></tr>
+           <tr><td style="padding-right:12px;color:#8a93a3;">Your contract ends</td><td><strong>${periodEndStr}</strong></td></tr>
+         </table>
+         <p style="${P}">You'll keep full Pro access until then &mdash; no further charges after that date. You can undo this and keep your Pro plan anytime before ${periodEndStr} from your Account settings.</p>`,
+      ),
+    });
+  } catch (emailErr) {
+    console.error('stripe-webhook: cancellation recorded but confirmation email failed:', emailErr);
   }
 }
 
@@ -178,7 +231,20 @@ Deno.serve(async (req) => {
         }
         break;
       }
-      case 'customer.subscription.updated':
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object as Stripe.Subscription;
+        const before = await loadProfileFor(subscription);
+        await updateProfileFromSubscription(subscription);
+        // Only on the transition into "cancelling", and only when nobody has
+        // confirmed it yet. cancel-subscription flips this same flag before
+        // Stripe's event arrives, so a still-false value here means the
+        // cancellation came from the Stripe portal instead of our own button
+        // — and the customer has had no confirmation at all.
+        if (subscription.cancel_at_period_end && before && !before.cancel_at_period_end) {
+          await sendCancellationEmail(subscription, before);
+        }
+        break;
+      }
       case 'customer.subscription.deleted': {
         await updateProfileFromSubscription(event.data.object as Stripe.Subscription);
         break;
