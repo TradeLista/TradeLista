@@ -325,10 +325,15 @@
     const btn = document.getElementById('loginSubmit');
     errEl.textContent = '';
     btn.disabled = true;
-    const res = await TLAuth.login({
-      email: document.getElementById('loginEmail').value,
-      password: document.getElementById('loginPassword').value
-    });
+    let res;
+    try {
+      res = await TLAuth.login({
+        email: document.getElementById('loginEmail').value,
+        password: document.getElementById('loginPassword').value
+      });
+    } catch(err){
+      res = { ok:false, error: 'Could not reach the server. Please check your connection and try again.' };
+    }
     btn.disabled = false;
     if(!res.ok){ errEl.textContent = res.error; return; }
     location.href = redirect;
@@ -342,12 +347,21 @@
     errEl.textContent = '';
     successEl.textContent = '';
     btn.disabled = true;
-    const res = await TLAuth.signup({
-      firstName: document.getElementById('suFirstName').value,
-      lastName: document.getElementById('suLastName').value,
-      email: document.getElementById('suEmail').value,
-      password: document.getElementById('suPassword').value
-    });
+    let res;
+    try {
+      res = await TLAuth.signup({
+        firstName: document.getElementById('suFirstName').value,
+        lastName: document.getElementById('suLastName').value,
+        email: document.getElementById('suEmail').value,
+        password: document.getElementById('suPassword').value
+      });
+    } catch(err){
+      // Without this the submit handler dies mid-flight: the button stays
+      // stuck on "disabled" and the person sees nothing at all — a silent
+      // dead end. Happens e.g. when the server can't send the confirmation
+      // email, or the request times out.
+      res = { ok:false, error: 'Could not create your account right now (' + ((err && err.message) || 'connection problem') + '). Please try again in a moment.' };
+    }
     btn.disabled = false;
     if(!res.ok){ errEl.textContent = res.error; return; }
     if(res.needsConfirmation){
