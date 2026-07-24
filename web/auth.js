@@ -397,10 +397,44 @@
     return res.ok ? [res.account] : [];
   }
 
+  // A session sitting in localStorage is not proof the account still exists.
+  // Delete the user server-side (or revoke the token) and the browser keeps
+  // tokens that still look perfectly valid to getSession(), which never asks
+  // the server — so every page treats the visitor as logged in, "Log in"
+  // bounces them straight to the calendar, and nothing there can load. Ask the
+  // server once per page load instead, and drop a genuinely dead session so
+  // the person simply lands as logged out.
+  //
+  // Cached, because getSessionUser() is called by nearly every read and one
+  // network round trip each time would be brutal; onAuthStateChange clears the
+  // cache whenever the real state changes (login, logout, token refresh).
+  let validatedUserPromise = null;
   async function getSessionUser(){
-    const { data: { session } } = await sb.auth.getSession();
-    return session ? session.user : null;
+    if(!validatedUserPromise){
+      validatedUserPromise = (async ()=>{
+        const { data: { session } } = await sb.auth.getSession();
+        if(!session) return null;
+        const { data, error } = await sb.auth.getUser();
+        if(error){
+          // Only an outright rejection means the session is really dead. A
+          // network blip must NOT sign anyone out — that would log people out
+          // the moment their connection stutters, mid-session.
+          if(error.status === 401 || error.status === 403){
+            await sb.auth.signOut();
+            return null;
+          }
+          return session.user;
+        }
+        if(!data || !data.user){
+          await sb.auth.signOut();
+          return null;
+        }
+        return data.user;
+      })();
+    }
+    return validatedUserPromise;
   }
+  sb.auth.onAuthStateChange(()=>{ validatedUserPromise = null; });
 
   async function fetchProfile(userId){
     const { data, error } = await sb.from('profiles').select('*').eq('id', userId).single();
